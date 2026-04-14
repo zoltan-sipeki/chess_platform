@@ -1,0 +1,79 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration
+  datasource:
+    url: jdbc:postgresql://postgres/relay_db
+    username: relay_service
+    password: "${postgres-relay-service-password}"
+  jackson:
+    default-property-inclusion: NON_NULL
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "${keycloak.url}/realms/chess"
+      client:
+        registration:
+          keycloak:
+            client-id: cp_relay_service
+            client-secret: "${keycloak-relay-service-client-secret}"
+            client-authentication-method: client_secret_post
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: "${keycloak.url}/realms/chess"
+            jwk-set-uri: "${keycloak.url}/realms/chess/protocol/openid-connect/certs"
+            token-uri: "${keycloak.url}/realms/chess/protocol/openid-connect/token"
+
+keycloak:
+  url: http://keycloak:8080
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka:8080/eureka/
+
+ws-connections:
+  unauthenticated:
+    timeout-ms: 15000
+
+rabbitmq-messaging:
+  queue:
+    service: relay_service_queue
+  routing-key:
+    service: relay_service
+    service-fanout: relay_service_fanout
+    chess-service: chess_service
+    chat-service: chat_service
+    matchmaking-service: matchmaking_service
+    user-service: user_service
+  user-service:
+    events:
+      exchange: user_events_exchange
+  chess-service:
+    events:
+      exchange: chess_events_exchange
+  chat-service:
+    events:
+      exchange: chat_events_exchange
+  matchmaking-service:
+    events:
+      exchange: matchmaking_events_exchange
+  relay-service:
+    events:
+      exchange: relay_events_exchange
+      fanout-exchange: relay_events_fanout_exchange

@@ -1,0 +1,35 @@
+package net.chess_platform.chess_service.ws.message.server;
+
+public class ServerMessage {
+
+    public enum Type {
+        ERROR,
+        MATCH_TIMEOUT,
+        MOVE_RESULT,
+        GAME_STATE,
+        PLAYER_DISCONNECTED,
+        PLAYER_RECONNECTED,
+        CONNECTED
+    }
+
+    private Type type;
+
+    private Object payload;
+
+    public ServerMessage(Type type) {
+        this.type = type;
+    }
+
+    public ServerMessage(Type type, Object payload) {
+        this(type);
+        this.payload = payload;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public Object getPayload() {
+        return payload;
+    }
+}

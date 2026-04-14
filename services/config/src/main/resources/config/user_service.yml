@@ -1,0 +1,64 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration
+  datasource:
+    url: jdbc:postgresql://postgres/user_db
+    username: user_service
+    password: "${postgres-user-service-password}"
+  jackson:
+    default-property-inclusion: NON_NULL
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "${keycloak.url}/realms/chess"
+      client:
+        registration:
+          keycloak:
+            client-id: cp_user_service
+            client-secret: "${keycloak-user-service-client-secret}"
+            client-authentication-method: client_secret_post
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: "${keycloak.url}/realms/master"
+            jwk-set-uri: "${keycloak.url}/realms/master/protocol/openid-connect/certs"
+            token-uri: "${keycloak.url}/realms/master/protocol/openid-connect/token"
+
+keycloak:
+  url: http://keycloak:8080
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka:8080/eureka/
+
+rabbitmq-messaging:
+  service:
+    queue: user_service_queue
+  routing-key:
+    service: user_service
+    chat-service: chat_service
+    matchmaking-service: matchmaking_service
+    match-service: match_service
+    relay-service: relay_service
+  keycloak:
+    events:
+      exchange: keycloak_events_exchange
+  user-service:
+    events:
+      exchange: user_events_exchange

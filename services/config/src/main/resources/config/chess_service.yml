@@ -1,0 +1,76 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration
+  datasource:
+    url: jdbc:postgresql://postgres/chess_db
+    username: chess_service
+    password: "${postgres-chess-service-password}"
+  jackson:
+    default-property-inclusion: NON_NULL
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "${keycloak.url}/realms/chess"
+      client:
+        registration:
+          keycloak:
+            client-id: cp_chess_service
+            client-secret: "${keycloak-chess-service-client-secret}"
+            client-authentication-method: client_secret_post
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: "${keycloak.url}/realms/chess"
+            jwk-set-uri: "${keycloak.url}/realms/chess/protocol/openid-connect/certs"
+            token-uri: "${keycloak.url}/realms/chess/protocol/openid-connect/token"
+
+keycloak:
+  url: http://keycloak:8080
+
+server:
+  port: 8080
+
+eureka:
+  instance:
+    metadata-map:
+      uuid: "${random.uuid}"
+  client:
+    serviceUrl:
+      defaultZone: http://eureka:8080/eureka/
+
+logging:
+  level:
+    root: info
+
+ws-connections:
+  unauthenticated:
+    timeout-ms: 15000
+
+rabbitmq-messaging:
+  queue:
+    service: chess_service_queue
+  routing-key:
+    service: chess_service
+    match-service: match_service
+    relay-service: relay_service
+    relay-service-fanout: relay_service_fanout
+  chess-service:
+    events:
+      exchange: chess_events_exchange
+
+matchmaking:
+  token:
+    algorithm: RSA512
+    public-key: "${mmtoken-public-key}"

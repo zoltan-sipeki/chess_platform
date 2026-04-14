@@ -1,0 +1,359 @@
+name: chess_platform
+services:
+  chat:
+    image: cp-chat-service:latest
+    build:
+      context: ./chat_service
+    secrets:
+      - postgres-chat-service-password
+      - mongodb-chat-service-password
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5000:5000
+    networks:
+      - chess-network
+    mem_limit: 250m
+    depends_on:
+      config:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  chess:
+    image: cp-chess-service:latest
+    build:
+      context: ./chess_service
+    secrets:
+      - postgres-chess-service-password
+      - mmtoken-public-key
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5001:5000
+    networks:
+      - chess-network
+    mem_limit: 250m
+    depends_on:
+      eureka:
+        condition: service_healthy
+      config:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+  config:
+    image: cp-config:latest
+    build:
+      context: ./config
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5002:5000
+      - 5555:8080
+    networks:
+      - chess-network
+    mem_limit: 250m
+    healthcheck:
+      test: curl http://localhost:8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+  eureka:
+    image: cp-eureka:latest
+    build:
+      context: ./eureka
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5003:5000
+      - 8083:8080
+    mem_limit: 250m
+    networks:
+      - chess-network
+    healthcheck:
+      test: curl http://localhost:8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    depends_on:
+      config:
+        condition: service_healthy
+  gateway:
+    image: cp-gateway:latest
+    build:
+      context: ./gateway
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5004:5000
+      - 8081:8080
+    mem_limit: 250m
+    networks:
+      - chess-network
+    depends_on:
+      config:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+  match:
+    image: cp-match-service:latest
+    build:
+      context: ./match_service
+    secrets:
+      - postgres-match-service-password
+      - keycloak-match-service-client-secret
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5005:5000
+    mem_limit: 250m
+    networks:
+      - chess-network
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      config:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+  matchmaking:
+    image: cp-matchmaking-service:latest
+    build:
+      context: ./matchmaking_service
+    secrets:
+      - postgres-matchmaking-service-password
+      - keycloak-matchmaking-service-client-secret
+      - mmtoken-private-key
+      - mmtoken-public-key
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5006:5000
+    mem_limit: 250m
+    networks:
+      - chess-network
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      config:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+  matchmaking-connection:
+    image: cp-matchmaking-connection-service:latest
+    build:
+      context: ./matchmaking_connection_service
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5007:5000
+    mem_limit: 250m
+    networks:
+      - chess-network
+    depends_on:
+      config:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+  relay:
+    image: cp-relay-service:latest
+    build:
+      context: ./relay_service
+    secrets:
+      - postgres-relay-service-password
+      - keycloak-relay-service-client-secret
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5008:5000
+    mem_limit: 250m
+    networks:
+      - chess-network
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      config:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+  user:
+    image: cp-user-service:latest
+    build:
+      context: ./user_service
+    secrets:
+      - postgres-user-service-password
+      - keycloak-user-service-client-secret
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
+    ports:
+      - 5009:5000
+      - 8090:8080
+    mem_limit: 250m
+    networks:
+      - chess-network
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      config:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+  keycloak:
+    image: keycloak:26.5.6
+    ports:
+      - 8080:8080
+    mem_limit: 300m
+    command:
+      - start-dev
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak_db
+      - KC_DB_USERNAME=keycloak
+      - KC_BOOTSTRAP_ADMIN_USERNAME=tmp_admin
+      - KC_HEALTH_ENABLED=true
+      - KC_RABBITMQ_HOST=rabbitmq
+      - KC_RABBITMQ_PORT=5672
+      - KC_EVENTS_ROUTING_KEY=user-service
+      - KC_HOSTNAME=keycloak
+    env_file:
+      - ./secrets/keycloak/.env
+    networks:
+      - chess-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:9000/health/ready"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+  postgres:
+    image: postgres:18.3
+    secrets:
+      - postgres-root-password
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-root-password
+    ports:
+      - 5432:5432
+    mem_limit: 200m
+    networks:
+      - chess-network
+    volumes:
+      - type: volume
+        source: postgres-data
+        target: /var/lib/postgresql
+      - type: bind
+        source: ./postgres_init/postgres_init.sql
+        target: /docker-entrypoint-initdb.d/postgres_init.sql
+        read_only: true
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+  rabbitmq:
+    image: rabbitmq:4.2.5-management-alpine
+    ports:
+      - 15672:15672
+    mem_limit: 200m
+    networks:
+      - chess-network
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+  mongodb:
+    image: mongodb/mongodb-community-server:8.0-ubi8-slim
+    ports:
+      - 27017:27017
+    mem_limit: 350m
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=root
+    env_file:
+      - ./secrets/mongodb/.env
+    networks:
+      - chess-network
+    volumes:
+      - type: volume
+        source: mongodb-data
+        target: /data/db
+      - type: bind
+        source: ./mongodb_init/mongodb_init.js
+        target: /docker-entrypoint-initdb.d/mongodb_init.js
+        read_only: true
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+networks:
+  chess-network:
+volumes:
+  postgres-data:
+  mongodb-data:
+  rabbitmq-data:
+secrets:
+  postgres-root-password:
+    file: ./secrets/postgres/root_password
+  postgres-chat-service-password:
+    file: ./secrets/postgres/chat_service_password
+  postgres-chess-service-password:
+    file: ./secrets/postgres/chess_service_password
+  postgres-match-service-password:
+    file: ./secrets/postgres/match_service_password
+  postgres-matchmaking-service-password:
+    file: ./secrets/postgres/matchmaking_service_password
+  postgres-relay-service-password:
+    file: ./secrets/postgres/relay_service_password
+  postgres-user-service-password:
+    file: ./secrets/postgres/user_service_password
+  mongodb-chat-service-password:
+    file: ./secrets/mongodb/chat_service_password
+  mmtoken-public-key:
+    file: ./secrets/mmtoken/public_key.pem
+  mmtoken-private-key:
+    file: ./secrets/mmtoken/private_key.pem
+  keycloak-match-service-client-secret:
+    file: ./secrets/keycloak/match_service_client_secret
+  keycloak-matchmaking-service-client-secret:
+    file: ./secrets/keycloak/matchmaking_service_client_secret
+  keycloak-relay-service-client-secret:
+    file: ./secrets/keycloak/relay_service_client_secret
+  keycloak-user-service-client-secret:
+    file: ./secrets/keycloak/user_service_client_secret
+  keycloak-chess-service-client-secret:
+    file: ./secrets/keycloak/chess_service_client_secret

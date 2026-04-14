@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    
+  <modelVersion>4.0.0</modelVersion>
+    
+  <groupId>net.chess_platform</groupId>
+    
+  <artifactId>project-aggregator</artifactId>
+    
+  <version>1.0.0</version>
+    
+  <packaging>pom</packaging>
+    
+  <modules>
+        
+    <module>config</module>
+        
+    <module>chat_service</module>
+        
+    <module>chess_service</module>
+        
+    <module>eureka</module>
+        
+    <module>gateway</module>
+        
+    <module>match_service</module>
+        
+    <module>matchmaking_connection_service</module>
+        
+    <module>matchmaking_service</module>
+        
+    <module>relay_service</module>
+        
+    <module>user_service</module>
+        
+    <module>keycloak_spi</module>
+      
+  </modules>
+  
+</project>

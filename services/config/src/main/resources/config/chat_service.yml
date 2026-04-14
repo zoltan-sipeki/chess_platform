@@ -1,0 +1,56 @@
+spring:
+  mongodb:
+    database: chat_db
+    host: mongodb
+    port: 27017
+    username: chat_service
+    password: ${mongodb-chat-service-password}
+  datasource:
+    url: jdbc:postgresql://postgres/chat_db
+    username: chat_service
+    password: "${postgres-chat-service-password}"
+  jackson:
+    default-property-inclusion: NON_NULL
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/chess
+
+logging:
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+    org.springframework.data.mongodb.core: DEBUG
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: "http://eureka:8080/eureka/"
+
+rabbitmq-messaging:
+  queue:
+    service: chat_service_queue
+  routing-key:
+    service: chat_service
+    relay-service: relay_service
+    relay-service-fanout: relay_service_fanout
+    user-service: user_service
+  chat-service:
+    events:
+      exchange: chat_events_exchange
+  user-service:
+    events:
+      exchange: user_events_exchange
