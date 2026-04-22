@@ -9,8 +9,7 @@
             </ul>
             <div class="d-flex align-items-center">
                 <small class="navbar-text me-2">Already have an account?</small>
-                <a href="http://keycloak:8080/realms/chess/protocol/openid-connect/auth?response_type=code&code_challenge=X9kkYl9qsWoZzJgHx8UGrhgTSQ5LpnX4Q9WhDguqzbg&code_challenge_method=S256&state=asdasd&client_id=chess_application&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A4200%2Flogin"
-                    class="btn btn-success">Sign in</a>
+                <a [href]="loginUrl()" class="btn btn-success">Sign in</a>
             </div>
         </div>
     </div>
@@ -29,8 +28,7 @@
             </ul>
             <hr />
             <p>Don't have an account?</p>
-            <a href="http://keycloak:8080/realms/chess/login-actions/registration?client_id=chess_application&tab_id=KSOQ9wpvdxA&client_data=eyJydSI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDIwMC9sb2dpbiIsInJ0IjoiY29kZSIsInN0IjoiYXNkYXNkIn0"
-                class="btn btn-lg btn-primary">
+            <a [href]="registerUrl()" class="btn btn-lg btn-primary">
                 Sign up
             </a>
         </div>

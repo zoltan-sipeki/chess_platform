@@ -245,16 +245,21 @@ services:
       - KC_RABBITMQ_PORT=5672
       - KC_EVENTS_ROUTING_KEY=user-service
       - KC_HOSTNAME=keycloak
+      - KC_HOSTNAME_PORT=8080
+      - KC_COOKIE_SAMESITE=none
     env_file:
       - ./secrets/keycloak/.env
     networks:
       - chess-network
     healthcheck:
-      test: ["CMD-SHELL", "curl http://localhost:9000/health/ready"]
+      test: [ "CMD-SHELL", "curl http://localhost:9000/health/ready" ]
       interval: 10s
       timeout: 10s
       retries: 5
       start_period: 5s
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
   postgres:
     image: postgres:18.3
     secrets:
@@ -275,7 +280,7 @@ services:
         target: /docker-entrypoint-initdb.d/postgres_init.sql
         read_only: true
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -290,7 +295,7 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
       timeout: 10s
       retries: 5
