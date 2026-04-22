@@ -1,12 +1,15 @@
 import { Component, inject, signal } from "@angular/core";
+import { RouterLink } from "@angular/router";
 import { AuthService } from "../../services/AuthService";
+import { Navbar } from "../navbar/navbar.component";
 
 
 @Component({
     selector: 'homepage',
     templateUrl: './homepage.component.html',
     styleUrl: './homepage.component.css',
-    standalone: true
+    standalone: true,
+    imports: [RouterLink, Navbar]
 })
 export class Homepage {
 
