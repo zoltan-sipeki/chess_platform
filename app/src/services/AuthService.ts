@@ -24,6 +24,10 @@ export class AuthService {
         return this.keycloak.createLoginUrl();
     }
 
+    public createLogoutUrl(): string {
+        return this.keycloak.createLogoutUrl();
+    }
+
     public createRegisterUrl(): Promise<string> {
         return this.keycloak.createRegisterUrl();
     }
