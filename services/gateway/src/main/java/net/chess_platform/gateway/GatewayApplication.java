@@ -49,22 +49,22 @@ public class GatewayApplication {
 								path("/api/notifications/**")).or(
 										path("/api/friendRequests/**"))),
 				http())
-				.filter(lb("chat-service"));
+				.filter(lb("chat_service"));
 	}
 
 	@Bean
 	public RouterFunction<ServerResponse> matchServiceRoutes() {
-		return route(path("/api/matches/**").or(path("/api/ratings/**")), http()).filter(lb("match-service"));
+		return route(path("/api/matches/**").or(path("/api/ratings/**")), http()).filter(lb("match_service"));
 	}
 
 	@Bean
 	public RouterFunction<ServerResponse> matchmakingServiceRoutes() {
-		return route(path("/api/queues/**"), http()).filter(lb("matchmaking-service"));
+		return route(path("/api/queues/**"), http()).filter(lb("matchmaking_service"));
 	}
 
 	@Bean
 	public RouterFunction<ServerResponse> userServiceRoutes() {
-		return route(path("/api/users/**"), http()).filter(lb("user-service"));
+		return route(path("/api/users/**"), http()).filter(lb("user_service"));
 	}
 
 	@Bean

@@ -20,7 +20,7 @@ public class ChatServiceProxy {
     }
 
     public ChatServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
-        this.restClient = builder.baseUrl("http://chat-service").build();
+        this.restClient = builder.baseUrl("http://chat_service").build();
     }
 
     public List<UserDto> getFriends(String userId) {

@@ -10,7 +10,7 @@ public class UserServiceProxy {
     private final RestClient restClient;
 
     public UserServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
-        this.restClient = builder.baseUrl("http://user-service").build();
+        this.restClient = builder.baseUrl("http://user_service").build();
     }
 
     public void verifyUser() {

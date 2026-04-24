@@ -50,7 +50,7 @@ public class MatchServiceProxy {
 	}
 
 	public MatchServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
-		this.restClient = builder.baseUrl("http://match-service").build();
+		this.restClient = builder.baseUrl("http://match_service").build();
 	}
 
 	public OngoingMatchDto findOngoingMatch() {

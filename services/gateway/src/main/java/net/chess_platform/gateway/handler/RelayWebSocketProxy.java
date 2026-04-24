@@ -17,7 +17,7 @@ public class RelayWebSocketProxy extends AbstractWebSocketProxy {
 
     @Override
     public String computeTargetURI(URI sourceURI) {
-        var instance = discoveryClient.getNextServerFromEureka("relay-service", false);
+        var instance = discoveryClient.getNextServerFromEureka("relay_service", false);
         return "ws://" + instance.getHostName() + ":" + instance.getPort() + "/ws";
     }
 
