@@ -3,6 +3,8 @@ package net.chess_platform.user_service.service;
 import java.util.UUID;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +12,7 @@ import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
 import net.chess_platform.keycloak.KeycloakUserVerifiedMessage;
+import net.chess_platform.user_service.dto.UserSearchResultDto;
 import net.chess_platform.user_service.integration.KeycloakProxy;
 import net.chess_platform.user_service.mapper.UserMapper;
 import net.chess_platform.user_service.model.User;
@@ -57,6 +60,11 @@ public class UserService {
         }
     }
 
+    public UserSearchResultDto findByDisplayNamePrefix(String prefix, Pageable pageable) {
+        var result = userWriter.findByDisplayNamePrefix(prefix, pageable);
+        return new UserSearchResultDto(result.hasNext(), mapper.toClientUserDtoList(result.getContent()));
+    }
+
     public User create(User user) {
         var id = keycloak.createUser(mapper.toKeycloakUserRepresentation(user));
         user.setId(id);
@@ -82,6 +90,10 @@ public class UserService {
         public UserWriter(UserRepository userRepository, DomainEventService domainEventService) {
             this.userRepository = userRepository;
             this.domainEventService = domainEventService;
+        }
+
+        public Page<User> findByDisplayNamePrefix(String prefix, Pageable pageable) {
+            return userRepository.findByDisplayNamePrefix(prefix, pageable);
         }
 
         @Transactional

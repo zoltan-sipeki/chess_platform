@@ -1,7 +1,10 @@
 package net.chess_platform.user_service.mapper;
 
+import java.util.List;
+
 import net.chess_platform.common.dto.user.UserDto;
 import net.chess_platform.keycloak.KeycloakUserVerifiedMessage;
+import net.chess_platform.user_service.dto.ClientUserDto;
 import net.chess_platform.user_service.dto.KeycloakUserRepresentation;
 import net.chess_platform.user_service.model.User;
 
@@ -18,4 +21,6 @@ public interface UserMapper {
     public UserDto toDto(User user);
 
     public KeycloakUserRepresentation toKeycloakUserRepresentation(KeycloakUserVerifiedMessage dto);
+
+    public List<ClientUserDto> toClientUserDtoList(List<User> users);
 }

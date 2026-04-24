@@ -1,17 +1,20 @@
 package net.chess_platform.user_service.mapper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.processing.Generated;
 import net.chess_platform.common.dto.user.UserDto;
 import net.chess_platform.keycloak.KeycloakUserVerifiedMessage;
+import net.chess_platform.user_service.dto.ClientUserDto;
 import net.chess_platform.user_service.dto.KeycloakUserRepresentation;
 import net.chess_platform.user_service.model.User;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-26T23:23:55+0100",
-    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.45.0.v20260224-0835, environment: Java 23 (Oracle Corporation)"
+    date = "2026-04-24T16:24:41+0200",
+    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
 public class UserMapperImpl implements UserMapper {
@@ -127,5 +130,39 @@ public class UserMapperImpl implements UserMapper {
         keycloakUserRepresentation.setAvatar( dto.avatar() );
 
         return keycloakUserRepresentation;
+    }
+
+    @Override
+    public List<ClientUserDto> toClientUserDtoList(List<User> users) {
+        if ( users == null ) {
+            return null;
+        }
+
+        List<ClientUserDto> list = new ArrayList<ClientUserDto>( users.size() );
+        for ( User user : users ) {
+            list.add( userToClientUserDto( user ) );
+        }
+
+        return list;
+    }
+
+    protected ClientUserDto userToClientUserDto(User user) {
+        if ( user == null ) {
+            return null;
+        }
+
+        UUID id = null;
+        String displayName = null;
+        String avatar = null;
+        String email = null;
+
+        id = user.getId();
+        displayName = user.getDisplayName();
+        avatar = user.getAvatar();
+        email = user.getEmail();
+
+        ClientUserDto clientUserDto = new ClientUserDto( id, displayName, avatar, email );
+
+        return clientUserDto;
     }
 }
