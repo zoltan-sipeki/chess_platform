@@ -1,0 +1,16 @@
+<div ngbDropdown display="dynamic" class="d-inline-block ms-3" [class]="clazz()" role="button">
+    <div class="d-flex align-items-center" ngbDropdownToggle>
+        <div class="navbar-text me-2">{{ userData().displayName }}</div>
+        <img class="rounded-circle" src="imgs/default-profile-image.jpg" height="30" width="30">
+    </div>
+    <div ngbDropdownMenu>
+        <a [routerLink]="['/dashboard', 'users', userData().id]" ngbDropdownItem>View profile</a>
+        <a routerLink="/dashboard/settings" ngbDropdownItem>Settings</a>
+        <hr class="dropdown-divider">
+        <button ngbDropdownItem>Online</button>
+        <button ngbDropdownItem>Away</button>
+        <button ngbDropdownItem>Offline</button>
+        <hr class="dropdown-divider">
+        <a [href]="logoutUrl()" ngbDropdownItem>Logout</a>
+    </div>
+</div>

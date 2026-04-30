@@ -1,0 +1,31 @@
+<form ngbDropdown class="d-flex me-5" (submit)="redirect($event)">
+    <input (click)="openList()" [formControl]="prefix" class="form-control me-2" placeholder="Search for user" />
+    <button type="submit" class="btn btn-success" [disabled]="loading()">
+        @if (loading()) {
+        <div class="spinner-border spinner-border-sm text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        }
+        @else {
+        <i class="bi bi-search"></i>
+        }
+    </button>
+    @if (userSearchResult() != null) {
+    <ul ngbDropdownMenu class="w-100 top-100 shadow">
+        @for (user of userSearchResult().users; track user.id) {
+        <li ngbDropdownItem>
+            <user [id]="user.id" [displayName]="user.displayName" [avatar]="user.avatar"></user>
+        </li>
+        } @empty {
+        <li ngbDropdownItem>No such users found</li>
+        }
+        @if (userSearchResult().hasMore) {
+        <li class="dropdown-divider"></li>
+        <li ngbDropdownItem class="text-center">
+            <a class="d-block" style="text-decoration: none; color: inherit;" routerLink="/dashboard/users"
+                [queryParams]="{ startsWith: prefix.value }">Show more</a>
+        </li>
+        }
+    </ul>
+    }
+</form>

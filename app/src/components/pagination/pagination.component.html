@@ -1,0 +1,7 @@
+<div>
+    <span class="fw-bold">{{ itemsShown() }}</span> of <span class="fw-bold">{{ collectionSize() }}</span>
+</div>
+<div class="d-flex justify-content-center">
+    <ngb-pagination [(page)]="page" [pageSize]="pageSize()" [collectionSize]="collectionSize()"
+        [maxSize]="5" [rotate]="true" [boundaryLinks]="true" />
+</div>

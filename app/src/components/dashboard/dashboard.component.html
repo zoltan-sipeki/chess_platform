@@ -1,3 +1,18 @@
 <navbar>
-    <a [href]="logoutUrl()" class="btn btn-danger">Logout</a>
+    <div class="collapse navbar-collapse">
+        <div class="navbar-nav">
+            <play-menu clazz="nav-item"></play-menu>
+            <div class="nav-item">
+                <a class="nav-link" href="javascript:void(0)">Leaderboard</a>
+            </div>
+        </div>
+    </div>
+    <user-search></user-search>
+    <div class="navbar-nav">
+        <div class="nav-item">
+            <i class="bi bi-bell-fill nav-link" role="button"></i>
+        </div>
+    </div>
+    <user-menu clazz="nav-item"></user-menu>
 </navbar>
+<router-outlet></router-outlet>

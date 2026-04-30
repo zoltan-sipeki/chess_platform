@@ -1,20 +1,23 @@
 import { Routes } from '@angular/router';
-import { AuthRedirect } from '../components/auth-redirect/auth-redirect.component';
+import { Login } from '../components/login/login.component';
 import { Dashboard } from '../components/dashboard/dashboard.component';
 import { Homepage } from '../components/homepage/homepage.component';
-import { authGuard } from '../guards/auth-guard';
+import { UserSearchPage } from '../components/user-search-page/user-search-page.component';
 
 export const routes: Routes = [
     {
-        path: "",
-        component: AuthRedirect
+        path: "login",
+        component: Login
     },
     {
-        path: "home",
+        path: "",
         component: Homepage
     },
     {
         path: "dashboard",
-        canActivate: [authGuard],
-        component: Dashboard
+        component: Dashboard,
+        children: [{
+            path: "users",
+            component: UserSearchPage
+        }]
     }];
