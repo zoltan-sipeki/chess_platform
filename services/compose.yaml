@@ -252,7 +252,7 @@ services:
     networks:
       - chess-network
     healthcheck:
-      test: [ "CMD-SHELL", "curl http://localhost:9000/health/ready" ]
+      test: [ "CMD-SHELL", "curl http://localhost:8080/health/ready" ]
       interval: 10s
       timeout: 10s
       retries: 5
