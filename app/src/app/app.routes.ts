@@ -3,6 +3,7 @@ import { Login } from '../components/login/login.component';
 import { Dashboard } from '../components/dashboard/dashboard.component';
 import { Homepage } from '../components/homepage/homepage.component';
 import { UserSearchPage } from '../components/user-search-page/user-search-page.component';
+import { UserProfile } from '../components/user-profile/user-profile.component';
 
 export const routes: Routes = [
     {
@@ -17,6 +18,10 @@ export const routes: Routes = [
         path: "dashboard",
         component: Dashboard,
         children: [{
+            path: "users/:id",
+            component: UserProfile
+        },
+        {
             path: "users",
             component: UserSearchPage
         }]
