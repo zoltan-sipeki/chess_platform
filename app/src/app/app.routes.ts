@@ -4,6 +4,7 @@ import { Dashboard } from '../components/dashboard/dashboard.component';
 import { Homepage } from '../components/homepage/homepage.component';
 import { UserSearchPage } from '../components/user-search-page/user-search-page.component';
 import { UserProfile } from '../components/user-profile/user-profile.component';
+import { SettingsPage } from '../components/settings-page/settings-page.component';
 
 export const routes: Routes = [
     {
@@ -24,5 +25,9 @@ export const routes: Routes = [
         {
             path: "users",
             component: UserSearchPage
+        },
+        {
+            path: "settings",
+            component: SettingsPage
         }]
     }];
