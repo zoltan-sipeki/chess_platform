@@ -4,12 +4,12 @@ import { Navbar } from "../navbar/navbar.component";
 import { PlayMenu } from "../play-menu/play-menu.component";
 import { UserMenu } from "../user-menu/user-menu.component";
 import { UserSearch } from "../user-search/user-search.component";
-import { RouterOutlet } from "@angular/router";
+import { RouterLink, RouterOutlet } from "@angular/router";
 
 @Component({
     selector: "dashboard",
     templateUrl: "./dashboard.component.html",
-    imports: [Navbar, PlayMenu, UserMenu, UserSearch, RouterOutlet]
+    imports: [Navbar, PlayMenu, UserMenu, UserSearch, RouterOutlet, RouterLink]
 })
 export class Dashboard implements OnInit {
 
