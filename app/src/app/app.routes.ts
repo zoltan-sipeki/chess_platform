@@ -6,6 +6,7 @@ import { UserSearchPage } from '../components/user-search-page/user-search-page.
 import { UserProfile } from '../components/user-profile/user-profile.component';
 import { SettingsPage } from '../components/settings-page/settings-page.component';
 import { Leaderboard } from '../components/leaderboard/leaderboard.component';
+import { NotificationPage } from '../components/notification-page/notification-page.component';
 
 export const routes: Routes = [
     {
@@ -34,5 +35,9 @@ export const routes: Routes = [
         {
             path: "leaderboard",
             component: Leaderboard
+        }, 
+        {
+            path: "notifications",
+            component: NotificationPage
         }]
     }];

@@ -1,0 +1,27 @@
+<div class="notification position-relative">
+    <div class="d-flex">
+        <img src="imgs/default-profile-image.jpg" class="rounded-circle me-3" width="40" height="40">
+        <div>
+            <div class="small">
+                <span class="small fw-bold">John Doe</span>
+                sent you a friend request
+            </div>
+            <div class="text-muted small">2 seconds ago</div>
+        </div>
+    </div>
+    <div ngbDropdown display="dynamic"
+        class="notification-context-menu position-absolute top-50 start-100 translate-middle-y align-items-center justify-content-center rounded-circle bg-secondary-subtle"
+        style="width: 2rem; height: 2rem; translate: -250%;">
+        <div ngbDropdownToggle>
+            <i class="bi bi-three-dots"></i>
+        </div>
+        <ul ngbDropdownMenu class="shadow">
+            <li ngbDropdownItem>Mark as read</li>
+            <li ngbDropdownItem>Delete</li>
+        </ul>
+    </div>
+    <div class="position-absolute top-50 start-100 translate-middle-y p-2 bg-primary rounded-circle"
+        style="translate: -200%;">
+        <span class="visually-hidden">Unread</span>
+    </div>
+</div>

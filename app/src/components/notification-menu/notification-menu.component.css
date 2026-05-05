@@ -1,0 +1,7 @@
+.dropdown-toggle::after {
+    display: none;
+}
+
+.dropdown-menu {
+    min-width: 300px;
+}

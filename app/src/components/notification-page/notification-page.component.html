@@ -1,0 +1,61 @@
+<div class="container py-4">
+
+    <div class="mb-4">
+        <h3 class="fw-semibold">
+            <i class="bi bi-bell text-primary"></i>
+            Notifications
+        </h3>
+        <div class="d-flex justify-content-between">
+            <p class="text-muted mb-0">
+                Manage your notifications
+            </p>
+            <div>
+                <button class="btn btn-outline-primary me-3">Mark all as read</button>
+                <button class="btn btn-outline-danger">Delete all</button>
+            </div>
+        </div>
+    </div>
+
+    <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+        <li ngbNavItem="all">
+            <button ngbNavLink>All</button>
+            <ng-template ngbNavContent>
+                <div class="card border-0 shadow-sm">
+                    <div class="list-group list-group-flush">
+
+                        <notification class="list-group-item list-group-item-action"></notification>
+                        <notification class="list-group-item list-group-item-action"></notification>
+                        <notification class="list-group-item list-group-item-action"></notification>
+                        <notification class="list-group-item list-group-item-action"></notification>
+
+                        <div class="card-footer bg-white border-top">
+                        </div>
+
+                    </div>
+
+                </div>
+            </ng-template>
+        </li>
+        <li ngbNavItem="unread">
+            <button ngbNavLink>Unread</button>
+            <ng-template ngbNavContent>
+                <div class="card border-0 shadow-sm">
+                    <div class="list-group list-group-flush">
+
+                        <notification class="list-group-item list-group-item-action"></notification>
+                        <notification class="list-group-item list-group-item-action"></notification>
+                        <notification class="list-group-item list-group-item-action"></notification>
+                        <notification class="list-group-item list-group-item-action"></notification>
+
+                        <div class="card-footer bg-white border-top">
+                        </div>
+
+                    </div>
+
+                </div>
+            </ng-template>
+        </li>
+    </ul>
+
+    <div [ngbNavOutlet]="nav" class="mt-2"></div>
+</div>
