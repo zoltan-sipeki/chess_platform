@@ -8,6 +8,7 @@ import { SettingsPage } from '../components/settings-page/settings-page.componen
 import { Leaderboard } from '../components/leaderboard/leaderboard.component';
 import { NotificationPage } from '../components/notification-page/notification-page.component';
 import { GameHistoryPage } from '../components/game-history-page/game-history-page.component';
+import { FriendsPage } from '../components/friends-page/friends-page.component';
 
 export const routes: Routes = [
     {
@@ -22,6 +23,10 @@ export const routes: Routes = [
         path: "dashboard",
         component: Dashboard,
         children: [
+            {
+                path: "users/:id/friends",
+                component: FriendsPage
+            },
             {
                 path: "users/:id/history",
                 component: GameHistoryPage
