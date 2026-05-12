@@ -1,5 +1,5 @@
 spring:
   application:
-    name: chess_service
+    name: chess-service
   config:
     import: configtree:/run/secrets/,configserver:http://config:8080

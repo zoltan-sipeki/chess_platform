@@ -1,5 +1,5 @@
 spring:
   application:
-    name: matchmaking_service
+    name: matchmaking-service
   config:
     import: configtree:/run/secrets/,configserver:http://config:8080

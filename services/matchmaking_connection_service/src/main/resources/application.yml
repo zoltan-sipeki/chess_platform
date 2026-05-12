@@ -1,5 +1,5 @@
 spring:
   application:
-    name: matchmaking_connection_service
+    name: matchmaking-connection-service
   config:
     import: configserver:http://config:8080

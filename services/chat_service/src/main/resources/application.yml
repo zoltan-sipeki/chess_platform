@@ -1,5 +1,5 @@
 spring:
   application:
-    name: chat_service
+    name: chat-service
   config:
     import: configtree:/run/secrets/,configserver:http://config:8080
