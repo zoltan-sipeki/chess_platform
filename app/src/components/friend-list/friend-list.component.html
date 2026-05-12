@@ -1,0 +1,124 @@
+<div style="max-height: calc(100vh - 56px);" class="overflow-auto">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+        <li [ngbNavItem]="1">
+            <button ngbNavLink>Friends</button>
+            <ng-template ngbNavContent>
+                <div class="position-relative">
+                    <input type="text" class="form-control" placeholder="Search for friends">
+                    <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                </div>
+                <div ngbAccordion>
+                    <div ngbAccordionItem [collapsed]="false">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="p-2">Online</button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody class="px-0 py-0">
+                                <ng-template>
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item list-group-item-action">
+                                            <div container="body" ngbDropdown class="d-inline-block" display="dynamic"
+                                                class="w-100">
+                                                <user ngbDropdownToggle id="Asd" displayName="Asd"></user>
+                                                <div ngbDropdownMenu class="shadow">
+                                                    <button ngbDropdownItem><i class="bi bi-person"></i> View
+                                                        profile</button>
+                                                    <button ngbDropdownItem><i class="bi bi-chat"></i> Message</button>
+                                                    <button ngbDropdownItem><i class="bi bi-controller"></i>
+                                                        Invite</button>
+                                                    <div class="dropdown-divider"></div>
+                                                    <button ngbDropdownItem class="text-danger"><i
+                                                            class="bi bi-person-dash"></i>
+                                                        Unfriend</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                    <div ngbAccordionItem>
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="p-2">
+                                Offline
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody class="px-0 py-0">
+                                <ng-template>
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item list-group-item-action">
+                                            <div ngbDropdown class="d-inline-block" display="dynamic">
+                                                <user ngbDropdownToggle id="Asd" displayName="Asd"></user>
+                                                <div ngbDropdownMenu class="shadow">
+                                                    <button ngbDropdownItem><i class="bi bi-person"></i> View
+                                                        profile</button>
+                                                    <button ngbDropdownItem><i class="bi bi-chat"></i> Message</button>
+                                                    <div class="dropdown-divider"></div>
+                                                    <button ngbDropdownItem class="text-danger"><i
+                                                            class="bi bi-person-dash"></i>
+                                                        Unfriend</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item list-group-item-action">
+                                            <user id="Asd" displayName="Asd"></user>
+                                        </div>
+                                        <div class="list-group-item list-group-item-action">
+                                            <user id="Asd" displayName="Asd"></user>
+                                        </div>
+                                        <div class="list-group-item list-group-item-action">
+                                            <user id="Asd" displayName="Asd"></user>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                    <div ngbAccordionItem [disabled]="false">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="p-2">Group chats</button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
+                                    <!-- content here -->
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </li>
+        <li [ngbNavItem]="2">
+            <button ngbNavLink>Friend Requests</button>
+            <ng-template ngbNavContent>
+                <div class="list-group list-group-flush">
+                    <div class="card-footer bg-white border-top">
+                        <div class="list-group-item list-group-item-action">
+                            <div ngbDropdown class="d-inline-block" display="dynamic" container="body">
+                                <user ngbDropdownToggle id="Asd" displayName="Asd"></user>
+                                <div ngbDropdownMenu class="shadow">
+                                    <button ngbDropdownItem><i class="bi bi-person"></i> View
+                                        profile</button>
+                                    <div class="dropdown-divider"></div>
+                                    <button ngbDropdownItem><i class="bi bi-check text-success"></i> Accept</button>
+                                    <button ngbDropdownItem><i class="bi bi-x text-danger"></i> Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item list-group-item-action">
+                            <user id="asd" displayName="Asd"></user>
+                        </div>
+                        <div class="list-group-item list-group-item-action">
+                            <user id="asd" displayName="Asd"></user>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </li>
+    </ul>
+
+    <div [ngbNavOutlet]="nav"></div>
+</div>
