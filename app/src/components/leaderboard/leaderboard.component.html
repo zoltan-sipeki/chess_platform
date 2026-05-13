@@ -4,7 +4,7 @@
         <h3 class="fw-semibold">
             <i class="bi bi-trophy me-2 text-warning"></i> Leaderboard
         </h3>
-        <p class="text-muted">Top ranked players</p>
+        <p class="text-muted">Top 100 ranked players</p>
     </div>
 
     <div class="card border-0 shadow-sm">
@@ -23,50 +23,30 @@
 
                 <tbody>
 
+                    @for (entry of leaderboard() | slice: (page() - 1) * pageSize : page() * pageSize; track
+                    entry.player.id) {
                     <tr>
-                        <th class="ps-4 fw-semibold">🥇 1</th>
+                        <th class="ps-4 fw-semibold">{{ entry.rank | medal }}</th>
                         <td>
-                            <user id="Potato" displayName="Potato" avatar="imgs/default-profile-image.jpg"></user>
+                            <div class="player-cell">
+                                <div class="d-flex justify-content-between">
+                                    <user [id]="entry.player.id" [displayName]="entry.player.displayName"
+                                        [avatar]="entry.player.avatar"></user>
+                                    <a [routerLink]="['/dashboard', 'users', entry.player.id]" class="btn btn-outline-primary btn-sm">View profile</a>
+                                </div>
+                            </div>
                         </td>
-                        <td class="fw-semibold">1500</td>
+                        <td class="fw-semibold">{{ entry.rankedMmr }}</td>
                         <td class="text-end pe-4">
-                            <span class="badge bg-success-subtle text-success">99%</span>
+                            <span class="badge bg-success-subtle text-success">{{ entry.percentile | percent }}</span>
                         </td>
                     </tr>
-
-                    <tr>
-                        <th class="ps-4 fw-semibold">🥈 2</th>
-                        <td>
-                            <user id="Asd" displayName="Asd" avatar="imgs/default-profile-image.jpg"></user>
-                        </td>
-                        <td>1500</td>
-                        <td class="text-end pe-4">
-                            <span class="badge bg-success-subtle text-success">99%</span>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th class="ps-4 fw-semibold">🥉 3</th>
-                        <td>
-                            <user id="User3" displayName="User3" avatar="imgs/default-profile-image.jpg"></user>
-                        </td>
-                        <td>1480</td>
-                        <td class="text-end pe-4">
-                            <span class="badge bg-success-subtle text-success">97%</span>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th class="ps-4">4</th>
-                        <td>
-                            <user id="User4" displayName="User4" avatar="imgs/default-profile-image.jpg"></user>
-                        </td>
-                        <td>1400</td>
-                        <td class="text-end pe-4">90%</td>
-                    </tr>
-
+                    }
                 </tbody>
             </table>
+        </div>
+        <div class="card-footer">
+            <pagination [(page)]="page" [pageSize]="pageSize" [collectionSize]="leaderboard().length"></pagination>
         </div>
 
     </div>

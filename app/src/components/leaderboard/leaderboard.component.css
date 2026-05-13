@@ -1,0 +1,7 @@
+.player-cell:hover a {
+    visibility: visible;
+}
+
+.player-cell a {
+    visibility: hidden;
+}

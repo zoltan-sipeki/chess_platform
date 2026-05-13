@@ -3,70 +3,71 @@ package net.chess_platform.match_service.mapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import javax.annotation.processing.Generated;
-
-import org.springframework.stereotype.Component;
-
 import net.chess_platform.match_service.dto.LeaderboardEntryDto;
 import net.chess_platform.match_service.dto.PlayerDto;
 import net.chess_platform.match_service.model.Leaderboard;
 import net.chess_platform.match_service.model.Player;
+import org.springframework.stereotype.Component;
 
-@Generated(value = "org.mapstruct.ap.MappingProcessor", date = "2026-05-12T15:54:06+0200", comments = "version: 1.6.3, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)")
+@Generated(
+    value = "org.mapstruct.ap.MappingProcessor",
+    date = "2026-05-13T22:52:30+0200",
+    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
+)
 @Component
 public class LeaderboardMapperImpl implements LeaderboardMapper {
 
     @Override
     public LeaderboardEntryDto toDto(Leaderboard leaderboard) {
-        if (leaderboard == null) {
+        if ( leaderboard == null ) {
             return null;
         }
 
-        PlayerDto user = null;
+        int mmr = 0;
+        PlayerDto player = null;
         int rank = 0;
-        int rankedMmr = 0;
         float percentile = 0.0f;
 
-        user = matchUserToUserDto(leaderboard.getPlayer());
+        mmr = leaderboard.getRankedMmr();
+        player = playerToPlayerDto( leaderboard.getPlayer() );
         rank = leaderboard.getRank();
-        rankedMmr = leaderboard.getRankedMmr();
         percentile = leaderboard.getPercentile();
 
-        LeaderboardEntryDto leaderboardEntryDto = new LeaderboardEntryDto(user, rank, rankedMmr, percentile);
+        LeaderboardEntryDto leaderboardEntryDto = new LeaderboardEntryDto( player, rank, mmr, percentile );
 
         return leaderboardEntryDto;
     }
 
     @Override
     public List<LeaderboardEntryDto> toDtoList(List<Leaderboard> leaderboards) {
-        if (leaderboards == null) {
+        if ( leaderboards == null ) {
             return null;
         }
 
-        List<LeaderboardEntryDto> list = new ArrayList<LeaderboardEntryDto>(leaderboards.size());
-        for (Leaderboard leaderboard : leaderboards) {
-            list.add(toDto(leaderboard));
+        List<LeaderboardEntryDto> list = new ArrayList<LeaderboardEntryDto>( leaderboards.size() );
+        for ( Leaderboard leaderboard : leaderboards ) {
+            list.add( toDto( leaderboard ) );
         }
 
         return list;
     }
 
-    protected PlayerDto matchUserToUserDto(Player matchUser) {
-        if (matchUser == null) {
+    protected PlayerDto playerToPlayerDto(Player player) {
+        if ( player == null ) {
             return null;
         }
 
         UUID id = null;
+        String avatar = null;
         String displayName = null;
 
-        id = matchUser.getId();
-        displayName = matchUser.getDisplayName();
+        id = player.getId();
+        avatar = player.getAvatar();
+        displayName = player.getDisplayName();
 
-        String username = null;
+        PlayerDto playerDto = new PlayerDto( id, avatar, displayName );
 
-        PlayerDto userDto = new PlayerDto(id, username, displayName);
-
-        return userDto;
+        return playerDto;
     }
 }
