@@ -13,7 +13,7 @@ import jakarta.persistence.PostUpdate;
 import jakarta.persistence.Transient;
 
 @Entity
-public class MatchmakingUser extends AuditedEntity implements Persistable<UUID> {
+public class Player extends AuditedEntity implements Persistable<UUID> {
 
     @Transient
     private boolean isNew = true;

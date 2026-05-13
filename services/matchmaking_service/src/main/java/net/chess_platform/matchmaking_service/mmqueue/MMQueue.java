@@ -12,7 +12,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 
 import net.chess_platform.matchmaking_service.exception.MatchmakingException;
-import net.chess_platform.matchmaking_service.repository.MatchmakingUserRepository;
+import net.chess_platform.matchmaking_service.repository.PlayerRepository;
 
 public class MMQueue {
 
@@ -25,9 +25,9 @@ public class MMQueue {
 
     private final Match.Type matchType;
 
-    private final MatchmakingUserRepository matchmakingUserRepository;
+    private final PlayerRepository matchmakingUserRepository;
 
-    public MMQueue(Match.Type queueType, MatchmakingUserRepository matchmakingUserRepository) {
+    public MMQueue(Match.Type queueType, PlayerRepository matchmakingUserRepository) {
         this.matchType = queueType;
         this.matchmakingUserRepository = matchmakingUserRepository;
     }

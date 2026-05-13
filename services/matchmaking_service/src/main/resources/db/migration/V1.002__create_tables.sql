@@ -1,7 +1,7 @@
 begin;
 
 create table
-    if not exists matchmaking_user (
+    if not exists player (
         id uuid not null,
         unranked_mmr int not null,
         ranked_mmr int not null,
