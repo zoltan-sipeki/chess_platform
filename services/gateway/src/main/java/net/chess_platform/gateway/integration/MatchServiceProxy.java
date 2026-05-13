@@ -44,16 +44,12 @@ public class MatchServiceProxy {
 	}
 
 	public static record MatchHistoryDto(
-			UUID userId,
 			UUID matchId,
 			String matchType,
 			OffsetDateTime startedAt,
-			OffsetDateTime endedAt,
 			long duration,
 			String color,
 			String score,
-			int mmrBefore,
-			int mmrAfter,
 			int mmrChange) {
 	}
 
@@ -61,7 +57,6 @@ public class MatchServiceProxy {
 			long matchId,
 			UUID userId,
 			String target) {
-
 	}
 
 	public MatchServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {

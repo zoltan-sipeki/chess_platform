@@ -10,14 +10,13 @@ import net.chess_platform.match_service.dto.OngoingMatchDto;
 import net.chess_platform.match_service.dto.OngoingMatchRequest;
 import net.chess_platform.match_service.model.Match;
 import net.chess_platform.match_service.model.MatchDetail;
-import net.chess_platform.match_service.model.MatchUser;
 import net.chess_platform.match_service.model.OngoingMatch;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-20T22:01:55+0100",
-    comments = "version: 1.6.3, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)"
+    date = "2026-05-13T17:28:24+0200",
+    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
 public class MatchMapperImpl implements MatchMapper {
@@ -42,26 +41,20 @@ public class MatchMapperImpl implements MatchMapper {
             return null;
         }
 
-        UUID userId = null;
         UUID matchId = null;
         String matchType = null;
         OffsetDateTime startedAt = null;
-        OffsetDateTime endedAt = null;
         long duration = 0L;
         String color = null;
         String score = null;
-        int mmrBefore = 0;
-        int mmrAfter = 0;
         int mmrChange = 0;
 
-        userId = matchResponseUserId( matchResponse );
         matchId = matchResponseMatchId( matchResponse );
         Match.Type type = matchResponseMatchType( matchResponse );
         if ( type != null ) {
             matchType = type.name();
         }
         startedAt = matchResponseMatchStartedAt( matchResponse );
-        endedAt = matchResponseMatchEndedAt( matchResponse );
         duration = matchResponseMatchDuration( matchResponse );
         if ( matchResponse.getColor() != null ) {
             color = matchResponse.getColor().name();
@@ -69,15 +62,11 @@ public class MatchMapperImpl implements MatchMapper {
         if ( matchResponse.getScore() != null ) {
             score = matchResponse.getScore().name();
         }
-        if ( matchResponse.getMmrBefore() != null ) {
-            mmrBefore = matchResponse.getMmrBefore();
-        }
-        mmrAfter = matchResponse.getMmrAfter();
         if ( matchResponse.getMmrChange() != null ) {
             mmrChange = matchResponse.getMmrChange();
         }
 
-        MatchHistoryDto matchHistoryDto = new MatchHistoryDto( userId, matchId, matchType, startedAt, endedAt, duration, color, score, mmrBefore, mmrAfter, mmrChange );
+        MatchHistoryDto matchHistoryDto = new MatchHistoryDto( matchId, matchType, startedAt, duration, color, score, mmrChange );
 
         return matchHistoryDto;
     }
@@ -129,14 +118,6 @@ public class MatchMapperImpl implements MatchMapper {
         return list;
     }
 
-    private UUID matchResponseUserId(MatchDetail matchDetail) {
-        MatchUser user = matchDetail.getUser();
-        if ( user == null ) {
-            return null;
-        }
-        return user.getId();
-    }
-
     private UUID matchResponseMatchId(MatchDetail matchDetail) {
         Match match = matchDetail.getMatch();
         if ( match == null ) {
@@ -159,14 +140,6 @@ public class MatchMapperImpl implements MatchMapper {
             return null;
         }
         return match.getStartedAt();
-    }
-
-    private OffsetDateTime matchResponseMatchEndedAt(MatchDetail matchDetail) {
-        Match match = matchDetail.getMatch();
-        if ( match == null ) {
-            return null;
-        }
-        return match.getEndedAt();
     }
 
     private long matchResponseMatchDuration(MatchDetail matchDetail) {
