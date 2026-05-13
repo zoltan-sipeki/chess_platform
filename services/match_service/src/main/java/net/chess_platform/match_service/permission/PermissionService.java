@@ -9,7 +9,10 @@ import net.chess_platform.common.permission.AbstractPermissionService;
 import net.chess_platform.common.permission.Authorization;
 import net.chess_platform.common.permission.FalseJPAQueryFragment;
 import net.chess_platform.common.permission.JPAQueryFragment;
+import net.chess_platform.common.permission.TrueJPAQueryFragment;
 import net.chess_platform.match_service.integration.ChatServiceProxy;
+import net.chess_platform.match_service.model.Leaderboard;
+import net.chess_platform.match_service.model.LongestStreak;
 import net.chess_platform.match_service.model.MatchDetail;
 import net.chess_platform.match_service.model.MatchStat;
 import net.chess_platform.match_service.model.OngoingMatch;
@@ -23,15 +26,13 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
     public enum Action {
         MATCH_HISTORY_QUERY,
-
         MATCH_STATS_QUERY,
-
         PRIVACY_SETTING_UPDATE,
-
         ONGOING_MATCH_QUERY,
         ONGOING_MATCH_CREATE,
-
-        MMR_QUERY
+        LEADERBOARD_QUERY,
+        MMR_QUERY,
+        USER_STATS_QUERY
     }
 
     private PrivacySettingRepository privacySettingRepository;
@@ -197,6 +198,73 @@ public class PermissionService extends AbstractPermissionService<Action> {
                         new JPAQueryFragment<>((root, query, cb) -> cb.equal(root.get("user").get("id"), userId)));
             } else {
                 auth.setQueryCondition(PlayerMmr.class, new FalseJPAQueryFragment<>());
+            }
+
+            return auth;
+        });
+
+        registerPolicy(Action.LEADERBOARD_QUERY, (user, attributes) -> {
+            var auth = new Authorization();
+
+            auth.setAction(Action.LEADERBOARD_QUERY);
+
+            if (user.hasRole("chess_application.user")) {
+                auth.setQueryCondition(Leaderboard.class, new TrueJPAQueryFragment<>());
+            } else {
+                auth.setQueryCondition(Leaderboard.class, new FalseJPAQueryFragment<>());
+            }
+
+            return auth;
+        });
+
+        registerPolicy(Action.USER_STATS_QUERY, (user, attributes) -> {
+            var userId = (UUID) attributes.get("userId");
+
+            var ps = privacySettingRepository.findByUserIdAndResource((UUID) userId,
+                    PrivacySetting.Resource.USER_STATS);
+
+            var auth = new Authorization();
+
+            auth.setAction(Action.USER_STATS_QUERY);
+
+            BiConsumer<Authorization, Boolean> rules = (a, condition) -> {
+                if (condition) {
+                    auth.setQueryCondition(Leaderboard.class, new JPAQueryFragment<>((root, query, cb) -> {
+                        return cb.equal(root.get("userId"), userId);
+                    }));
+                    auth.setQueryCondition(LongestStreak.class, new JPAQueryFragment<>((root, query, cb) -> {
+                        return cb.equal(root.get("userId"), userId);
+                    }));
+                    auth.setQueryCondition(PlayerMmr.class, new JPAQueryFragment<>((root, query, cb) -> {
+                        return cb.equal(root.get("user").get("id"), userId);
+                    }));
+                } else {
+                    auth.setQueryCondition(Leaderboard.class, new FalseJPAQueryFragment<>());
+                    auth.setQueryCondition(LongestStreak.class, new FalseJPAQueryFragment<>());
+                    auth.setQueryCondition(PlayerMmr.class, new FalseJPAQueryFragment<>());
+                }
+            };
+
+            if (!user.hasRole("chess_application.user")) {
+                rules.accept(auth, false);
+                return auth;
+            }
+
+            if (user.id().equals(userId)) {
+                rules.accept(auth, true);
+                return auth;
+            }
+
+            switch (ps.getRestriction()) {
+                case PUBLIC:
+                    rules.accept(auth, true);
+                    break;
+                case PRIVATE:
+                    rules.accept(auth, user.id().equals(userId));
+                    break;
+                case FRIENDS:
+                    rules.accept(auth, chatServiceProxy.areFriends(user.id(), userId));
+                    break;
             }
 
             return auth;

@@ -54,7 +54,8 @@ public class GatewayApplication {
 
 	@Bean
 	public RouterFunction<ServerResponse> matchServiceRoutes() {
-		return route(path("/api/matches/**").or(path("/api/ratings/**")), http()).filter(lb("match-service"));
+		return route(path("/api/matches/**").or(path("/api/players/**")).or(path("/api/leaderboard/**")), http())
+				.filter(lb("match-service"));
 	}
 
 	@Bean

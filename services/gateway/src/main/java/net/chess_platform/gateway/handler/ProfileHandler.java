@@ -13,7 +13,7 @@ import net.chess_platform.gateway.integration.ChatServiceProxy.UserDto;
 import net.chess_platform.gateway.integration.MatchServiceProxy;
 import net.chess_platform.gateway.integration.MatchServiceProxy.MatchHistoryDto;
 import net.chess_platform.gateway.integration.MatchServiceProxy.MatchStatDto;
-import net.chess_platform.gateway.integration.MatchServiceProxy.PlayerMMrDto;
+import net.chess_platform.gateway.integration.MatchServiceProxy.PlayerStatsDto;
 import net.chess_platform.gateway.util.SecurityContextAwareAsyncSupplier;
 
 @Component
@@ -29,7 +29,7 @@ public class ProfileHandler implements HandlerFunction<ServerResponse> {
 		this.chatService = chatService;
 	}
 
-	public static record ProfileDto(PlayerMMrDto ratings, List<MatchHistoryDto> matches, List<MatchStatDto> stats,
+	public static record ProfileDto(PlayerStatsDto playerStats, List<MatchHistoryDto> matches, List<MatchStatDto> stats,
 			List<UserDto> friends) {
 	}
 
@@ -37,22 +37,22 @@ public class ProfileHandler implements HandlerFunction<ServerResponse> {
 	public ServerResponse handle(ServerRequest request) throws Exception {
 		var userId = request.pathVariables().get("userId");
 
-		var ratings = CompletableFuture
-				.supplyAsync(new SecurityContextAwareAsyncSupplier<>(() -> matchService.getRatings(userId)));
+		var playerStats = CompletableFuture
+				.supplyAsync(new SecurityContextAwareAsyncSupplier<>(() -> matchService.getPlayerStats(userId)));
 
 		var matches = CompletableFuture
 				.supplyAsync(new SecurityContextAwareAsyncSupplier<>(() -> matchService.getMatches(userId)));
 
 		var stats = CompletableFuture
-				.supplyAsync(new SecurityContextAwareAsyncSupplier<>(() -> matchService.getStats(userId)));
+				.supplyAsync(new SecurityContextAwareAsyncSupplier<>(() -> matchService.getMatchStats(userId)));
 
 		var friends = CompletableFuture
 				.supplyAsync(new SecurityContextAwareAsyncSupplier<>(() -> chatService.getFriends(userId)));
 
-		CompletableFuture.allOf(ratings, matches, stats, friends).get();
+		CompletableFuture.allOf(playerStats, matches, stats, friends).get();
 
 		return ServerResponse.ok()
-				.body(new ProfileDto(ratings.get(), matches.get(), stats.get(), friends.get()));
+				.body(new ProfileDto(playerStats.get(), matches.get(), stats.get(), friends.get()));
 	}
 
 }

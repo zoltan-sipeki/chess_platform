@@ -1,5 +1,6 @@
 package net.chess_platform.gateway.integration;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -7,6 +8,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 @Service
@@ -14,7 +16,20 @@ public class MatchServiceProxy {
 
 	private final RestClient restClient;
 
-	public static record PlayerMMrDto(UUID userId, int mmr, OffsetDateTime lastPlayed) {
+	public static record PlayerStatsDto(
+			int rank,
+			int mmr,
+			float percentile,
+			List<LongestStreakDto> longestStreaks,
+			Instant joinedAt,
+			OffsetDateTime lastPlayedAt) {
+
+	}
+
+	public static record LongestStreakDto(
+			String score,
+			int longestStreak) {
+
 	}
 
 	public static record MatchStatDto(
@@ -57,7 +72,7 @@ public class MatchServiceProxy {
 		return restClient.get().uri("/api/matches/ongoing").retrieve().body(OngoingMatchDto.class);
 	}
 
-	public List<MatchStatDto> getStats(String userId) {
+	public List<MatchStatDto> getMatchStats(String userId) {
 		return restClient.get().uri("/api/matches/stats?userId={userId}", userId)
 				.retrieve()
 				.body(new ParameterizedTypeReference<List<MatchStatDto>>() {
@@ -71,10 +86,14 @@ public class MatchServiceProxy {
 				});
 	}
 
-	public PlayerMMrDto getRatings(String userId) {
-		return restClient.get().uri("/api/ratings?userId={userId}", userId)
-				.retrieve()
-				.body(PlayerMMrDto.class);
+	public PlayerStatsDto getPlayerStats(String userId) {
+		try {
+			return restClient.get().uri("/api/players/{userId}/stats", userId)
+					.retrieve()
+					.body(PlayerStatsDto.class);
+		} catch (HttpClientErrorException.NotFound e) {
+			return null;
+		}
 	}
 
 }
