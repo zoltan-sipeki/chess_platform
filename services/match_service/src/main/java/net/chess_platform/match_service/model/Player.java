@@ -1,5 +1,6 @@
 package net.chess_platform.match_service.model;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -9,14 +10,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.Transient;
 
 @Entity
-public class MatchUser extends AuditedEntity implements Persistable<UUID> {
+public class Player extends AuditedEntity implements Persistable<UUID> {
 
     @Transient
     private boolean isNew = true;
@@ -28,19 +28,14 @@ public class MatchUser extends AuditedEntity implements Persistable<UUID> {
 
     private String avatar;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-    private PlayerMmr playerMmr;
+    private int rankedMmr = 1500;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private int unrankedMmr = 1500;
+
+    private OffsetDateTime lastPlayedAt;
+
+    @OneToMany(mappedBy = "player", fetch = FetchType.LAZY)
     private Set<PrivacySetting> privacySettings;
-
-    public PlayerMmr getPlayerMmr() {
-        return playerMmr;
-    }
-
-    public void setPlayerMmr(PlayerMmr playerMmr) {
-        this.playerMmr = playerMmr;
-    }
 
     @Override
     public boolean isNew() {
@@ -82,7 +77,7 @@ public class MatchUser extends AuditedEntity implements Persistable<UUID> {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        MatchUser other = (MatchUser) obj;
+        Player other = (Player) obj;
         if (id == null) {
             if (other.id != null)
                 return false;
@@ -117,6 +112,30 @@ public class MatchUser extends AuditedEntity implements Persistable<UUID> {
 
     public void setPrivacySettings(Set<PrivacySetting> privacySettings) {
         this.privacySettings = privacySettings;
+    }
+
+    public int getRankedMmr() {
+        return rankedMmr;
+    }
+
+    public void setRankedMmr(int rankedMmr) {
+        this.rankedMmr = rankedMmr;
+    }
+
+    public int getUnrankedMmr() {
+        return unrankedMmr;
+    }
+
+    public void setUnrankedMmr(int unrankedMmr) {
+        this.unrankedMmr = unrankedMmr;
+    }
+
+    public OffsetDateTime getLastPlayedAt() {
+        return lastPlayedAt;
+    }
+
+    public void setLastPlayedAt(OffsetDateTime lastPlayedAt) {
+        this.lastPlayedAt = lastPlayedAt;
     }
 
 }

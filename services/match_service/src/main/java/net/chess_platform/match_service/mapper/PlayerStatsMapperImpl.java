@@ -4,25 +4,28 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.annotation.processing.Generated;
+
+import org.springframework.stereotype.Component;
+
 import net.chess_platform.match_service.dto.LongestStreakDto;
 import net.chess_platform.match_service.dto.PlayerStatsDto;
 import net.chess_platform.match_service.model.Leaderboard;
 import net.chess_platform.match_service.model.LongestStreak;
-import net.chess_platform.match_service.model.PlayerMmr;
-import org.springframework.stereotype.Component;
+import net.chess_platform.match_service.model.Player;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-05-12T22:35:45+0200",
-    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
+    date = "2026-05-13T18:30:49+0200",
+    comments = "version: 1.6.3, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)"
 )
 @Component
 public class PlayerStatsMapperImpl implements PlayerStatsMapper {
 
     @Override
-    public PlayerStatsDto toDto(Leaderboard leaderboard, PlayerMmr playerMmr, List<LongestStreak> longestStreaks) {
-        if ( leaderboard == null && playerMmr == null && longestStreaks == null ) {
+    public PlayerStatsDto toDto(Leaderboard leaderboard, Player player, List<LongestStreak> longestStreaks) {
+        if ( leaderboard == null && player == null && longestStreaks == null ) {
             return null;
         }
 
@@ -35,10 +38,10 @@ public class PlayerStatsMapperImpl implements PlayerStatsMapper {
         Instant joinedAt = null;
         OffsetDateTime lastPlayedAt = null;
         int mmr = 0;
-        if ( playerMmr != null ) {
-            joinedAt = playerMmr.getCreatedAt();
-            lastPlayedAt = playerMmr.getLastPlayed();
-            mmr = playerMmr.getRankedMmr();
+        if ( player != null ) {
+            joinedAt = player.getCreatedAt();
+            lastPlayedAt = player.getLastPlayedAt();
+            mmr = player.getRankedMmr();
         }
         List<LongestStreakDto> longestStreaks1 = null;
         longestStreaks1 = longestStreakListToLongestStreakDtoList( longestStreaks );

@@ -31,7 +31,7 @@ public class PrivacySetting extends AuditedEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private MatchUser user;
+    private Player player;
 
     @Enumerated(EnumType.STRING)
     private Resource resource;
@@ -47,12 +47,12 @@ public class PrivacySetting extends AuditedEntity {
         this.id = id;
     }
 
-    public MatchUser getUser() {
-        return user;
+    public Player getPlayer() {
+        return player;
     }
 
-    public void setUser(MatchUser user) {
-        this.user = user;
+    public void setPlayer(Player user) {
+        this.player = user;
     }
 
     public Resource getResource() {

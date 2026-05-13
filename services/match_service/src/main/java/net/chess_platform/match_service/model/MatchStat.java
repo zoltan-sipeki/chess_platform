@@ -19,7 +19,7 @@ public class MatchStat extends AuditedEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private MatchUser user;
+    private Player player;
 
     @Enumerated(EnumType.STRING)
     private Match.Type matchType;
@@ -42,12 +42,12 @@ public class MatchStat extends AuditedEntity {
         this.winRatio = winRatio;
     }
 
-    public MatchUser getUser() {
-        return user;
+    public Player getPlayer() {
+        return player;
     }
 
-    public void setUser(MatchUser user) {
-        this.user = user;
+    public void setPlayer(Player user) {
+        this.player = user;
     }
 
     public Match.Type getMatchType() {

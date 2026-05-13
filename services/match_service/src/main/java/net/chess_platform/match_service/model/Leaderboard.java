@@ -15,12 +15,12 @@ import jakarta.persistence.OneToOne;
 public class Leaderboard {
 
     @Id
-    private UUID userId;
+    private UUID playerId;
 
     @OneToOne
     @MapsId
-    @JoinColumn(name = "user_id")
-    private MatchUser user;
+    @JoinColumn(name = "player_id")
+    private Player player;
 
     private int rankedMmr;
 
@@ -28,12 +28,12 @@ public class Leaderboard {
 
     private float percentile;
 
-    public UUID getUserId() {
-        return userId;
+    public UUID getPlayerId() {
+        return playerId;
     }
 
-    public MatchUser getUser() {
-        return user;
+    public Player getPlayer() {
+        return player;
     }
 
     public int getRankedMmr() {

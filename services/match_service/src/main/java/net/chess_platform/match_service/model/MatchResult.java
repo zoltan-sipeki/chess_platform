@@ -12,7 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class MatchDetail extends AuditedEntity {
+public class MatchResult extends AuditedEntity {
 
     public enum Score {
         DRAW,
@@ -33,7 +33,7 @@ public class MatchDetail extends AuditedEntity {
     private Match match;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private MatchUser user;
+    private Player player;
 
     @Enumerated(EnumType.STRING)
     private Color color;
@@ -63,12 +63,12 @@ public class MatchDetail extends AuditedEntity {
         this.match = match;
     }
 
-    public MatchUser getUser() {
-        return user;
+    public Player getPlayer() {
+        return player;
     }
 
-    public void setUser(MatchUser user) {
-        this.user = user;
+    public void setPlayer(Player user) {
+        this.player = user;
     }
 
     public Color getColor() {

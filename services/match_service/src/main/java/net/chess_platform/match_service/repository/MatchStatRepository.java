@@ -21,8 +21,6 @@ public interface MatchStatRepository extends JpaRepository<MatchStat, UUID>, Jpa
         return findAll(fragment.getSpecification());
     }
 
-    public List<MatchStat> findByUserId(UUID userId);
-
-    public Optional<MatchStat> findByUserIdAndMatchType(UUID userId, Match.Type matchType);
+    public Optional<MatchStat> findByPlayerIdAndMatchType(UUID userId, Match.Type matchType);
 
 }

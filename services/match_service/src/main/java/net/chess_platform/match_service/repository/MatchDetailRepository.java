@@ -12,16 +12,16 @@ import org.springframework.stereotype.Repository;
 
 import net.chess_platform.common.permission.Authorization;
 import net.chess_platform.common.permission.JPAQueryFragment;
-import net.chess_platform.match_service.model.MatchDetail;
+import net.chess_platform.match_service.model.MatchResult;
 
 @Repository
-public interface MatchDetailRepository extends JpaRepository<MatchDetail, UUID>, JpaSpecificationExecutor<MatchDetail> {
+public interface MatchDetailRepository extends JpaRepository<MatchResult, UUID>, JpaSpecificationExecutor<MatchResult> {
 
-    default Page<MatchDetail> findAll(Authorization auth, Pageable pageable) {
-        JPAQueryFragment<MatchDetail> fragment = auth.getQueryFragment(MatchDetail.class);
+    default Page<MatchResult> findAll(Authorization auth, Pageable pageable) {
+        JPAQueryFragment<MatchResult> fragment = auth.getQueryFragment(MatchResult.class);
         return findAll(fragment.getSpecification(), pageable);
     }
 
     @EntityGraph(attributePaths = { "match" })
-    Page<MatchDetail> findAll(Specification<MatchDetail> spec, Pageable pageable);
+    Page<MatchResult> findAll(Specification<MatchResult> spec, Pageable pageable);
 }

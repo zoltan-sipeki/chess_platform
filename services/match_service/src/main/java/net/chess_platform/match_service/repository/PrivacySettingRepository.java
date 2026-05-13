@@ -12,6 +12,6 @@ import net.chess_platform.match_service.model.PrivacySetting.Resource;
 @Repository
 public interface PrivacySettingRepository extends JpaRepository<PrivacySetting, UUID> {
 
-    @Query("SELECT ps FROM PrivacySetting ps WHERE ps.user.id = :userId AND ps.resource = :resource")
-    public PrivacySetting findByUserIdAndResource(UUID userId, Resource resource);
+    @Query("SELECT ps FROM PrivacySetting ps WHERE ps.player.id = :playerId AND ps.resource = :resource")
+    public PrivacySetting findByUserIdAndResource(UUID playerId, Resource resource);
 }

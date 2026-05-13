@@ -1,6 +1,6 @@
 create view leaderboard as (
-	select user_id, ranked_mmr, rank() over ( order by ranked_mmr desc ) as rank, cume_dist() over ( order by ranked_mmr ) percentile
-	from player_mmr
+	select id as player_id, ranked_mmr, rank() over ( order by ranked_mmr desc ) as rank, cume_dist() over ( order by ranked_mmr ) percentile
+	from player
 	order by ranked_mmr desc
 );
 

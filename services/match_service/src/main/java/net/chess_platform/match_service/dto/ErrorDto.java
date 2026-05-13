@@ -2,7 +2,7 @@ package net.chess_platform.match_service.dto;
 
 import java.time.OffsetDateTime;
 
-public record ErrorResponse(
+public record ErrorDto(
         int status,
         OffsetDateTime timestamp,
         String error,

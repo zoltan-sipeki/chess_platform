@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.processing.Generated;
-import net.chess_platform.match_service.dto.MatchStatDto;
+import net.chess_platform.match_service.dto.MatchStatsDto;
 import net.chess_platform.match_service.model.MatchStat;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-20T22:01:56+0100",
-    comments = "version: 1.6.3, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)"
+    date = "2026-05-13T17:40:40+0200",
+    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
 public class MatchStatMapperImpl implements MatchStatMapper {
 
     @Override
-    public MatchStatDto toDto(MatchStat stat) {
+    public MatchStatsDto toDto(MatchStat stat) {
         if ( stat == null ) {
             return null;
         }
@@ -40,18 +40,18 @@ public class MatchStatMapperImpl implements MatchStatMapper {
 
         UUID userId = null;
 
-        MatchStatDto matchStatDto = new MatchStatDto( userId, matchType, gamesPlayed, wins, losses, draws, winRatio );
+        MatchStatsDto matchStatsDto = new MatchStatsDto( userId, matchType, gamesPlayed, wins, losses, draws, winRatio );
 
-        return matchStatDto;
+        return matchStatsDto;
     }
 
     @Override
-    public List<MatchStatDto> toDto(List<MatchStat> stat) {
+    public List<MatchStatsDto> toDto(List<MatchStat> stat) {
         if ( stat == null ) {
             return null;
         }
 
-        List<MatchStatDto> list = new ArrayList<MatchStatDto>( stat.size() );
+        List<MatchStatsDto> list = new ArrayList<MatchStatsDto>( stat.size() );
         for ( MatchStat matchStat : stat ) {
             list.add( toDto( matchStat ) );
         }

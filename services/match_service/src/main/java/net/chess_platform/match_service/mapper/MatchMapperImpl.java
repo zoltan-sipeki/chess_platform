@@ -7,28 +7,27 @@ import java.util.UUID;
 import javax.annotation.processing.Generated;
 import net.chess_platform.match_service.dto.MatchHistoryDto;
 import net.chess_platform.match_service.dto.OngoingMatchDto;
-import net.chess_platform.match_service.dto.OngoingMatchRequest;
 import net.chess_platform.match_service.model.Match;
-import net.chess_platform.match_service.model.MatchDetail;
+import net.chess_platform.match_service.model.MatchResult;
 import net.chess_platform.match_service.model.OngoingMatch;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-05-13T17:28:24+0200",
+    date = "2026-05-13T17:38:18+0200",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
 public class MatchMapperImpl implements MatchMapper {
 
     @Override
-    public List<MatchHistoryDto> toMatchHistoryList(List<MatchDetail> matchDetails) {
+    public List<MatchHistoryDto> toMatchHistoryList(List<MatchResult> matchDetails) {
         if ( matchDetails == null ) {
             return null;
         }
 
         List<MatchHistoryDto> list = new ArrayList<MatchHistoryDto>( matchDetails.size() );
-        for ( MatchDetail matchDetail : matchDetails ) {
+        for ( MatchResult matchDetail : matchDetails ) {
             list.add( toMatchHistory( matchDetail ) );
         }
 
@@ -36,7 +35,7 @@ public class MatchMapperImpl implements MatchMapper {
     }
 
     @Override
-    public MatchHistoryDto toMatchHistory(MatchDetail matchResponse) {
+    public MatchHistoryDto toMatchHistory(MatchResult matchResponse) {
         if ( matchResponse == null ) {
             return null;
         }
@@ -105,20 +104,20 @@ public class MatchMapperImpl implements MatchMapper {
     }
 
     @Override
-    public List<OngoingMatch> toModelList(List<OngoingMatchRequest> ongoingMatchRequest) {
+    public List<OngoingMatch> toModelList(List<OngoingMatchDto> ongoingMatchRequest) {
         if ( ongoingMatchRequest == null ) {
             return null;
         }
 
         List<OngoingMatch> list = new ArrayList<OngoingMatch>( ongoingMatchRequest.size() );
-        for ( OngoingMatchRequest ongoingMatchRequest1 : ongoingMatchRequest ) {
-            list.add( ongoingMatchRequestToOngoingMatch( ongoingMatchRequest1 ) );
+        for ( OngoingMatchDto ongoingMatchDto : ongoingMatchRequest ) {
+            list.add( ongoingMatchDtoToOngoingMatch( ongoingMatchDto ) );
         }
 
         return list;
     }
 
-    private UUID matchResponseMatchId(MatchDetail matchDetail) {
+    private UUID matchResponseMatchId(MatchResult matchDetail) {
         Match match = matchDetail.getMatch();
         if ( match == null ) {
             return null;
@@ -126,7 +125,7 @@ public class MatchMapperImpl implements MatchMapper {
         return match.getId();
     }
 
-    private Match.Type matchResponseMatchType(MatchDetail matchDetail) {
+    private Match.Type matchResponseMatchType(MatchResult matchDetail) {
         Match match = matchDetail.getMatch();
         if ( match == null ) {
             return null;
@@ -134,7 +133,7 @@ public class MatchMapperImpl implements MatchMapper {
         return match.getType();
     }
 
-    private OffsetDateTime matchResponseMatchStartedAt(MatchDetail matchDetail) {
+    private OffsetDateTime matchResponseMatchStartedAt(MatchResult matchDetail) {
         Match match = matchDetail.getMatch();
         if ( match == null ) {
             return null;
@@ -142,7 +141,7 @@ public class MatchMapperImpl implements MatchMapper {
         return match.getStartedAt();
     }
 
-    private long matchResponseMatchDuration(MatchDetail matchDetail) {
+    private long matchResponseMatchDuration(MatchResult matchDetail) {
         Match match = matchDetail.getMatch();
         if ( match == null ) {
             return 0L;
@@ -150,15 +149,15 @@ public class MatchMapperImpl implements MatchMapper {
         return match.getDuration();
     }
 
-    protected OngoingMatch ongoingMatchRequestToOngoingMatch(OngoingMatchRequest ongoingMatchRequest) {
-        if ( ongoingMatchRequest == null ) {
+    protected OngoingMatch ongoingMatchDtoToOngoingMatch(OngoingMatchDto ongoingMatchDto) {
+        if ( ongoingMatchDto == null ) {
             return null;
         }
 
         OngoingMatch ongoingMatch = new OngoingMatch();
 
-        ongoingMatch.setMatchId( ongoingMatchRequest.matchId() );
-        ongoingMatch.setTarget( ongoingMatchRequest.target() );
+        ongoingMatch.setMatchId( ongoingMatchDto.matchId() );
+        ongoingMatch.setTarget( ongoingMatchDto.target() );
 
         return ongoingMatch;
     }

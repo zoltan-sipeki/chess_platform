@@ -19,7 +19,7 @@ public class OngoingMatch extends AuditedEntity {
     private long matchId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    private MatchUser user;
+    private Player player;
 
     private String target;
 
@@ -47,11 +47,11 @@ public class OngoingMatch extends AuditedEntity {
         this.id = id;
     }
 
-    public MatchUser getUser() {
-        return user;
+    public Player getPlayer() {
+        return player;
     }
 
-    public void setUser(MatchUser user) {
-        this.user = user;
+    public void setPlayer(Player user) {
+        this.player = user;
     }
 }

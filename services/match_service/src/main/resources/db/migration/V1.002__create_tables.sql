@@ -1,28 +1,17 @@
 begin;
 
 create table
-    if not exists match_user (
+    if not exists player (
         id uuid,
         display_name varchar(255) not null,
         avatar varchar(255),
+        unranked_mmr int not null,
+        ranked_mmr int not null,
+        last_played_at timestamp with time zone,
         created_at timestamp with time zone not null,
         updated_at timestamp with time zone,
         primary key (id)
     );
-
-
-create table 
-    if not exists player_mmr (
-        id uuid not null,
-        user_id uuid not null,
-        unranked_mmr int not null,
-        ranked_mmr int not null,
-        last_played timestamp with time zone,
-        created_at timestamp with time zone not null,
-        updated_at timestamp with time zone,
-        primary key (id),
-        foreign key (user_id) references match_user (id)
-);
 
 create table
     if not exists match (
@@ -38,9 +27,9 @@ create table
     );
 
 create table
-    if not exists match_detail (
+    if not exists match_result (
         id uuid not null,
-        user_id uuid not null,
+        player_id uuid not null,
         match_id uuid not null,
         color varchar(255) not null,
         score varchar(255) not null,
@@ -50,15 +39,15 @@ create table
         created_at timestamp with time zone not null,
         updated_at timestamp with time zone,
         primary key (id),
-        unique (user_id, match_id),
-        foreign key (user_id) references match_user (id),
+        unique (player_id, match_id),
+        foreign key (player_id) references player (id),
         foreign key (match_id) references match (id)
     );
 
 create table
     if not exists match_stat (
         id uuid not null,
-        user_id uuid not null,
+        player_id uuid not null,
         match_type varchar(255) not null,
         games_played int not null default 0,
         wins int not null default 0,
@@ -68,33 +57,33 @@ create table
         created_at timestamp with time zone not null,
         updated_at timestamp with time zone,
         primary key (id),
-        unique (user_id, match_type),
-        foreign key (user_id) references match_user (id)
+        unique (player_id, match_type),
+        foreign key (player_id) references player (id)
     );
 
 create table
     if not exists ongoing_match (
         id uuid not null,
         match_id bigint not null,
-        user_id uuid not null,
+        player_id uuid not null,
         target varchar(255) not null,
         created_at timestamp with time zone not null,
         updated_at timestamp with time zone,
         primary key (id),
-        unique (user_id)
+        unique (player_id)
     );
 
 create table 
     if not exists privacy_setting (
         id uuid not null,
-        user_id uuid not null,
+        player_id uuid not null,
         resource varchar(255) not null,
         restriction varchar(255) not null,
         created_at timestamp with time zone not null,
         updated_at timestamp with time zone,
         primary key (id),
-        unique (user_id, resource),
-        foreign key (user_id) references match_user (id)
+        unique (player_id, resource),
+        foreign key (player_id) references player (id)
     );
 
 commit;

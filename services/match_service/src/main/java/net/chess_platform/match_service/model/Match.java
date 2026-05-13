@@ -62,7 +62,7 @@ public class Match extends AuditedEntity implements Persistable<UUID> {
     private String replay;
 
     @OneToMany(mappedBy = "match", fetch = FetchType.LAZY)
-    private Set<MatchDetail> matchDetails;
+    private Set<MatchResult> matchDetails;
 
     public OffsetDateTime getEndedAt() {
         return endedAt;
@@ -72,11 +72,11 @@ public class Match extends AuditedEntity implements Persistable<UUID> {
         this.endedAt = endedAt;
     }
 
-    public Set<MatchDetail> getMatchDetails() {
+    public Set<MatchResult> getMatchDetails() {
         return matchDetails;
     }
 
-    public void setMatchDetails(Set<MatchDetail> matchDetails) {
+    public void setMatchDetails(Set<MatchResult> matchDetails) {
         this.matchDetails = matchDetails;
     }
 

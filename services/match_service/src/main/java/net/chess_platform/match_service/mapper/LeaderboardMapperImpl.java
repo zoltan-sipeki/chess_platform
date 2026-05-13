@@ -9,9 +9,9 @@ import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 import net.chess_platform.match_service.dto.LeaderboardEntryDto;
-import net.chess_platform.match_service.dto.UserDto;
+import net.chess_platform.match_service.dto.PlayerDto;
 import net.chess_platform.match_service.model.Leaderboard;
-import net.chess_platform.match_service.model.MatchUser;
+import net.chess_platform.match_service.model.Player;
 
 @Generated(value = "org.mapstruct.ap.MappingProcessor", date = "2026-05-12T15:54:06+0200", comments = "version: 1.6.3, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)")
 @Component
@@ -23,12 +23,12 @@ public class LeaderboardMapperImpl implements LeaderboardMapper {
             return null;
         }
 
-        UserDto user = null;
+        PlayerDto user = null;
         int rank = 0;
         int rankedMmr = 0;
         float percentile = 0.0f;
 
-        user = matchUserToUserDto(leaderboard.getUser());
+        user = matchUserToUserDto(leaderboard.getPlayer());
         rank = leaderboard.getRank();
         rankedMmr = leaderboard.getRankedMmr();
         percentile = leaderboard.getPercentile();
@@ -52,7 +52,7 @@ public class LeaderboardMapperImpl implements LeaderboardMapper {
         return list;
     }
 
-    protected UserDto matchUserToUserDto(MatchUser matchUser) {
+    protected PlayerDto matchUserToUserDto(Player matchUser) {
         if (matchUser == null) {
             return null;
         }
@@ -65,7 +65,7 @@ public class LeaderboardMapperImpl implements LeaderboardMapper {
 
         String username = null;
 
-        UserDto userDto = new UserDto(id, username, displayName);
+        PlayerDto userDto = new PlayerDto(id, username, displayName);
 
         return userDto;
     }

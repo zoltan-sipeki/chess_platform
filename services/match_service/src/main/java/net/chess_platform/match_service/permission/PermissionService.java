@@ -13,10 +13,10 @@ import net.chess_platform.common.permission.TrueJPAQueryFragment;
 import net.chess_platform.match_service.integration.ChatServiceProxy;
 import net.chess_platform.match_service.model.Leaderboard;
 import net.chess_platform.match_service.model.LongestStreak;
-import net.chess_platform.match_service.model.MatchDetail;
+import net.chess_platform.match_service.model.MatchResult;
 import net.chess_platform.match_service.model.MatchStat;
 import net.chess_platform.match_service.model.OngoingMatch;
-import net.chess_platform.match_service.model.PlayerMmr;
+import net.chess_platform.match_service.model.Player;
 import net.chess_platform.match_service.model.PrivacySetting;
 import net.chess_platform.match_service.permission.PermissionService.Action;
 import net.chess_platform.match_service.repository.PrivacySettingRepository;
@@ -31,7 +31,6 @@ public class PermissionService extends AbstractPermissionService<Action> {
         ONGOING_MATCH_QUERY,
         ONGOING_MATCH_CREATE,
         LEADERBOARD_QUERY,
-        MMR_QUERY,
         USER_STATS_QUERY
     }
 
@@ -55,11 +54,11 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
             BiConsumer<Authorization, Boolean> rules = (a, condition) -> {
                 if (condition) {
-                    auth.setQueryCondition(MatchDetail.class, new JPAQueryFragment<>((root, query, cb) -> {
+                    auth.setQueryCondition(MatchResult.class, new JPAQueryFragment<>((root, query, cb) -> {
                         return cb.equal(root.get("user").get("id"), userId);
                     }));
                 } else {
-                    auth.setQueryCondition(MatchDetail.class, new FalseJPAQueryFragment<>());
+                    auth.setQueryCondition(MatchResult.class, new FalseJPAQueryFragment<>());
                 }
             };
 
@@ -186,23 +185,6 @@ public class PermissionService extends AbstractPermissionService<Action> {
             return auth;
         });
 
-        registerPolicy(Action.MMR_QUERY, (user, attributes) -> {
-            var userId = (UUID) attributes.get("userId");
-
-            var auth = new Authorization();
-
-            auth.setAction(Action.MMR_QUERY);
-
-            if (user.hasRole("chess_application.user")) {
-                auth.setQueryCondition(PlayerMmr.class,
-                        new JPAQueryFragment<>((root, query, cb) -> cb.equal(root.get("user").get("id"), userId)));
-            } else {
-                auth.setQueryCondition(PlayerMmr.class, new FalseJPAQueryFragment<>());
-            }
-
-            return auth;
-        });
-
         registerPolicy(Action.LEADERBOARD_QUERY, (user, attributes) -> {
             var auth = new Authorization();
 
@@ -235,13 +217,13 @@ public class PermissionService extends AbstractPermissionService<Action> {
                     auth.setQueryCondition(LongestStreak.class, new JPAQueryFragment<>((root, query, cb) -> {
                         return cb.equal(root.get("userId"), userId);
                     }));
-                    auth.setQueryCondition(PlayerMmr.class, new JPAQueryFragment<>((root, query, cb) -> {
+                    auth.setQueryCondition(Player.class, new JPAQueryFragment<>((root, query, cb) -> {
                         return cb.equal(root.get("user").get("id"), userId);
                     }));
                 } else {
                     auth.setQueryCondition(Leaderboard.class, new FalseJPAQueryFragment<>());
                     auth.setQueryCondition(LongestStreak.class, new FalseJPAQueryFragment<>());
-                    auth.setQueryCondition(PlayerMmr.class, new FalseJPAQueryFragment<>());
+                    auth.setQueryCondition(Player.class, new FalseJPAQueryFragment<>());
                 }
             };
 

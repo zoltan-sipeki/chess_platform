@@ -19,9 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.match_service.dto.MatchHistoryDto;
-import net.chess_platform.match_service.dto.MatchStatDto;
+import net.chess_platform.match_service.dto.MatchStatsDto;
 import net.chess_platform.match_service.dto.OngoingMatchDto;
-import net.chess_platform.match_service.dto.OngoingMatchRequest;
 import net.chess_platform.match_service.mapper.MatchMapper;
 import net.chess_platform.match_service.service.MatchService;
 
@@ -58,14 +57,14 @@ public class MatchController {
 
     @PostMapping("/ongoing")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<OngoingMatchDto> createOngoingMatch(@RequestBody List<OngoingMatchRequest> request,
+    public List<OngoingMatchDto> createOngoingMatch(@RequestBody List<OngoingMatchDto> request,
             CurrentUser currentUser) {
         var match = matchService.save(mapper.toModelList(request), currentUser);
         return mapper.toDto(match);
     }
 
     @GetMapping(value = "/stats", params = { "userId" })
-    public List<MatchStatDto> getStatsByUserId(@RequestParam UUID userId, CurrentUser currentUser) {
+    public List<MatchStatsDto> getStatsByUserId(@RequestParam UUID userId, CurrentUser currentUser) {
         return matchService.findMatchStats(userId, currentUser);
     }
 
