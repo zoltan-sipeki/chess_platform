@@ -1,11 +1,9 @@
 package net.chess_platform.chat_service.dto;
 
-import java.util.List;
-import java.util.UUID;
-
-public record RelationshipDto(List<UUID> ids, Relationship relationship) {
+public record RelationshipDto(Relationship relationship) {
 
     public enum Relationship {
+        SELF,
         FRIENDS,
         NOT_RELATED
     }

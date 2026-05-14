@@ -19,7 +19,7 @@ import net.chess_platform.chat_service.repository.FriendRepository;
 import net.chess_platform.common.security.CurrentUser;
 
 @Service
-public class RelationShipService {
+public class RelationshipService {
 
     private final FriendRepository friendRepository;
 
@@ -27,7 +27,7 @@ public class RelationShipService {
 
     private final PermissionService permissionService;
 
-    public RelationShipService(FriendRepository friendRepository, ChannelRepository channelRepository,
+    public RelationshipService(FriendRepository friendRepository, ChannelRepository channelRepository,
             PermissionService permissionService) {
         this.friendRepository = friendRepository;
         this.channelRepository = channelRepository;
@@ -35,14 +35,22 @@ public class RelationShipService {
     }
 
     public RelationshipDto getRelationship(List<UUID> userIds, CurrentUser user) {
+        if (userIds.size() != 2) {
+            throw new IllegalArgumentException();
+        }
+
         var auth = permissionService.authorize(Action.RELATIONSHIP_QUERY, user, Map.of("userIds", userIds));
         if (!auth.isAllowed()) {
             throw new AccessDeniedException();
         }
 
+        if (userIds.get(0).equals(userIds.get(1))) {
+            return new RelationshipDto(Relationship.SELF);
+        }
+
         var friends = friendRepository.findAll(auth);
 
-        return new RelationshipDto(userIds,
+        return new RelationshipDto(
                 friends == null || friends.isEmpty() ? Relationship.NOT_RELATED : Relationship.FRIENDS);
     }
 

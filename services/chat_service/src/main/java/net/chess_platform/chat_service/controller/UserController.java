@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.chess_platform.chat_service.dto.ContactsDto;
 import net.chess_platform.chat_service.service.FriendService;
-import net.chess_platform.chat_service.service.RelationShipService;
+import net.chess_platform.chat_service.service.RelationshipService;
 import net.chess_platform.common.dto.chat.UserDto;
 import net.chess_platform.common.security.CurrentUser;
 
@@ -22,11 +22,11 @@ public class UserController {
 
     private FriendService friendService;
 
-    private RelationShipService relationShipService;
+    private RelationshipService relationshipService;
 
-    public UserController(FriendService friendService, RelationShipService relationShipService) {
+    public UserController(FriendService friendService, RelationshipService relationShipService) {
         this.friendService = friendService;
-        this.relationShipService = relationShipService;
+        this.relationshipService = relationShipService;
     }
 
     @GetMapping("/{userId}/friends")
@@ -47,7 +47,7 @@ public class UserController {
 
     @GetMapping("/{userId}/contacts")
     public ContactsDto getContacts(@PathVariable UUID userId, CurrentUser currentUser) {
-        return relationShipService.findContacts(userId, currentUser);
+        return relationshipService.findContacts(userId, currentUser);
     }
 
 }

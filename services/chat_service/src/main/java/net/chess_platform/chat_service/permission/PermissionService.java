@@ -445,7 +445,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
             auth.setAction(Action.RELATIONSHIP_QUERY);
 
-            if (user.hasRole("cp_chat_service.cp_match_service")) {
+            if (user.hasRole("cp_chat_service.cp_match_service") || user.hasRole("cp_chat_service.cp_gateway")) {
                 auth.setAllowed(() -> true);
                 auth.setQueryCondition(Friend.class, new MongoQueryFragment<>(
                         Criteria.where("userId").is(userIds.get(0)).and("friendId").is(userIds.get(1))));
