@@ -2,25 +2,30 @@ package net.chess_platform.user_service.mapper;
 
 import java.util.List;
 
+import org.mapstruct.Mapper;
+
 import net.chess_platform.common.dto.user.UserDto;
 import net.chess_platform.keycloak.KeycloakUserVerifiedMessage;
-import net.chess_platform.user_service.dto.ClientUserDto;
+import net.chess_platform.user_service.dto.ProfileUserDto;
 import net.chess_platform.user_service.dto.KeycloakUserRepresentation;
 import net.chess_platform.user_service.model.User;
 
+// @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    public User toModel(UserDto dto);
+    User toModel(UserDto dto);
 
-    public User toModel(KeycloakUserVerifiedMessage message);
+    User toModel(KeycloakUserVerifiedMessage message);
 
-    public User toModel(KeycloakUserRepresentation kcUser);
+    User toModel(KeycloakUserRepresentation kcUser);
 
-    public KeycloakUserRepresentation toKeycloakUserRepresentation(User user);
+    KeycloakUserRepresentation toKeycloakUserRepresentation(User user);
 
-    public UserDto toDto(User user);
+    UserDto toDto(User user);
 
-    public KeycloakUserRepresentation toKeycloakUserRepresentation(KeycloakUserVerifiedMessage dto);
+    ProfileUserDto toProfileUserDto(User user);
 
-    public List<ClientUserDto> toClientUserDtoList(List<User> users);
+    KeycloakUserRepresentation toKeycloakUserRepresentation(KeycloakUserVerifiedMessage dto);
+
+    List<ProfileUserDto> toClientUserDtoList(List<User> users);
 }

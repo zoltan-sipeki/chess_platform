@@ -18,7 +18,7 @@ import net.chess_platform.match_service.model.MatchResult.Score;
 public class LongestStreak {
 
     @Id
-    private UUID userId;
+    private UUID playerId;
 
     @ManyToOne
     @MapsId
@@ -30,8 +30,8 @@ public class LongestStreak {
 
     private int longestStreak;
 
-    public UUID getUserId() {
-        return userId;
+    public UUID getPlayerId() {
+        return playerId;
     }
 
     public Player getPlayer() {

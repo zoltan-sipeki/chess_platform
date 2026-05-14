@@ -55,7 +55,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
             BiConsumer<Authorization, Boolean> rules = (a, condition) -> {
                 if (condition) {
                     auth.setQueryCondition(MatchResult.class, new JPAQueryFragment<>((root, query, cb) -> {
-                        return cb.equal(root.get("user").get("id"), userId);
+                        return cb.equal(root.get("player").get("id"), userId);
                     }));
                 } else {
                     auth.setQueryCondition(MatchResult.class, new FalseJPAQueryFragment<>());
@@ -104,7 +104,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
             BiConsumer<Authorization, Boolean> rules = (a, condition) -> {
                 if (condition) {
                     auth.setQueryCondition(MatchStat.class, new JPAQueryFragment<>((root, query, cb) -> {
-                        return cb.equal(root.get("user").get("id"), userId);
+                        return cb.equal(root.get("player").get("id"), userId);
                     }));
                 } else {
                     auth.setQueryCondition(MatchStat.class, new FalseJPAQueryFragment<>());
@@ -143,7 +143,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
             if (user.hasRole("chess_application.user")) {
                 auth.setQueryCondition(PrivacySetting.class,
-                        new JPAQueryFragment<>((root, query, cb) -> cb.equal(root.get("user").get("id"), user.id())));
+                        new JPAQueryFragment<>((root, query, cb) -> cb.equal(root.get("player").get("id"), user.id())));
             } else {
                 auth.setQueryCondition(PrivacySetting.class, new FalseJPAQueryFragment<>());
             }
@@ -158,7 +158,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
             if (user.hasRole("chess_application.user")) {
                 auth.setQueryCondition(OngoingMatch.class,
-                        new JPAQueryFragment<>((root, query, cb) -> cb.equal(root.get("user").get("id"), user.id())));
+                        new JPAQueryFragment<>((root, query, cb) -> cb.equal(root.get("player").get("id"), user.id())));
                 return auth;
             }
 
@@ -168,7 +168,8 @@ public class PermissionService extends AbstractPermissionService<Action> {
                     auth.setQueryCondition(OngoingMatch.class, new FalseJPAQueryFragment<>());
                 } else {
                     auth.setQueryCondition(OngoingMatch.class,
-                            new JPAQueryFragment<>((root, query, cb) -> cb.equal(root.get("user").get("id"), userId)));
+                            new JPAQueryFragment<>(
+                                    (root, query, cb) -> cb.equal(root.get("player").get("id"), userId)));
                 }
             }
 
@@ -212,13 +213,13 @@ public class PermissionService extends AbstractPermissionService<Action> {
             BiConsumer<Authorization, Boolean> rules = (a, condition) -> {
                 if (condition) {
                     auth.setQueryCondition(Leaderboard.class, new JPAQueryFragment<>((root, query, cb) -> {
-                        return cb.equal(root.get("userId"), userId);
+                        return cb.equal(root.get("playerId"), userId);
                     }));
                     auth.setQueryCondition(LongestStreak.class, new JPAQueryFragment<>((root, query, cb) -> {
-                        return cb.equal(root.get("userId"), userId);
+                        return cb.equal(root.get("playerId"), userId);
                     }));
                     auth.setQueryCondition(Player.class, new JPAQueryFragment<>((root, query, cb) -> {
-                        return cb.equal(root.get("user").get("id"), userId);
+                        return cb.equal(root.get("id"), userId);
                     }));
                 } else {
                     auth.setQueryCondition(Leaderboard.class, new FalseJPAQueryFragment<>());

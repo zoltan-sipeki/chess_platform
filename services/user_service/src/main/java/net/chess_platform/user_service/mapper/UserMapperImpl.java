@@ -6,14 +6,14 @@ import java.util.UUID;
 import javax.annotation.processing.Generated;
 import net.chess_platform.common.dto.user.UserDto;
 import net.chess_platform.keycloak.KeycloakUserVerifiedMessage;
-import net.chess_platform.user_service.dto.ClientUserDto;
 import net.chess_platform.user_service.dto.KeycloakUserRepresentation;
+import net.chess_platform.user_service.dto.ProfileUserDto;
 import net.chess_platform.user_service.model.User;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-24T16:24:41+0200",
+    date = "2026-05-14T10:06:32+0200",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
@@ -116,6 +116,25 @@ public class UserMapperImpl implements UserMapper {
     }
 
     @Override
+    public ProfileUserDto toProfileUserDto(User user) {
+        if ( user == null ) {
+            return null;
+        }
+
+        UUID id = null;
+        String displayName = null;
+        String avatar = null;
+
+        id = user.getId();
+        displayName = user.getDisplayName();
+        avatar = user.getAvatar();
+
+        ProfileUserDto profileUserDto = new ProfileUserDto( id, displayName, avatar );
+
+        return profileUserDto;
+    }
+
+    @Override
     public KeycloakUserRepresentation toKeycloakUserRepresentation(KeycloakUserVerifiedMessage dto) {
         if ( dto == null ) {
             return null;
@@ -133,36 +152,16 @@ public class UserMapperImpl implements UserMapper {
     }
 
     @Override
-    public List<ClientUserDto> toClientUserDtoList(List<User> users) {
+    public List<ProfileUserDto> toClientUserDtoList(List<User> users) {
         if ( users == null ) {
             return null;
         }
 
-        List<ClientUserDto> list = new ArrayList<ClientUserDto>( users.size() );
+        List<ProfileUserDto> list = new ArrayList<ProfileUserDto>( users.size() );
         for ( User user : users ) {
-            list.add( userToClientUserDto( user ) );
+            list.add( toProfileUserDto( user ) );
         }
 
         return list;
-    }
-
-    protected ClientUserDto userToClientUserDto(User user) {
-        if ( user == null ) {
-            return null;
-        }
-
-        UUID id = null;
-        String displayName = null;
-        String avatar = null;
-        String email = null;
-
-        id = user.getId();
-        displayName = user.getDisplayName();
-        avatar = user.getAvatar();
-        email = user.getEmail();
-
-        ClientUserDto clientUserDto = new ClientUserDto( id, displayName, avatar, email );
-
-        return clientUserDto;
     }
 }

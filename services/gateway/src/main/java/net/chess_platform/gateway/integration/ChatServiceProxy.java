@@ -19,8 +19,23 @@ public class ChatServiceProxy {
     public static record UserDto(UUID id, String displayName, String avatar) {
     }
 
+    public static record RelationshipSearchDto(List<String> ids) {
+
+    }
+
+    public static record RelationshipDto(String relationship) {
+    }
+
     public ChatServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
         this.restClient = builder.baseUrl("http://chat-service").build();
+    }
+
+    public String getRelationship(String userId) {
+        var response = restClient.post().uri("/api/relationships/search")
+                .body(new RelationshipSearchDto(List.of(userId)))
+                .retrieve()
+                .body(RelationshipDto.class);
+        return response.relationship();
     }
 
     public List<UserDto> getFriends(String userId) {

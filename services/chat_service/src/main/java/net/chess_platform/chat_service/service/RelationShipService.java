@@ -35,7 +35,7 @@ public class RelationshipService {
     }
 
     public RelationshipDto getRelationship(List<UUID> userIds, CurrentUser user) {
-        if (userIds.size() != 2) {
+        if (userIds.isEmpty() || userIds.size() > 2) {
             throw new IllegalArgumentException();
         }
 
@@ -44,8 +44,17 @@ public class RelationshipService {
             throw new AccessDeniedException();
         }
 
-        if (userIds.get(0).equals(userIds.get(1))) {
-            return new RelationshipDto(Relationship.SELF);
+        switch (userIds.size()) {
+        case 1:
+            if (userIds.get(0).equals(user.id())) {
+                return new RelationshipDto(Relationship.SELF);
+            }
+            break;
+        case 2:
+            if (userIds.get(0).equals(userIds.get(1))) {
+                return new RelationshipDto(Relationship.SELF);
+            }
+            break;
         }
 
         var friends = friendRepository.findAll(auth);

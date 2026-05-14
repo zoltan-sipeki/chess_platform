@@ -1,5 +1,6 @@
 package net.chess_platform.user_service.service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -11,8 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
+import net.chess_platform.common.dto.user.UserDto;
 import net.chess_platform.keycloak.KeycloakUserVerifiedMessage;
+import net.chess_platform.user_service.dto.ProfileUserDto;
 import net.chess_platform.user_service.dto.UserSearchResultDto;
+import net.chess_platform.user_service.exception.EntityNotFoundException;
 import net.chess_platform.user_service.integration.KeycloakProxy;
 import net.chess_platform.user_service.mapper.UserMapper;
 import net.chess_platform.user_service.model.User;
@@ -80,6 +84,11 @@ public class UserService {
         keycloak.deleteUser(id.toString());
     }
 
+    public ProfileUserDto findById(UUID id) {
+        var user = userWriter.findById(id);
+        return mapper.toProfileUserDto(user);
+    }
+
     @Service
     public static class UserWriter {
 
@@ -90,6 +99,10 @@ public class UserService {
         public UserWriter(UserRepository userRepository, DomainEventService domainEventService) {
             this.userRepository = userRepository;
             this.domainEventService = domainEventService;
+        }
+
+        public User findById(UUID userId) {
+            return userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException());
         }
 
         public Page<User> findByDisplayNamePrefix(String prefix, Pageable pageable) {

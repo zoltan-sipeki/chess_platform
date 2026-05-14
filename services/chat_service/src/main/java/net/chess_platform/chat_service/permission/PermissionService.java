@@ -141,7 +141,8 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
             auth.setAction(Action.CHANNEL_KICK_MEMBER);
 
-            if (user.hasRole("chess_application.user") && hasChannelRoles(user, channelId, List.of("OWNER", "MODERATOR"))) {
+            if (user.hasRole("chess_application.user")
+                    && hasChannelRoles(user, channelId, List.of("OWNER", "MODERATOR"))) {
                 auth.setQueryCondition(ChannelMember.class,
                         new MongoQueryFragment<>(
                                 Criteria.where("userId").is(kickedUserId).and("channel.id").is(channelId)));
@@ -445,12 +446,31 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
             auth.setAction(Action.RELATIONSHIP_QUERY);
 
-            if (user.hasRole("cp_chat_service.cp_match_service") || user.hasRole("cp_chat_service.cp_gateway")) {
-                auth.setAllowed(() -> true);
-                auth.setQueryCondition(Friend.class, new MongoQueryFragment<>(
-                        Criteria.where("userId").is(userIds.get(0)).and("friendId").is(userIds.get(1))));
-            } else {
-                auth.setQueryCondition(Friend.class, new MongoQueryFragment.False<>());
+            switch (userIds.size()) {
+                case 1: {
+                    if (user.hasRole("chess_application.user")) {
+                        auth.setAllowed(() -> true);
+                        auth.setQueryCondition(Friend.class,
+                                new MongoQueryFragment<>(Criteria.where("userId").is(user.id()).and("friendId")
+                                        .is(userIds.get(0))));
+                    } else {
+                        auth.setAllowed(() -> false);
+                        auth.setQueryCondition(Friend.class, new MongoQueryFragment.False<>());
+                    }
+                }
+                    break;
+
+                case 2: {
+                    if (user.hasRole("cp_chat_service.cp_match_service")) {
+                        auth.setAllowed(() -> true);
+                        auth.setQueryCondition(Friend.class, new MongoQueryFragment<>(
+                                Criteria.where("userId").is(userIds.get(0)).and("friendId").is(userIds.get(1))));
+                    } else {
+                        auth.setAllowed(() -> false);
+                        auth.setQueryCondition(Friend.class, new MongoQueryFragment.False<>());
+                    }
+                }
+                    break;
             }
 
             return auth;
