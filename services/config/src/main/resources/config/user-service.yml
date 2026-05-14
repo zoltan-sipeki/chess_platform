@@ -7,14 +7,14 @@ spring:
     username: user_service
     password: "${postgres-user-service-password}"
   jackson:
-    default-property-inclusion: NON_NULL
+    default-property-inclusion: NON-NULL
   jpa:
     open-in-view: false
     show-sql: true
     properties:
       hibernate:
-        format_sql: true
-        highlight_sql: true
+        format-sql: true
+        highlight-sql: true
   rabbitmq:
     host: rabbitmq
     port: 5672
@@ -49,16 +49,16 @@ eureka:
 
 rabbitmq-messaging:
   service:
-    queue: user_service_queue
+    queue: user-service-queue
   routing-key:
-    service: user_service
-    chat-service: chat_service
-    matchmaking-service: matchmaking_service
-    match-service: match_service
-    relay-service: relay_service
+    service: user-service
+    chat-service: chat-service
+    matchmaking-service: matchmaking-service
+    match-service: match-service
+    relay-service: relay-service
   keycloak:
     events:
-      exchange: keycloak_events_exchange
+      exchange: keycloak-events-exchange
   user-service:
     events:
-      exchange: user_events_exchange
+      exchange: user-events-exchange

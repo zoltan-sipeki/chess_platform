@@ -42,15 +42,15 @@ eureka:
 
 rabbitmq-messaging:
   queue:
-    service: chat_service_queue
+    service: chat-service-queue
   routing-key:
-    service: chat_service
-    relay-service: relay_service
-    relay-service-fanout: relay_service_fanout
-    user-service: user_service
+    service: chat-service
+    relay-service: relay-service
+    relay-service-fanout: relay-service-fanout
+    user-service: user-service
   chat-service:
     events:
-      exchange: chat_events_exchange
+      exchange: chat-events-exchange
   user-service:
     events:
-      exchange: user_events_exchange
+      exchange: user-events-exchange

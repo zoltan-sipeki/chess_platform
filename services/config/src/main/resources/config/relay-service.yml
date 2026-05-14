@@ -7,14 +7,14 @@ spring:
     username: relay_service
     password: "${postgres-relay-service-password}"
   jackson:
-    default-property-inclusion: NON_NULL
+    default-property-inclusion: NON-NULL
   jpa:
     open-in-view: false
     show-sql: true
     properties:
       hibernate:
-        format_sql: true
-        highlight_sql: true
+        format-sql: true
+        highlight-sql: true
   rabbitmq:
     host: rabbitmq
     port: 5672
@@ -53,27 +53,27 @@ ws-connections:
 
 rabbitmq-messaging:
   queue:
-    service: relay_service_queue
+    service: relay-service-queue
   routing-key:
-    service: relay_service
-    service-fanout: relay_service_fanout
-    chess-service: chess_service
-    chat-service: chat_service
-    matchmaking-service: matchmaking_service
-    user-service: user_service
+    service: relay-service
+    service-fanout: relay-service-fanout
+    chess-service: chess-service
+    chat-service: chat-service
+    matchmaking-service: matchmaking-service
+    user-service: user-service
   user-service:
     events:
-      exchange: user_events_exchange
+      exchange: user-events-exchange
   chess-service:
     events:
-      exchange: chess_events_exchange
+      exchange: chess-events-exchange
   chat-service:
     events:
-      exchange: chat_events_exchange
+      exchange: chat-events-exchange
   matchmaking-service:
     events:
-      exchange: matchmaking_events_exchange
+      exchange: matchmaking-events-exchange
   relay-service:
     events:
-      exchange: relay_events_exchange
-      fanout-exchange: relay_events_fanout_exchange
+      exchange: relay-events-exchange
+      fanout-exchange: relay-events-fanout-exchange

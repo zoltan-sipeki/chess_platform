@@ -60,15 +60,15 @@ ws-connections:
 
 rabbitmq-messaging:
   queue:
-    service: chess_service_queue
+    service: chess-service-queue
   routing-key:
-    service: chess_service
-    match-service: match_service
-    relay-service: relay_service
-    relay-service-fanout: relay_service_fanout
+    service: chess-service
+    match-service: match-service
+    relay-service: relay-service
+    relay-service-fanout: relay-service-fanout
   chess-service:
     events:
-      exchange: chess_events_exchange
+      exchange: chess-events-exchange
 
 matchmaking:
   token:

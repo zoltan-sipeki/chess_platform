@@ -49,14 +49,14 @@ eureka:
 
 rabbitmq-messaging:
   queue:
-    service: match_service_queue
+    service: match-service-queue
   routing-key:
-    service: match_service
-    chess-service: chess_service
-    user-service: user_service
+    service: match-service
+    chess-service: chess-service
+    user-service: user-service
   chess-service:
     events:
-      exchange: chess_events_exchange
+      exchange: chess-events-exchange
   user-service:
     events:
-      exchange: user_events_exchange
+      exchange: user-events-exchange
