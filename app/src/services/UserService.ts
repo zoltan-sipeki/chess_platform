@@ -1,6 +1,20 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { UserSearchResult } from "../types";
+import { Observable } from "rxjs";
+import { UserData, UserSearchResult } from "../types";
+import { FriendList } from "./FriendService";
+import { MatchHistoryList, MatchStat, PlayerStats } from "./MatchService";
+
+export type Relationship = "FRIENDS" | "SELF" | "NOT_RELATED";
+
+export interface UserProfile {
+    user: UserData,
+    relationship: Relationship,
+    playerStats?: PlayerStats,
+    matches: MatchHistoryList,
+    matchStats: MatchStat[],
+    friends: FriendList
+}
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -9,7 +23,7 @@ export class UserService {
 
     constructor() { }
 
-    public findUsersByDisplayNamePrefix(prefix: string, limit: number = 5): Promise<UserSearchResult> {
+    findUsersByDisplayNamePrefix(prefix: string, limit: number = 5): Promise<UserSearchResult> {
         if (prefix.length === 0) {
             return Promise.resolve({ hasMore: false, users: [] });
         }
@@ -25,5 +39,9 @@ export class UserService {
                 error: err => reject(err)
             });
         });
+    }
+
+    fetchProfile(userId: string): Observable<UserProfile> {
+        return this.http.get<UserProfile>(`/api/profiles/${userId}`);
     }
 }

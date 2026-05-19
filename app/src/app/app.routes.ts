@@ -1,14 +1,14 @@
 import { Routes } from '@angular/router';
-import { Login } from '../components/login/login.component';
 import { Dashboard } from '../components/dashboard/dashboard.component';
-import { Homepage } from '../components/homepage/homepage.component';
-import { UserSearchPage } from '../components/user-search-page/user-search-page.component';
-import { UserProfile } from '../components/user-profile/user-profile.component';
-import { SettingsPage } from '../components/settings-page/settings-page.component';
-import { Leaderboard } from '../components/leaderboard/leaderboard.component';
-import { NotificationPage } from '../components/notification-page/notification-page.component';
-import { GameHistoryPage } from '../components/game-history-page/game-history-page.component';
 import { FriendsPage } from '../components/friends-page/friends-page.component';
+import { Homepage } from '../components/homepage/homepage.component';
+import { Leaderboard } from '../components/leaderboard/leaderboard.component';
+import { Login } from '../components/login/login.component';
+import { MatchHistoryPage } from '../components/match-history-page/match-history-page.component';
+import { NotificationPage } from '../components/notification-page/notification-page.component';
+import { SettingsPage } from '../components/settings-page/settings-page.component';
+import { UserProfilePage } from '../components/user-profile-page/user-profile-page.component';
+import { UserSearchPage } from '../components/user-search-page/user-search-page.component';
 
 export const routes: Routes = [
     {
@@ -29,11 +29,11 @@ export const routes: Routes = [
             },
             {
                 path: "users/:id/history",
-                component: GameHistoryPage
+                component: MatchHistoryPage
             },
             {
                 path: "users/:id",
-                component: UserProfile
+                component: UserProfilePage
             },
             {
                 path: "users",

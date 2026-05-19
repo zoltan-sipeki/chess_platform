@@ -45,7 +45,7 @@ public class MatchMapperImpl implements MatchMapper {
         OffsetDateTime startedAt = null;
         long duration = 0L;
         String color = null;
-        String score = null;
+        String outcome = null;
         int mmrChange = 0;
 
         matchId = matchResponseMatchId( matchResponse );
@@ -58,14 +58,14 @@ public class MatchMapperImpl implements MatchMapper {
         if ( matchResponse.getColor() != null ) {
             color = matchResponse.getColor().name();
         }
-        if ( matchResponse.getScore() != null ) {
-            score = matchResponse.getScore().name();
+        if ( matchResponse.getOutcome() != null ) {
+            outcome = matchResponse.getOutcome().name();
         }
         if ( matchResponse.getMmrChange() != null ) {
             mmrChange = matchResponse.getMmrChange();
         }
 
-        MatchHistoryDto matchHistoryDto = new MatchHistoryDto( matchId, matchType, startedAt, duration, color, score, mmrChange );
+        MatchHistoryDto matchHistoryDto = new MatchHistoryDto( matchId, matchType, startedAt, duration, color, outcome, mmrChange );
 
         return matchHistoryDto;
     }

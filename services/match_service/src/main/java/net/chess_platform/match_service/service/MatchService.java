@@ -6,8 +6,10 @@ import java.util.UUID;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +18,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent;
 import net.chess_platform.common.security.CurrentUser;
-import net.chess_platform.match_service.dto.MatchHistoryDto;
+import net.chess_platform.match_service.dto.MatchHistoryListDto;
+import net.chess_platform.match_service.dto.MatchHistorySearchParams;
 import net.chess_platform.match_service.dto.MatchStatsDto;
 import net.chess_platform.match_service.dto.OngoingMatchDto;
 import net.chess_platform.match_service.exception.AccessDeniedException;
@@ -28,14 +31,14 @@ import net.chess_platform.match_service.mapper.MatchStatMapper;
 import net.chess_platform.match_service.model.Match;
 import net.chess_platform.match_service.model.MatchResult;
 import net.chess_platform.match_service.model.MatchResult.Color;
-import net.chess_platform.match_service.model.MatchResult.Score;
+import net.chess_platform.match_service.model.MatchResult.Outcome;
 import net.chess_platform.match_service.model.MatchStat;
 import net.chess_platform.match_service.model.OngoingMatch;
 import net.chess_platform.match_service.model.Player;
 import net.chess_platform.match_service.permission.PermissionService;
 import net.chess_platform.match_service.permission.PermissionService.Action;
-import net.chess_platform.match_service.repository.MatchDetailRepository;
 import net.chess_platform.match_service.repository.MatchRepository;
+import net.chess_platform.match_service.repository.MatchResultRepository;
 import net.chess_platform.match_service.repository.MatchStatRepository;
 import net.chess_platform.match_service.repository.OngoingMatchRepository;
 import net.chess_platform.match_service.repository.PlayerRepository;
@@ -47,7 +50,7 @@ public class MatchService {
 
     private final OngoingMatchRepository ongoingMatchRepository;
 
-    private final MatchDetailRepository matchDetailRepository;
+    private final MatchResultRepository matchDetailRepository;
 
     private final MatchStatRepository matchStatRepository;
 
@@ -65,7 +68,7 @@ public class MatchService {
     private EntityManager em;
 
     public MatchService(MatchRepository matchRepository, OngoingMatchRepository ongoingMatchRepository,
-            MatchDetailRepository matchDetailRepository, MatchStatRepository matchStatRepository,
+            MatchResultRepository matchDetailRepository, MatchStatRepository matchStatRepository,
             PlayerRepository playerRepository,
             PermissionService permissionService, MatchMapper matchMapper, MatchStatMapper matchStatMapper,
             ObjectMapper objectMapper) {
@@ -80,11 +83,23 @@ public class MatchService {
         this.objectMapper = objectMapper;
     }
 
-    public List<MatchHistoryDto> findMatchHistory(UUID userId, Pageable pageable, CurrentUser currentUser) {
+    public MatchHistoryListDto findMatchHistory(UUID userId, MatchHistorySearchParams searchParams, Pageable pageable,
+            CurrentUser currentUser) {
         var auth = permissionService.authorize(Action.MATCH_HISTORY_QUERY, currentUser, Map.of("userId", userId));
-        var details = matchDetailRepository.findAll(auth, pageable).getContent();
 
-        return matchMapper.toMatchHistoryList(details);
+        Specification<MatchResult> spec = Specification.unrestricted();
+        if (StringUtils.hasText(searchParams.outcome())) {
+            spec = spec.and((root, cq, cb) -> cb.equal(root.get("outcome"), searchParams.outcome().toUpperCase()));
+        }
+
+        if (StringUtils.hasText(searchParams.matchType())) {
+            spec = spec.and(
+                    (root, cq, cb) -> cb.equal(root.get("match").get("type"), searchParams.matchType().toUpperCase()));
+        }
+
+        var page = matchDetailRepository.findAll(auth, pageable);
+
+        return new MatchHistoryListDto(page.getTotalElements(), matchMapper.toMatchHistoryList(page.getContent()));
     }
 
     public String findReplay(UUID matchId) {
@@ -153,16 +168,16 @@ public class MatchService {
                 }
 
                 var stat = matchStatRepository.findByPlayerIdAndMatchType(player.id(), matchType).orElse(null);
-                var score = MatchResult.Score.valueOf(player.score());
+                var outcome = MatchResult.Outcome.valueOf(player.score());
                 var playerRef = em.getReference(Player.class, player.id());
 
                 if (stat == null) {
                     stat = new MatchStat();
                     stat.setPlayer(playerRef);
                     stat.setMatchType(matchType);
-                    stat.setWins(score == Score.WIN ? 1 : 0);
-                    stat.setLosses(score == Score.LOSS ? 1 : 0);
-                    stat.setDraws(score == Score.DRAW ? 1 : 0);
+                    stat.setWins(outcome == Outcome.WIN ? 1 : 0);
+                    stat.setLosses(outcome == Outcome.LOSS ? 1 : 0);
+                    stat.setDraws(outcome == Outcome.DRAW ? 1 : 0);
                     stat.setGamesPlayed(1);
                     stat.setWinRatio(stat.getWins());
                     matchStatRepository.save(stat);
@@ -171,9 +186,9 @@ public class MatchService {
                     int losses = stat.getLosses();
                     int draws = stat.getDraws();
 
-                    stat.setWins(score == Score.WIN ? wins + 1 : wins);
-                    stat.setLosses(score == Score.LOSS ? losses + 1 : losses);
-                    stat.setDraws(score == Score.DRAW ? draws + 1 : draws);
+                    stat.setWins(outcome == Outcome.WIN ? wins + 1 : wins);
+                    stat.setLosses(outcome == Outcome.LOSS ? losses + 1 : losses);
+                    stat.setDraws(outcome == Outcome.DRAW ? draws + 1 : draws);
                     stat.setGamesPlayed(stat.getGamesPlayed() + 1);
                     stat.setWinRatio((float) stat.getWins() / stat.getGamesPlayed());
                     matchStatRepository.save(stat);
@@ -181,7 +196,7 @@ public class MatchService {
 
                 var detail = new MatchResult();
                 detail.setColor(Color.valueOf(player.color()));
-                detail.setScore(Score.valueOf(player.score()));
+                detail.setOutcome(Outcome.valueOf(player.score()));
                 detail.setMmrBefore(player.mmrBefore());
                 detail.setMmrAfter(player.mmrAfter());
                 if (player.mmrAfter() != null && player.mmrBefore() != null) {

@@ -14,7 +14,7 @@ import jakarta.persistence.ManyToOne;
 @Entity
 public class MatchResult extends AuditedEntity {
 
-    public enum Score {
+    public enum Outcome {
         DRAW,
         WIN,
         LOSS
@@ -39,7 +39,7 @@ public class MatchResult extends AuditedEntity {
     private Color color;
 
     @Enumerated(EnumType.STRING)
-    private Score score;
+    private Outcome outcome;
 
     private Integer mmrBefore;
 
@@ -79,12 +79,12 @@ public class MatchResult extends AuditedEntity {
         this.color = color;
     }
 
-    public Score getScore() {
-        return score;
+    public Outcome getOutcome() {
+        return outcome;
     }
 
-    public void setScore(Score score) {
-        this.score = score;
+    public void setOutcome(Outcome outcome) {
+        this.outcome = outcome;
     }
 
     public Integer getMmrBefore() {

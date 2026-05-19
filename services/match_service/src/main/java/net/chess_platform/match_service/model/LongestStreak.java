@@ -11,7 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
-import net.chess_platform.match_service.model.MatchResult.Score;
+import net.chess_platform.match_service.model.MatchResult.Outcome;
 
 @Entity
 @Immutable
@@ -26,7 +26,7 @@ public class LongestStreak {
     private Player player;
 
     @Enumerated(EnumType.STRING)
-    private Score score;
+    private Outcome outcome;
 
     private int longestStreak;
 
@@ -38,8 +38,8 @@ public class LongestStreak {
         return player;
     }
 
-    public Score getScore() {
-        return score;
+    public Outcome getOutcome() {
+        return outcome;
     }
 
     public int getLongestStreak() {

@@ -8,6 +8,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import net.chess_platform.common.dto.chat.UserDto;
+
 @Service
 public class ChatServiceProxy {
 
@@ -16,7 +18,7 @@ public class ChatServiceProxy {
     public static record ChannelDto(UUID id, String name, String type, List<UserDto> members) {
     }
 
-    public static record UserDto(UUID id, String displayName, String avatar) {
+    public static record FriendListDto(long total, List<UserDto> friends) {
     }
 
     public static record RelationshipSearchDto(List<String> ids) {
@@ -38,18 +40,16 @@ public class ChatServiceProxy {
         return response.relationship();
     }
 
-    public List<UserDto> getFriends(String userId) {
-        return restClient.get().uri("/api/friends?userId={userId}", userId)
+    public FriendListDto getFriends(String userId) {
+        return restClient.get().uri("/api/friends?userId={userId}&size=10&sort=displayName,asc", userId)
                 .retrieve()
-                .body(new ParameterizedTypeReference<List<UserDto>>() {
-                });
+                .body(FriendListDto.class);
     }
 
-    public List<UserDto> getFriends() {
+    public FriendListDto getFriends() {
         return restClient.get().uri("/api/friends")
                 .retrieve()
-                .body(new ParameterizedTypeReference<List<UserDto>>() {
-                });
+                .body(FriendListDto.class);
     }
 
     public List<ChannelDto> getChannels() {

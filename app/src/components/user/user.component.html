@@ -1,4 +1,19 @@
-<a [routerLink]="['/dashboard', 'users', id()]" class="d-flex align-items-center" style="text-decoration: none; color: inherit;">
-    <img class="rounded-circle me-1" src="imgs/default-profile-image.jpg" height="30" width="30">
-    <div>{{ displayName() }}</div>
+@switch (profileLink()) {
+@case (true) {
+<a [routerLink]="['/dashboard', 'users', id()]" class="d-flex align-items-center" [class.flex-column]="vertical()"
+    style="text-decoration: none; color: inherit;">
+    <ng-container *ngTemplateOutlet="content"></ng-container>
 </a>
+}
+@case (false) {
+<div class="d-flex align-items-center" [class.flex-column]="vertical()">
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+</div>
+}
+}
+
+<ng-template #content>
+    <img class="rounded-circle" [class]="vertical() ? 'mb-1' : 'me-1'" src="imgs/default-profile-image.jpg" [height]="avatarSize()"
+        [width]="avatarSize()">
+    <div [style.fontSize.rem]="displayNameSize()">{{ displayName() }}</div>
+</ng-template>

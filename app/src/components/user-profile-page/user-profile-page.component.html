@@ -1,0 +1,184 @@
+@if (profile$ | async; as p){
+<div class="container py-4">
+
+    <div class="card mb-4 shadow-sm border border-0">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <img src="imgs/default-profile-image.jpg"
+                        class="rounded-circle img-fluid border border-3 border-light shadow"
+                        style="width: 150px; height: 150px; object-fit: cover;">
+                </div>
+
+                <div class="col-md-6 text-center text-md-start mt-3 mt-md-0">
+                    <h3 class="mb-1">{{ p.user.displayName }}</h3>
+                    @if (p.playerStats; as playerStats) {
+                    <p class="text-muted mb-2">Rank #{{ playerStats.rank }} • {{ playerStats.mmr }} MMR</p>
+                    <span class="badge bg-secondary-subtle text-secondary">Joined {{ playerStats.joinedAt | date :
+                        "yyyy" }}</span>
+                    }
+
+                </div>
+
+                @if (p.relationship !== "SELF") {
+                <div class="col-md-3 mt-3 mt-md-0">
+                    <div class="d-grid gap-2">
+                        @if (p.relationship === "NOT_RELATED") {
+                        <button class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Add Friend
+                        </button>
+                        }
+                        @if (p.relationship === "FRIENDS") {
+                        <button class="btn btn-outline-secondary">
+                            <i class="bi bi-chat"></i> Message
+                        </button>
+                        <button class="btn btn-outline-success">
+                            <i class="bi bi-controller"></i> Invite
+                        </button>
+                        <button class="btn btn-danger">
+                            <i class="bi bi-person-dash"></i> Unfriend
+                        </button>
+                        }
+                    </div>
+                </div>
+                }
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        @if (p.playerStats; as playerStats) {
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100 border border-0">
+                <h5 class="card-header">
+                    <i class="bi bi-bar-chart text-primary"></i> Player statistics
+                </h5>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            <tr>
+                                <td>MMR</td>
+                                <td>{{ playerStats.mmr }}</td>
+                            </tr>
+                            <tr>
+                                <td>Rank</td>
+                                <td>{{ playerStats.rank }}</td>
+                            </tr>
+                            <tr>
+                                <td>Percentile</td>
+                                <td>{{ playerStats.percentile | percent }}</td>
+                            </tr>
+                            @for (streak of playerStats.longestStreaks; track streak.score) {
+                            <tr>
+                                <td>Longest {{ streak.score === "WIN" ? "winning" : "losing" }} streak</td>
+                                <td>{{ streak.longestStreak }}</td>
+                            </tr>
+                            }
+                            <tr>
+                                <td>Joined</td>
+                                <td>{{ playerStats.joinedAt | date }}</td>
+                            </tr>
+                            <tr>
+                                <td>Last played</td>
+                                <td>{{ playerStats.lastPlayedAt | date }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        }
+
+        @if (p.friends.total > 0) {
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100 border border-0">
+                <h5 class="card-header">
+                    <i class="bi bi-people text-primary"></i> Friends
+                </h5>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-3">
+                        @for (friend of p.friends.friends; track friend.id) {
+                        <user [id]="friend.id" [displayName]="friend.displayName" [avatar]="friend.avatar"
+                            [vertical]="true" [displayNameSize]="0.85" [avatarSize]="50" [profileLink]="true"></user>
+                        }
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-center">
+                    <a [routerLink]="['/dashboard/users', route.snapshot.paramMap.get('id'), 'friends']"
+                        class="text-decoration-none">View all</a>
+                </div>
+            </div>
+        </div>
+        }
+
+    </div>
+    @if (p.matchStats && p.matchStats.length > 0) {
+    <div class="row mb-4 mt-4">
+        <div class="col">
+            <div class="card shadow-sm border border-0">
+                <h5 class="card-header">
+                    <i class="bi bi-trophy text-primary"></i> Match statistics
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Match type</th>
+                                <th>Matches played</th>
+                                <th>Wins</th>
+                                <th>Draws</th>
+                                <th>Losses</th>
+                                <th>Win rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (stat of p.matchStats; track stat.matchType) {
+                            <tr>
+                                <td>{{ stat.matchType }}</td>
+                                <td>{{ stat.gamesPlayed }}</td>
+                                <td>{{ stat.wins }}</td>
+                                <td>{{ stat.draws }}</td>
+                                <td>{{ stat.losses }}</td>
+                                <td>{{ stat.winRatio | percent }}</td>
+                            </tr>
+                            }
+                        </tbody>
+                        <tfoot class="fw-semibold">
+                            @let matchStatsTotal = calcMatchStatsTotal(p.matchStats);
+                            <tr>
+                                <td>Total</td>
+                                <td>{{ matchStatsTotal.gamesPlayed }}</td>
+                                <td>{{ matchStatsTotal.wins }}</td>
+                                <td>{{ matchStatsTotal.draws }}</td>
+                                <td>{{ matchStatsTotal.losses }}</td>
+                                <td>{{ matchStatsTotal.winRatio | percent }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    @if (p.matches && p.matches.total > 0) {
+    <div class="row">
+        <div class="col">
+            <div class="card shadow-sm border border-0">
+                <h5 class="card-header">
+                    <i class="bi bi-clock-history text-primary"></i> Recent Games
+                </h5>
+                <match-history-table [matches]="p.matches.matches"></match-history-table>
+                <div class="card-footer d-flex justify-content-center">
+                    <a [routerLink]="['/dashboard/users', route.snapshot.paramMap.get('id'), 'history']"
+                        class="text-decoration-none">View all</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+</div>
+}

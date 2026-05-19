@@ -38,9 +38,7 @@ public class MatchStatMapperImpl implements MatchStatMapper {
         draws = stat.getDraws();
         winRatio = stat.getWinRatio();
 
-        UUID userId = null;
-
-        MatchStatsDto matchStatsDto = new MatchStatsDto( userId, matchType, gamesPlayed, wins, losses, draws, winRatio );
+        MatchStatsDto matchStatsDto = new MatchStatsDto( matchType, gamesPlayed, wins, losses, draws, winRatio );
 
         return matchStatsDto;
     }

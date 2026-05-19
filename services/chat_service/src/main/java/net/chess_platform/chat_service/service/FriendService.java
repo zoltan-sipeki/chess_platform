@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import net.chess_platform.chat_service.dto.FriendListDto;
 import net.chess_platform.chat_service.exception.AccessDeniedException;
 import net.chess_platform.chat_service.exception.EntityNotFoundException;
 import net.chess_platform.chat_service.exception.InvalidFriendRequestException;
@@ -29,7 +31,6 @@ import net.chess_platform.chat_service.repository.UserRepository;
 import net.chess_platform.common.domain_events.broker.chat.NotificationEvent;
 import net.chess_platform.common.domain_events.broker.chat.UnfriendEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
-import net.chess_platform.common.dto.chat.UserDto;
 import net.chess_platform.common.security.CurrentUser;
 
 @Service
@@ -142,11 +143,11 @@ public class FriendService {
         eventService.publish(event);
     }
 
-    public List<UserDto> findAll(UUID userId, CurrentUser user) {
+    public FriendListDto findAll(UUID userId, Pageable pageable, CurrentUser user) {
         var auth = permissionService.authorize(Action.FRIEND_QUERY, user,
                 userId == null ? Map.of() : Map.of("userId", userId));
-        var friends = friendRepository.findAll(auth);
-        return userMapper.toDtoListFromFriend(friends);
+        var result = friendRepository.findAll(auth, pageable);
+        return new FriendListDto(result.getTotalElements(), userMapper.toDtoListFromFriend(result.getContent()));
     }
 
     public void unfriend(UUID friendId, CurrentUser user) {

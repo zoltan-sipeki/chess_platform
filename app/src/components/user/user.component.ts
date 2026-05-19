@@ -1,10 +1,12 @@
+import { CommonModule } from "@angular/common";
 import { Component, input } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
 @Component({
     selector: "user",
     templateUrl: "user.component.html",
-    imports: [RouterLink]
+    styleUrl: "user.component.css",
+    imports: [RouterLink, CommonModule]
 })
 export class User {
 
@@ -12,6 +14,14 @@ export class User {
 
     displayName = input<string>("");
 
+    displayNameSize = input<number>(1);
+
     avatar = input<string>("");
+
+    avatarSize = input<number>(30);
+
+    profileLink = input<boolean>(false);
+
+    vertical = input<boolean>(false);
 
 }

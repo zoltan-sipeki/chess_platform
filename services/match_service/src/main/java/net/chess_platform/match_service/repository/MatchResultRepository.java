@@ -15,11 +15,16 @@ import net.chess_platform.common.permission.JPAQueryFragment;
 import net.chess_platform.match_service.model.MatchResult;
 
 @Repository
-public interface MatchDetailRepository extends JpaRepository<MatchResult, UUID>, JpaSpecificationExecutor<MatchResult> {
+public interface MatchResultRepository extends JpaRepository<MatchResult, UUID>, JpaSpecificationExecutor<MatchResult> {
 
     default Page<MatchResult> findAll(Authorization auth, Pageable pageable) {
         JPAQueryFragment<MatchResult> fragment = auth.getQueryFragment(MatchResult.class);
         return findAll(fragment.getSpecification(), pageable);
+    }
+
+    default Page<MatchResult> findAll(Authorization auth, Specification<MatchResult> spec, Pageable pageable) {
+        JPAQueryFragment<MatchResult> fragment = auth.getQueryFragment(MatchResult.class);
+        return findAll(fragment.getSpecification().and(spec), pageable);
     }
 
     @EntityGraph(attributePaths = { "match" })

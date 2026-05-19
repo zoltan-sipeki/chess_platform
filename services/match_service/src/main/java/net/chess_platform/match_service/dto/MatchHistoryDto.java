@@ -9,6 +9,6 @@ public record MatchHistoryDto(
 		OffsetDateTime startedAt,
 		long duration,
 		String color,
-		String score,
+		String outcome,
 		int mmrChange) {
 }

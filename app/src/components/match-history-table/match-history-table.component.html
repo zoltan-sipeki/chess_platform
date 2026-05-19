@@ -1,0 +1,33 @@
+<div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Played At</th>
+                <th>Duration</th>
+                <th>Type</th>
+                <th>Color</th>
+                <th>Result</th>
+                <th>MMR</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (match of matches(); track match.matchId) {
+            <tr>
+                <td>{{ match.startedAt | timeAgo }}</td>
+                <td>{{ match.duration | timeFormat : "ms" }}</td>
+                <td>{{ match.matchType }}</td>
+                <td>
+                    <span class="rounded-circle border border-secondary" [class]="getColorClass(match.color)">
+                        <span class="invisible">aaa</span>
+                    </span>
+                </td>
+                <td><span class="badge" [class]="getScoreClass(match.score)">{{ match.score }}</span>
+                </td>
+                <td class="fw-semibold" [class]="getMmrChangeClass(match.mmrChange)">{{ match.mmrChange
+                    }}</td>
+                <td><a [routerLink]="['/dashboard/replays', match.matchId]">replay</a></td>
+            </tr>
+            }
+        </tbody>
+    </table>

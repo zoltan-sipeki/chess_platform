@@ -3,17 +3,15 @@ package net.chess_platform.gateway.handler;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.function.HandlerFunction;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 
 import net.chess_platform.gateway.integration.ChatServiceProxy;
-import net.chess_platform.gateway.integration.ChatServiceProxy.UserDto;
+import net.chess_platform.gateway.integration.ChatServiceProxy.FriendListDto;
 import net.chess_platform.gateway.integration.MatchServiceProxy;
-import net.chess_platform.gateway.integration.MatchServiceProxy.MatchHistoryDto;
+import net.chess_platform.gateway.integration.MatchServiceProxy.MatchHistoryListDto;
 import net.chess_platform.gateway.integration.MatchServiceProxy.MatchStatDto;
 import net.chess_platform.gateway.integration.MatchServiceProxy.PlayerStatsDto;
 import net.chess_platform.gateway.integration.UserServiceProxy;
@@ -40,9 +38,9 @@ public class ProfileHandler implements HandlerFunction<ServerResponse> {
 			ProfileUserDto user,
 			String relationship,
 			PlayerStatsDto playerStats,
-			List<MatchHistoryDto> matches,
+			MatchHistoryListDto matches,
 			List<MatchStatDto> matchStats,
-			List<UserDto> friends) {
+			FriendListDto friends) {
 	}
 
 	@Override

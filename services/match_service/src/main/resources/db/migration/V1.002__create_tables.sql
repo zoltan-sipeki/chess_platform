@@ -32,7 +32,7 @@ create table
         player_id uuid not null,
         match_id uuid not null,
         color varchar(255) not null,
-        score varchar(255) not null,
+        outcome varchar(255) not null,
         mmr_before int,
         mmr_after int,
         mmr_change int,

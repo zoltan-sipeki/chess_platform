@@ -56,15 +56,15 @@ public class PlayerStatsMapperImpl implements PlayerStatsMapper {
             return null;
         }
 
-        String score = null;
+        String outcome = null;
         int longestStreak1 = 0;
 
-        if ( longestStreak.getScore() != null ) {
-            score = longestStreak.getScore().name();
+        if ( longestStreak.getOutcome() != null ) {
+            outcome = longestStreak.getOutcome().name();
         }
         longestStreak1 = longestStreak.getLongestStreak();
 
-        LongestStreakDto longestStreakDto = new LongestStreakDto( score, longestStreak1 );
+        LongestStreakDto longestStreakDto = new LongestStreakDto( outcome, longestStreak1 );
 
         return longestStreakDto;
     }
