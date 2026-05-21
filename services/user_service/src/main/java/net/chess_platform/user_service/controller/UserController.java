@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.chess_platform.common.dto.user.UserDto;
+import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.user_service.dto.ProfileUserDto;
 import net.chess_platform.user_service.dto.UserSearchResultDto;
 import net.chess_platform.user_service.mapper.UserMapper;
@@ -30,6 +31,11 @@ public class UserController {
     public UserController(UserService userService, UserMapper mapper) {
         this.userService = userService;
         this.mapper = mapper;
+    }
+
+    @GetMapping("/me")
+    public ProfileUserDto getCurrentUser(CurrentUser currentUser) {
+        return userService.findById(currentUser.id());
     }
 
     @GetMapping("/{id}")

@@ -11,10 +11,18 @@ public class UserServiceProxy {
 
     private final RestClient restClient;
 
-    public static record ProfileUserDto(UUID id, String displayName, String avatar) {}
+    public static record ProfileUserDto(UUID id, String displayName, String avatar) {
+    }
 
     public UserServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
         this.restClient = builder.baseUrl("http://user-service").build();
+    }
+
+    public ProfileUserDto getCurrentUser() {
+        return restClient.get()
+                .uri("/api/users/me")
+                .retrieve()
+                .body(ProfileUserDto.class);
     }
 
     public ProfileUserDto getUserById(String id) {

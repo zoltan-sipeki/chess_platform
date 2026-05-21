@@ -13,6 +13,8 @@ import net.chess_platform.gateway.integration.ChatServiceProxy.ChannelDto;
 import net.chess_platform.gateway.integration.ChatServiceProxy.FriendListDto;
 import net.chess_platform.gateway.integration.MatchServiceProxy;
 import net.chess_platform.gateway.integration.MatchServiceProxy.OngoingMatchDto;
+import net.chess_platform.gateway.integration.UserServiceProxy;
+import net.chess_platform.gateway.integration.UserServiceProxy.ProfileUserDto;
 import net.chess_platform.gateway.util.SecurityContextAwareAsyncSupplier;
 
 @Component
@@ -22,17 +24,25 @@ public class DashboardHandler implements HandlerFunction<ServerResponse> {
 
         private final MatchServiceProxy matchService;
 
-        public static record DashboardDto(List<ChannelDto> channels, FriendListDto friends,
+        private final UserServiceProxy userService;
+
+        public static record DashboardDto(ProfileUserDto user, List<ChannelDto> channels, FriendListDto friends,
                         OngoingMatchDto ongoingMatch) {
         }
 
-        public DashboardHandler(ChatServiceProxy chatService, MatchServiceProxy matchService) {
+        public DashboardHandler(ChatServiceProxy chatService, MatchServiceProxy matchService,
+                        UserServiceProxy userService) {
                 this.chatService = chatService;
                 this.matchService = matchService;
+                this.userService = userService;
         }
 
         @Override
         public ServerResponse handle(ServerRequest request) throws Exception {
+                var user = CompletableFuture
+                                .supplyAsync(new SecurityContextAwareAsyncSupplier<>(
+                                                () -> userService.getCurrentUser()));
+
                 var channels = CompletableFuture
                                 .supplyAsync(new SecurityContextAwareAsyncSupplier<>(() -> chatService.getChannels()));
 
@@ -43,9 +53,9 @@ public class DashboardHandler implements HandlerFunction<ServerResponse> {
                                 .supplyAsync(new SecurityContextAwareAsyncSupplier<>(
                                                 () -> matchService.findOngoingMatch()));
 
-                CompletableFuture.allOf(channels, friends).get();
+                CompletableFuture.allOf(user, channels, friends).get();
 
                 return ServerResponse.ok()
-                                .body(new DashboardDto(channels.get(), friends.get(), ongoingMatch.get()));
+                                .body(new DashboardDto(user.get(), channels.get(), friends.get(), ongoingMatch.get()));
         }
 }
