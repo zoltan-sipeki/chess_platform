@@ -1,5 +1,6 @@
 package net.chess_platform.match_service.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -126,7 +127,10 @@ public class MatchService {
     }
 
     public OngoingMatchDto findOngoingMatch(UUID userId, CurrentUser user) {
-        var auth = permissionService.authorize(Action.ONGOING_MATCH_QUERY, user, Map.of("userId", userId));
+        var map = new HashMap<String, Object>();
+        map.put("userId", userId);
+
+        var auth = permissionService.authorize(Action.ONGOING_MATCH_QUERY, user, map);
         var match = ongoingMatchRepository.findOne(auth).orElseThrow(() -> new EntityNotFoundException());
         return matchMapper.toDto(match);
     }

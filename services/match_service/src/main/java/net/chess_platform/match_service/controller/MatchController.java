@@ -50,9 +50,9 @@ public class MatchController {
         return matchService.findReplay(matchId);
     }
 
-    @GetMapping(value = "/ongoing")
+    @GetMapping("/ongoing")
     public OngoingMatchDto findOngoingMatchByUserId(@RequestParam Optional<UUID> userId, CurrentUser currentUser) {
-        return matchService.findOngoingMatch(userId.get(), currentUser);
+        return matchService.findOngoingMatch(userId.orElse(null), currentUser);
     }
 
     @PostMapping("/ongoing")

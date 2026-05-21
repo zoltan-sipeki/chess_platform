@@ -68,7 +68,11 @@ public class MatchServiceProxy {
 	}
 
 	public OngoingMatchDto findOngoingMatch() {
-		return restClient.get().uri("/api/matches/ongoing").retrieve().body(OngoingMatchDto.class);
+		try {
+			return restClient.get().uri("/api/matches/ongoing").retrieve().body(OngoingMatchDto.class);
+		} catch (HttpClientErrorException.NotFound e) {
+			return null;
+		}
 	}
 
 	public List<MatchStatDto> getMatchStats(String userId) {
