@@ -1,0 +1,42 @@
+<div class="d-flex flex-column flex-md-row align-items-md-center gap-4">
+
+    <img [src]="'/api/avatars/' + avatar()" class="rounded-circle border-sm shadow" width="200" height="200"
+        style="object-fit: cover;">
+
+    <div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-sm" (click)="selectImage()" [disabled]="uploading() || removing()">
+                <div class="d-flex justify-content-between align-items-center">
+                    @if (uploading()) {
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    }
+                    @else {
+                    <i class="bi bi-upload me-2"></i>
+                    }
+                    Change
+                </div>
+            </button>
+            <input #fileInput accept=".jpg,.png" type="file" hidden (change)="onImageSelect()">
+            <button class="btn btn-outline-danger btn-sm" (click)="deleteAvatar()"
+                [disabled]="uploading() || removing()">
+                <div class="d-flex justify-content-between align-items-center">
+                    @if (removing()) {
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    }
+                    @else {
+                    <i class="bi bi-trash me-2"></i>
+                    }
+                    Remove
+                </div>
+            </button>
+        </div>
+        <div class="form-text mt-2">
+            JPG or PNG, max 2MB
+        </div>
+    </div>
+
+</div>

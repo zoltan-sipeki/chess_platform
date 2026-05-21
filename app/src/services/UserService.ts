@@ -16,6 +16,19 @@ export interface UserProfile {
     friends: FriendList
 }
 
+export interface OngoingMatch {
+    matchId: number,
+    userId: string,
+    target: string
+}
+
+export interface Dashboard {
+    user: UserData,
+    friends: FriendList,
+    channels: any[],
+    ongoingMatch: OngoingMatch
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
 
@@ -43,5 +56,9 @@ export class UserService {
 
     fetchProfile(userId: string): Observable<UserProfile> {
         return this.http.get<UserProfile>(`/api/profiles/${userId}`);
+    }
+
+    fetchDashboard(): Observable<Dashboard> {
+        return this.http.get<Dashboard>("/api/dashboard");
     }
 }

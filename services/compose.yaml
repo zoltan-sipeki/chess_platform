@@ -217,6 +217,10 @@ services:
     mem_limit: 250m
     networks:
       - chess-network
+    volumes:
+      - type: volume
+        source: avatars
+        target: /avatars
     depends_on:
       keycloak:
         condition: service_healthy
@@ -252,7 +256,7 @@ services:
     networks:
       - chess-network
     healthcheck:
-      test: [ "CMD-SHELL", "curl http://localhost:8080/health/ready" ]
+      test: ["CMD-SHELL", "curl http://localhost:8080/health/ready"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -280,7 +284,7 @@ services:
         target: /docker-entrypoint-initdb.d/postgres_init.sql
         read_only: true
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -295,7 +299,7 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -331,6 +335,7 @@ volumes:
   postgres-data:
   mongodb-data:
   rabbitmq-data:
+  avatars:
 secrets:
   postgres-root-password:
     file: ./secrets/postgres/root_password

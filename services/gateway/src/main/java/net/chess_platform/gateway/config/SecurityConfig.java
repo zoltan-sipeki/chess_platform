@@ -21,6 +21,7 @@ public class SecurityConfig {
 				.csrf(csrf -> csrf.disable())
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/avatars/**").permitAll()
 						.requestMatchers("/relay/ws").permitAll()
 						.requestMatchers("/chess/ws").permitAll()
 						.anyRequest().permitAll())

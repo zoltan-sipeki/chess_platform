@@ -65,7 +65,7 @@ public class GatewayApplication {
 
 	@Bean
 	public RouterFunction<ServerResponse> userServiceRoutes() {
-		return route(path("/api/users/**"), http()).filter(lb("user-service"));
+		return route(path("/api/users/**").or(path("/api/avatars/**")), http()).filter(lb("user-service"));
 	}
 
 	@Bean

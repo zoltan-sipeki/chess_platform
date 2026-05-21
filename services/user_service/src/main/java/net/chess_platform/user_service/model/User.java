@@ -13,6 +13,7 @@ import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import net.chess_platform.user_service.service.AvatarService;
 
 @Entity
 @Table(name = "app_user")
@@ -29,7 +30,7 @@ public class User extends AuditedEntity implements Persistable<UUID> {
 
     private String displayName;
 
-    private String avatar;
+    private String avatar = AvatarService.DEFAULT_AVATAR.toString();
 
     private String email;
 
@@ -90,14 +91,14 @@ public class User extends AuditedEntity implements Persistable<UUID> {
     }
 
     @PostRemove
-    public void setNotNew() {
-        isNew = false;
+    public void setNew() {
+        isNew = true;
     }
 
     @PostLoad
     @PostPersist
-    public void setNew() {
-        isNew = true;
+    public void setNotNew() {
+        isNew = false;
     }
 
 }

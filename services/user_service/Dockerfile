@@ -7,6 +7,8 @@ FROM eclipse-temurin:25-jre
 RUN useradd -ms /bin/sh -u 1001 app
 RUN apt-get update && apt-get install curl -y
 USER app
+WORKDIR /avatars
+COPY avatars/default-avatar.jpg 00000000-0000-0000-0000-000000000000
 WORKDIR /app
 COPY --from=builder --chown=app:app /build/extracted/dependencies/ .
 COPY --from=builder --chown=app:app /build/extracted/spring-boot-loader/ .

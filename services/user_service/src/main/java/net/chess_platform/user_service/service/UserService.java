@@ -1,6 +1,5 @@
 package net.chess_platform.user_service.service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -12,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
-import net.chess_platform.common.dto.user.UserDto;
 import net.chess_platform.keycloak.KeycloakUserVerifiedMessage;
 import net.chess_platform.user_service.dto.ProfileUserDto;
 import net.chess_platform.user_service.dto.UserSearchResultDto;
