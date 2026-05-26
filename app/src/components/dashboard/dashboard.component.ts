@@ -45,6 +45,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
     onAlert = (e: AlertEvent): void => {
         this.alertDetails.set(e.details);
+        clearTimeout(this.timeout);
         this.timeout = setTimeout(() => this.alert()?.close(), 5000);
     }
 

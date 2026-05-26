@@ -51,7 +51,7 @@ public class PlayerService {
     }
 
     public PlayerStatsDto findPlayerStats(UUID userId, CurrentUser user) {
-        var auth = permissionService.authorize(Action.USER_STATS_QUERY, user, Map.of("userId", userId));
+        var auth = permissionService.authorize(Action.PLAYER_STATS_QUERY, user, Map.of("userId", userId));
         var player = playerRepository.findOne(auth).orElseThrow(() -> new EntityNotFoundException());
         var leaderboard = leaderboardRepository.findOne(auth).orElse(null);
         var longestStreak = longestStreakRepository.findAll(auth);

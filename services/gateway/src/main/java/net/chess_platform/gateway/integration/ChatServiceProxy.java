@@ -28,8 +28,17 @@ public class ChatServiceProxy {
     public static record RelationshipDto(String relationship) {
     }
 
+    public static record PrivacyDto(String friends) {
+    }
+
     public ChatServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
         this.restClient = builder.baseUrl("http://chat-service").build();
+    }
+
+    public PrivacyDto getPrivacySettings() {
+        return restClient.get().uri("/api/privacy")
+                .retrieve()
+                .body(PrivacyDto.class);
     }
 
     public String getRelationship(String userId) {

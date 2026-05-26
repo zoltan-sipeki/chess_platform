@@ -1,5 +1,6 @@
 package net.chess_platform.gateway;
 
+import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.rewritePath;
 import static org.springframework.cloud.gateway.server.mvc.filter.LoadBalancerFilterFunctions.lb;
 import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http;
 import static org.springframework.web.servlet.function.RequestPredicates.path;
@@ -16,6 +17,7 @@ import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
 import net.chess_platform.common.security.EnableCommonSecurity;
 import net.chess_platform.gateway.handler.DashboardHandler;
+import net.chess_platform.gateway.handler.PrivacyHandler;
 import net.chess_platform.gateway.handler.ProfileHandler;
 
 @SpringBootApplication
@@ -27,9 +29,13 @@ public class GatewayApplication {
 
 	private final DashboardHandler dashboardHandler;
 
-	public GatewayApplication(ProfileHandler profileHandler, DashboardHandler dashboardHandler) {
+	private final PrivacyHandler privacyHandler;
+
+	public GatewayApplication(ProfileHandler profileHandler, DashboardHandler dashboardHandler,
+			PrivacyHandler privacyHandler) {
 		this.profileHandler = profileHandler;
 		this.dashboardHandler = dashboardHandler;
+		this.privacyHandler = privacyHandler;
 	}
 
 	@Bean
@@ -76,6 +82,26 @@ public class GatewayApplication {
 	@Bean
 	public RouterFunction<ServerResponse> dashboard() {
 		return route().GET("/api/dashboard", dashboardHandler).build();
+	}
+
+	@Bean
+	public RouterFunction<ServerResponse> privacy() {
+		return route().GET("/api/privacy/**", privacyHandler).build();
+	}
+
+	@Bean
+	public RouterFunction<ServerResponse> chatPrivacy() {
+		return route().PATCH("/api/privacy/chat/**", http())
+				.before(rewritePath("/api/privacy/chat", "/api/privacy"))
+				.filter(lb("chat-service")).build();
+
+	}
+
+	@Bean
+	public RouterFunction<ServerResponse> matchPrivacy() {
+		return route().PATCH("/api/privacy/match/**", http())
+				.before(rewritePath("/api/privacy/match", "/api/privacy"))
+				.filter(lb("match-service")).build();
 	}
 
 	public static void main(String[] args) {

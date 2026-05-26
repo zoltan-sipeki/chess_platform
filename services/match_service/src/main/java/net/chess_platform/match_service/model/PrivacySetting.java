@@ -17,7 +17,7 @@ public class PrivacySetting extends AuditedEntity {
     public enum Resource {
         MATCH_HISTORY,
         MATCH_STATS,
-        USER_STATS
+        PLAYER_STATS
     }
 
     public enum Restriction {

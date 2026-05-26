@@ -63,8 +63,18 @@ public class MatchServiceProxy {
 			String target) {
 	}
 
+	public static record PrivacyDto(
+			String matchHistory,
+			String matchStats,
+			String playerStats) {
+	}
+
 	public MatchServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
 		this.restClient = builder.baseUrl("http://match-service").build();
+	}
+
+	public PrivacyDto getPrivacySettings() {
+		return restClient.get().uri("/api/privacy").retrieve().body(PrivacyDto.class);
 	}
 
 	public OngoingMatchDto findOngoingMatch() {

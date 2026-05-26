@@ -31,7 +31,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
         ONGOING_MATCH_QUERY,
         ONGOING_MATCH_CREATE,
         LEADERBOARD_QUERY,
-        USER_STATS_QUERY
+        PLAYER_STATS_QUERY
     }
 
     private PrivacySettingRepository privacySettingRepository;
@@ -200,15 +200,15 @@ public class PermissionService extends AbstractPermissionService<Action> {
             return auth;
         });
 
-        registerPolicy(Action.USER_STATS_QUERY, (user, attributes) -> {
+        registerPolicy(Action.PLAYER_STATS_QUERY, (user, attributes) -> {
             var userId = (UUID) attributes.get("userId");
 
             var ps = privacySettingRepository.findByUserIdAndResource((UUID) userId,
-                    PrivacySetting.Resource.USER_STATS);
+                    PrivacySetting.Resource.PLAYER_STATS);
 
             var auth = new Authorization();
 
-            auth.setAction(Action.USER_STATS_QUERY);
+            auth.setAction(Action.PLAYER_STATS_QUERY);
 
             BiConsumer<Authorization, Boolean> rules = (a, condition) -> {
                 if (condition) {
