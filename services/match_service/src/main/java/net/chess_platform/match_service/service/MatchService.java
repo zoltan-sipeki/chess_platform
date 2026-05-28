@@ -29,6 +29,7 @@ import net.chess_platform.match_service.exception.MatchAlreadyExistsException;
 import net.chess_platform.match_service.exception.UserAlreadyInMatchException;
 import net.chess_platform.match_service.mapper.MatchMapper;
 import net.chess_platform.match_service.mapper.MatchStatMapper;
+import net.chess_platform.match_service.mapper.PlayerMapper;
 import net.chess_platform.match_service.model.Match;
 import net.chess_platform.match_service.model.MatchResult;
 import net.chess_platform.match_service.model.MatchResult.Color;
@@ -63,6 +64,8 @@ public class MatchService {
 
     private final MatchStatMapper matchStatMapper;
 
+    private final PlayerMapper playerMapper;
+
     private final ObjectMapper objectMapper;
 
     @PersistenceContext
@@ -72,6 +75,7 @@ public class MatchService {
             MatchResultRepository matchDetailRepository, MatchStatRepository matchStatRepository,
             PlayerRepository playerRepository,
             PermissionService permissionService, MatchMapper matchMapper, MatchStatMapper matchStatMapper,
+            PlayerMapper playerMapper,
             ObjectMapper objectMapper) {
         this.matchRepository = matchRepository;
         this.ongoingMatchRepository = ongoingMatchRepository;
@@ -81,6 +85,7 @@ public class MatchService {
         this.permissionService = permissionService;
         this.matchMapper = matchMapper;
         this.matchStatMapper = matchStatMapper;
+        this.playerMapper = playerMapper;
         this.objectMapper = objectMapper;
     }
 
@@ -163,13 +168,10 @@ public class MatchService {
             }
 
             for (var player : m.players()) {
-                if (matchType == Match.Type.RANKED) {
-                    playerRepository.updateRankedMmrByUserId(player.id(), player.mmrAfter(), m.endedAt());
-                } else if (matchType == Match.Type.UNRANKED) {
-                    playerRepository.updateUnrankedMmrByUserId(player.id(), player.mmrAfter(), m.endedAt());
-                } else if (matchType == Match.Type.PRIVATE) {
-                    playerRepository.updateLastPlayed(player.id(), m.endedAt());
-                }
+
+                var update = playerMapper.toUpdate(player);
+
+                playerRepository.update(update);
 
                 var stat = matchStatRepository.findByPlayerIdAndMatchType(player.id(), matchType).orElse(null);
                 var outcome = MatchResult.Outcome.valueOf(player.score());

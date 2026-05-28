@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import net.chess_platform.chat_service.service.UserService;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
+import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 
 @Component
 @RabbitListener(queues = "#{eventQueue.name}", messageConverter = "messageConverter")
@@ -20,6 +21,11 @@ public class EventListener {
 
     @RabbitHandler
     public void process(@Payload UserCreatedEvent e) {
+        userService.process(e);
+    }
+
+    @RabbitHandler
+    public void process(@Payload UserUpdatedEvent e) {
         userService.process(e);
     }
 

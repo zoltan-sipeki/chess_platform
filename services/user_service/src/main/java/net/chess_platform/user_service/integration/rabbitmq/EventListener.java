@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 
 import net.chess_platform.common.domain_events.broker.AckEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
-import net.chess_platform.keycloak.KeycloakUserVerifiedMessage;
+import net.chess_platform.keycloak.event.KeycloakUserUpdatedEvent;
+import net.chess_platform.keycloak.event.KeycloakUserVerifiedEvent;
 import net.chess_platform.user_service.service.UserService;
 
 @Component
@@ -30,7 +31,12 @@ public class EventListener {
     }
 
     @RabbitHandler
-    public void process(@Payload KeycloakUserVerifiedMessage m) {
-        userService.process(m);
+    public void process(@Payload KeycloakUserVerifiedEvent e) {
+        userService.process(e);
+    }
+
+    @RabbitHandler
+    public void process(@Payload KeycloakUserUpdatedEvent e) {
+        userService.process(e);
     }
 }

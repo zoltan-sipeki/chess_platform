@@ -33,6 +33,7 @@ public class DomainEventConfig implements IDomainEventSubscriptionConfigurer {
         registry.registerSubscription(DomainEvent.Type.UNFRIEND, relayService, false);
 
         registry.registerAck(DomainEvent.Type.USER_CREATED, userService);
+        registry.registerAck(DomainEvent.Type.USER_UPDATED, userService);
     }
 
 }

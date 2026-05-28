@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import net.chess_platform.chat_service.model.User;
@@ -17,6 +18,27 @@ public class UserRepository {
 
     public UserRepository(MongoOperations mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
+    }
+
+    public long update(User.Update update) {
+        if (update == null || update.getId() == null) {
+            return 0;
+        }
+
+        var u = new Update();
+
+        var avatar = update.getAvatar();
+        if (avatar != null) {
+            u.set("avatar", avatar);
+        }
+
+        var displayName = update.getDisplayName();
+        if (displayName != null) {
+            u.set("displayName", displayName);
+        }
+
+        return mongoTemplate.updateFirst(new Query(Criteria.where("_id").is(update.getId())), u, User.class)
+                .getModifiedCount();
     }
 
     public void save(User user) {

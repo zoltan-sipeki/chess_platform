@@ -48,7 +48,7 @@ public class UserEventService {
         public void write(UserCreatedEvent e) {
             try {
                 var user = new RelayUser();
-                user.setId(e.getData().userId());
+                user.setId(e.getData().getId());
 
                 relayUserRepository.saveAndFlush(user);
             } catch (DataIntegrityViolationException ex) {

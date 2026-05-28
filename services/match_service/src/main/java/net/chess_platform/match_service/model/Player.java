@@ -18,6 +18,70 @@ import jakarta.persistence.Transient;
 @Entity
 public class Player extends AuditedEntity implements Persistable<UUID> {
 
+    public static class Update {
+
+        private UUID id;
+
+        private String displayName;
+
+        private String avatar;
+
+        private int rankedMmr;
+
+        private int unrankedMmr;
+
+        private OffsetDateTime lastPlayedAt;
+
+        public UUID getId() {
+            return id;
+        }
+
+        public void setId(UUID id) {
+            this.id = id;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getAvatar() {
+            return avatar;
+        }
+
+        public void setAvatar(String avatar) {
+            this.avatar = avatar;
+        }
+
+        public int getRankedMmr() {
+            return rankedMmr;
+        }
+
+        public void setRankedMmr(int rankedMmr) {
+            this.rankedMmr = rankedMmr;
+        }
+
+        public int getUnrankedMmr() {
+            return unrankedMmr;
+        }
+
+        public void setUnrankedMmr(int unrankedMmr) {
+            this.unrankedMmr = unrankedMmr;
+        }
+
+        public OffsetDateTime getLastPlayedAt() {
+            return lastPlayedAt;
+        }
+
+        public void setLastPlayedAt(OffsetDateTime lastPlayedAt) {
+            this.lastPlayedAt = lastPlayedAt;
+        }
+
+    }
+
     @Transient
     private boolean isNew = true;
 
@@ -36,6 +100,17 @@ public class Player extends AuditedEntity implements Persistable<UUID> {
 
     @OneToMany(mappedBy = "player", fetch = FetchType.LAZY)
     private Set<PrivacySetting> privacySettings;
+
+    public void clear() {
+        id = null;
+        isNew = true;
+        displayName = null;
+        avatar = null;
+        rankedMmr = -1;
+        unrankedMmr = -1;
+        lastPlayedAt = null;
+        privacySettings = null;
+    }
 
     @Override
     public boolean isNew() {

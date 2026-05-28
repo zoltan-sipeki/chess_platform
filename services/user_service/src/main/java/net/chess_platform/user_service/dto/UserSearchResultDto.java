@@ -4,7 +4,7 @@ import java.util.List;
 
 public record UserSearchResultDto(
     boolean hasMore,
-    List<ProfileUserDto> users
+    List<UserDto> users
 ) {
 
 }

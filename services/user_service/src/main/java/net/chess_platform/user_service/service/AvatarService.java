@@ -22,7 +22,7 @@ import net.chess_platform.user_service.dto.AvatarDto;
 import net.chess_platform.user_service.exception.EntityNotFoundException;
 import net.chess_platform.user_service.exception.InvalidImageException;
 import net.chess_platform.user_service.exception.InvalidUserException;
-import net.chess_platform.user_service.repository.UserRepository;
+import net.chess_platform.user_service.model.User;
 
 @Service
 public class AvatarService {
@@ -31,13 +31,13 @@ public class AvatarService {
 
     public static final UUID DEFAULT_AVATAR = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public AvatarService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public AvatarService(UserService userService) {
+        this.userService = userService;
     }
 
-    public AvatarDto upload(MultipartFile file, CurrentUser user) {
+    public AvatarDto upload(MultipartFile file, CurrentUser currentUser) {
         if (file.isEmpty()) {
             throw new InvalidImageException("Image is empty");
         }
@@ -48,7 +48,7 @@ public class AvatarService {
 
         var id = UUID.randomUUID();
 
-        var u = userRepository.findById(user.id()).orElseGet(null);
+        var u = userService.findById(currentUser.id());
         if (u == null) {
             throw new InvalidUserException();
         }
@@ -72,15 +72,18 @@ public class AvatarService {
             outputStream.flush();
 
             try {
-                var a = u.getAvatar();
+                var a = u.avatar();
                 if (a != null && !a.equals(DEFAULT_AVATAR.toString())) {
                     Files.delete(Path.of(IMAGE_FOLDER + '/' + a));
                 }
             } catch (NoSuchFileException e) {
             }
 
-            u.setAvatar(id.toString());
-            userRepository.save(u);
+            var update = new User.Update();
+            update.setId(currentUser.id());
+            update.setAvatar(id.toString());
+
+            userService.update(update, currentUser);
 
             return new AvatarDto(id);
 
@@ -116,17 +119,25 @@ public class AvatarService {
         return resource;
     }
 
-    public AvatarDto delete(CurrentUser user) {
+    public AvatarDto delete(CurrentUser currentUser) {
         try {
-            var u = userRepository.findById(user.id()).orElseThrow(() -> new InvalidUserException());
-            var a = u.getAvatar();
+            var u = userService.findById(currentUser.id());
+            if (u == null) {
+                throw new InvalidUserException();
+            }
+
+            var a = u.avatar();
             if (a == null || a.equals(DEFAULT_AVATAR.toString())) {
                 return new AvatarDto(DEFAULT_AVATAR);
             }
 
             Files.delete(Paths.get(IMAGE_FOLDER + '/' + a));
-            u.setAvatar(DEFAULT_AVATAR.toString());
-            userRepository.save(u);
+
+            var update = new User.Update();
+            update.setId(currentUser.id());
+            update.setAvatar(DEFAULT_AVATAR.toString());
+
+            userService.update(update, currentUser);
 
             return new AvatarDto(DEFAULT_AVATAR);
 

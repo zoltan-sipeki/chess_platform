@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
+import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.match_service.dto.PlayerStatsDto;
 import net.chess_platform.match_service.exception.EntityNotFoundException;
 import net.chess_platform.match_service.exception.UserAlreadyExistsException;
+import net.chess_platform.match_service.mapper.PlayerMapper;
 import net.chess_platform.match_service.mapper.PlayerStatsMapper;
 import net.chess_platform.match_service.model.Player;
 import net.chess_platform.match_service.model.PrivacySetting;
@@ -36,18 +38,21 @@ public class PlayerService {
 
     private final PermissionService permissionService;
 
-    private final PlayerStatsMapper mapper;
+    private final PlayerStatsMapper playerStatsMapper;
+
+    private final PlayerMapper playerMapper;
 
     public PlayerService(LeaderboardRepository leaderboardRepository,
             LongestStreakRepository longestStreakRepository,
             PlayerRepository playerRepository, PrivacySettingRepository privacySettingRepository,
-            PermissionService permissionService, PlayerStatsMapper mapper) {
+            PermissionService permissionService, PlayerStatsMapper mapper, PlayerMapper playerMapper) {
         this.leaderboardRepository = leaderboardRepository;
         this.longestStreakRepository = longestStreakRepository;
         this.playerRepository = playerRepository;
         this.privacySettingRepository = privacySettingRepository;
         this.permissionService = permissionService;
-        this.mapper = mapper;
+        this.playerStatsMapper = mapper;
+        this.playerMapper = playerMapper;
     }
 
     public PlayerStatsDto findPlayerStats(UUID userId, CurrentUser user) {
@@ -55,7 +60,7 @@ public class PlayerService {
         var player = playerRepository.findOne(auth).orElseThrow(() -> new EntityNotFoundException());
         var leaderboard = leaderboardRepository.findOne(auth).orElse(null);
         var longestStreak = longestStreakRepository.findAll(auth);
-        return mapper.toDto(leaderboard, player, longestStreak);
+        return playerStatsMapper.toDto(leaderboard, player, longestStreak);
     }
 
     @Transactional
@@ -63,9 +68,9 @@ public class PlayerService {
         try {
             var user = new Player();
             var data = e.getData();
-            user.setId(data.userId());
-            user.setDisplayName(data.displayName());
-            user.setAvatar(data.avatar());
+            user.setId(data.getId());
+            user.setDisplayName(data.getDisplayName());
+            user.setAvatar(data.getAvatar());
 
             playerRepository.saveAndFlush(user);
 
@@ -82,6 +87,14 @@ public class PlayerService {
         } catch (DataIntegrityViolationException ex) {
             throw new UserAlreadyExistsException();
         }
+    }
+
+    @Transactional
+    public void process(UserUpdatedEvent e) {
+        var u = e.getData();
+        var updates = playerMapper.toUpdate(u);
+
+        playerRepository.update(updates);
     }
 
 }

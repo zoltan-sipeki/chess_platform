@@ -36,7 +36,7 @@ public class DomainEventConfig implements IDomainEventSubscriptionConfigurer {
     public void configure(DomainEventSubscriptionRegistry registry) {
         var services = List.of(chatService, matchmakingService, matchService, relayService);
         registry.registerSubscription(DomainEvent.Type.USER_CREATED, services, true);
-        registry.registerSubscription(DomainEvent.Type.USER_UPDATED, services, true);
+        registry.registerSubscription(DomainEvent.Type.USER_UPDATED, List.of(chatService, matchService), true);
         registry.registerSubscription(DomainEvent.Type.USER_DELETED, services, true);
     }
 

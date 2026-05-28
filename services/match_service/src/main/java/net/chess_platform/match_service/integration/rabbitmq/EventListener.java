@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
+import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
 import net.chess_platform.match_service.exception.MatchAlreadyExistsException;
 import net.chess_platform.match_service.exception.UserAlreadyExistsException;
@@ -52,5 +53,11 @@ public class EventListener {
         } catch (UserAlreadyExistsException ex) {
             eventService.ack(e, SERVICE_NAME);
         }
+    }
+
+    @RabbitHandler
+    public void process(@Payload UserUpdatedEvent e) {
+        playerService.process(e);
+        eventService.ack(e, SERVICE_NAME);
     }
 }

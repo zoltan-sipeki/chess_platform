@@ -3,20 +3,39 @@ package net.chess_platform.chat_service.mapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import javax.annotation.processing.Generated;
+
+import org.springframework.stereotype.Component;
+
 import net.chess_platform.chat_service.model.ChannelMember;
 import net.chess_platform.chat_service.model.Friend;
 import net.chess_platform.chat_service.model.User;
+import net.chess_platform.common.domain_events.broker.user.UserEventData;
 import net.chess_platform.common.dto.chat.UserDto;
-import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-23T20:57:42+0100",
-    comments = "version: 1.6.3, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)"
+    date = "2026-05-28T13:36:07+0200",
+    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
 public class UserMapperImpl implements UserMapper {
+
+    @Override
+    public User.Update toUpdate(UserEventData userDto) {
+        if ( userDto == null ) {
+            return null;
+        }
+
+        User.Update update = new User.Update();
+
+        update.setId( userDto.getId() );
+        update.setDisplayName( userDto.getDisplayName() );
+        update.setAvatar( userDto.getAvatar() );
+
+        return update;
+    }
 
     @Override
     public UserDto toDto(User user) {

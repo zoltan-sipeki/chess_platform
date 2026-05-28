@@ -22,7 +22,7 @@ public class PlayerService {
     public void process(UserCreatedEvent e) {
         try {
             var user = new Player();
-            user.setId(e.getData().userId());
+            user.setId(e.getData().getId());
 
             playerRepository.saveAndFlush(user);
         } catch (DataIntegrityViolationException ex) {

@@ -9,12 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
+import net.chess_platform.common.domain_events.broker.user.UserEventData;
 import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
-import net.chess_platform.keycloak.KeycloakUserVerifiedMessage;
-import net.chess_platform.user_service.dto.ProfileUserDto;
+import net.chess_platform.common.security.CurrentUser;
+import net.chess_platform.keycloak.event.KeycloakUserUpdatedEvent;
+import net.chess_platform.keycloak.event.KeycloakUserVerifiedEvent;
+import net.chess_platform.user_service.dto.UserDto;
 import net.chess_platform.user_service.dto.UserSearchResultDto;
 import net.chess_platform.user_service.exception.EntityNotFoundException;
+import net.chess_platform.user_service.exception.InvalidUserException;
 import net.chess_platform.user_service.integration.KeycloakProxy;
 import net.chess_platform.user_service.mapper.UserMapper;
 import net.chess_platform.user_service.model.User;
@@ -27,77 +31,97 @@ public class UserService {
 
     private final UserMapper mapper;
 
-    private final UserWriter userWriter;
+    private final DomainEventService eventService;
 
-    public UserService(KeycloakProxy keyCloak, UserWriter userWriter, UserMapper mapper) {
+    private final UserRepository userRepository;
+
+    private final UserWriter writer = this.new UserWriter();
+
+    public UserService(KeycloakProxy keyCloak, UserMapper mapper,
+            DomainEventService eventService, UserRepository userRepository) {
         this.keycloak = keyCloak;
-        this.userWriter = userWriter;
         this.mapper = mapper;
+        this.eventService = eventService;
+        this.userRepository = userRepository;
     }
 
     public void syncUnsyncedUsers() {
         var unsynced = keycloak.getUnsyncedUsers();
-        for (var kcUser : unsynced) {
+        for (var kcr : unsynced) {
             try {
-                userWriter.create(mapper.toModel(kcUser));
-                kcUser.setSynced("true");
-                keycloak.updateUser(kcUser);
+                writer.create(mapper.toModel(kcr));
+                kcr.setSynced("true");
+                kcr.setUpdated("false");
+                keycloak.updateUser(kcr);
             } catch (DataIntegrityViolationException e) {
-                kcUser.setSynced("true");
-                keycloak.updateUser(kcUser);
+                if (kcr.getUpdated().equals("true")) {
+                    writer.update(mapper.toUpdate(kcr));
+                }
+                kcr.setSynced("true");
+                kcr.setUpdated("false");
+                keycloak.updateUser(kcr);
             }
         }
     }
 
-    public void process(KeycloakUserVerifiedMessage m) {
+    public void process(KeycloakUserVerifiedEvent e) {
+        var kcu = e.getPayload();
         try {
-            userWriter.create(mapper.toModel(m));
-            var kcUser = mapper.toKeycloakUserRepresentation(m);
-            kcUser.setSynced("true");
-            keycloak.updateUser(kcUser);
-        } catch (DataIntegrityViolationException e) {
-            var kcUser = mapper.toKeycloakUserRepresentation(m);
-            kcUser.setSynced("true");
-            keycloak.updateUser(kcUser);
+            writer.create(mapper.toModel(kcu));
+            var kcr = mapper.toKeycloakUserRepresentation(kcu);
+            kcr.setSynced("true");
+            kcr.setUpdated("false");
+            keycloak.updateUser(kcr);
+        } catch (DataIntegrityViolationException ex) {
+            var kcr = mapper.toKeycloakUserRepresentation(kcu);
+            kcr.setSynced("true");
+            kcr.setUpdated("false");
+            keycloak.updateUser(kcr);
+        }
+
+    }
+
+    public void process(KeycloakUserUpdatedEvent e) {
+        var kcu = e.getPayload();
+        User u = null;
+        try {
+            u = writer.update(mapper.toUpdate(kcu));
+            var kcr = mapper.toKeycloakUserRepresentation(u);
+            kcr.setSynced("true");
+            kcr.setUpdated("false");
+            keycloak.updateUser(kcr);
+        } catch (InvalidUserException ex) {
+            var kcr = mapper.toKeycloakUserRepresentation(u);
+            kcr.setSynced("true");
+            kcr.setUpdated("false");
+            keycloak.updateUser(kcr);
         }
     }
 
     public UserSearchResultDto findByDisplayNamePrefix(String prefix, Pageable pageable) {
-        var result = userWriter.findByDisplayNamePrefix(prefix, pageable);
-        return new UserSearchResultDto(result.hasNext(), mapper.toClientUserDtoList(result.getContent()));
-    }
-
-    public User create(User user) {
-        var id = keycloak.createUser(mapper.toKeycloakUserRepresentation(user));
-        user.setId(id);
-        return userWriter.create(user);
-    }
-
-    public void update(User user) {
-        keycloak.updateUser(mapper.toKeycloakUserRepresentation(user));
-        userWriter.update(user);
+        var result = writer.findByDisplayNamePrefix(prefix, pageable);
+        return new UserSearchResultDto(result.hasNext(), mapper.toDtoList(result.getContent()));
     }
 
     public void delete(UUID id) {
         keycloak.deleteUser(id.toString());
     }
 
-    public ProfileUserDto findById(UUID id) {
-        var user = userWriter.findById(id);
-        return mapper.toProfileUserDto(user);
+    public UserDto findById(UUID id) {
+        var user = writer.findById(id);
+        return mapper.toDto(user);
     }
 
-    @Service
-    public static class UserWriter {
-
-        private UserRepository userRepository;
-
-        private DomainEventService domainEventService;
-
-        public UserWriter(UserRepository userRepository, DomainEventService domainEventService) {
-            this.userRepository = userRepository;
-            this.domainEventService = domainEventService;
+    public UserDto update(User.Update update, CurrentUser currentUser) {
+        if (update.getId() == null) {
+            throw new InvalidUserException();
         }
+
+        var u = writer.update(update);
+        return mapper.toDto(u);
+    }
+
+    private class UserWriter {
 
         public User findById(UUID userId) {
             return userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException());
@@ -109,20 +133,43 @@ public class UserService {
 
         @Transactional
         public User create(User user) {
-            var savedUser = userRepository.save(user);
-            var event = new UserCreatedEvent(savedUser.getId(), savedUser.getUsername(), savedUser.getDisplayName(),
-                    savedUser.getEmail(), savedUser.getAvatar());
-            domainEventService.publish(event);
-            return savedUser;
+            user.setDisplayName(user.getUsername());
+
+            userRepository.save(user);
+
+            var payload = new UserEventData.Builder(user.getId()).displayName(user.getDisplayName()).build();
+            var event = new UserCreatedEvent(payload);
+            eventService.publish(event);
+
+            return user;
         }
 
         @Transactional
-        public User update(User user) {
-            var savedUser = userRepository.save(user);
-            var event = new UserUpdatedEvent(savedUser.getId(), savedUser.getUsername(), savedUser.getDisplayName(),
-                    savedUser.getEmail(), savedUser.getAvatar());
-            domainEventService.publish(event);
-            return savedUser;
+        public User update(User.Update user) {
+            var payload = new UserEventData.Builder(user.getId());
+
+            boolean sendEvent = false;
+
+            var avatar = user.getAvatar();
+            if (avatar != null) {
+                payload.avatar(avatar);
+                sendEvent = true;
+            }
+
+            var displayName = user.getDisplayName();
+            if (displayName != null) {
+                payload.displayName(displayName);
+                sendEvent = true;
+            }
+
+            var u = userRepository.updateAndFetch(user);
+
+            if (u != null && sendEvent) {
+                var event = new UserUpdatedEvent(payload.build());
+                eventService.publish(event);
+            }
+
+            return u;
         }
     }
 }

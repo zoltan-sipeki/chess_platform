@@ -7,10 +7,13 @@ import org.mapstruct.Mapping;
 import net.chess_platform.chat_service.model.ChannelMember;
 import net.chess_platform.chat_service.model.Friend;
 import net.chess_platform.chat_service.model.User;
+import net.chess_platform.common.domain_events.broker.user.UserEventData;
 import net.chess_platform.common.dto.chat.UserDto;
 
 // @Mapper(componentModel = "spring")
 public interface UserMapper {
+
+    User.Update toUpdate(UserEventData userDto);
 
     UserDto toDto(User user);
 
