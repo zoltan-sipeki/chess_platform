@@ -5,7 +5,7 @@
 
     <div>
         <div class="d-flex gap-2">
-            <button class="btn btn-primary btn-sm" (click)="selectImage()" [disabled]="uploading() || removing()">
+            <button class="btn btn-primary" (click)="selectImage()" [disabled]="uploading() || removing()">
                 <div class="d-flex justify-content-between align-items-center">
                     @if (uploading()) {
                     <div class="spinner-border spinner-border-sm me-2" role="status">
@@ -19,7 +19,7 @@
                 </div>
             </button>
             <input #fileInput accept=".jpg,.png" type="file" hidden (change)="onImageSelect()">
-            <button class="btn btn-outline-danger btn-sm" (click)="deleteAvatar()"
+            <button class="btn btn-outline-danger" (click)="deleteAvatar()"
                 [disabled]="uploading() || removing()">
                 <div class="d-flex justify-content-between align-items-center">
                     @if (removing()) {
@@ -35,7 +35,7 @@
             </button>
         </div>
         <div class="form-text mt-2">
-            JPG or PNG, max 2MB
+            Maximum image size: 2MB
         </div>
     </div>
 
