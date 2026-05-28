@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { UserData } from "../types";
 import { BehaviorSubject, Subscription } from "rxjs";
+import { UserData } from "../types";
 
 @Injectable({
     providedIn: "root",
@@ -11,10 +11,6 @@ export class UserStoreService {
 
     setUser(user: UserData) {
         this.user$.next(user);
-    }
-
-    getUser(): UserData | null {
-        return this.user$.value;
     }
 
     subscribe(callback: (user: UserData | null) => void): Subscription {

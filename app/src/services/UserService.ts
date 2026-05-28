@@ -87,4 +87,8 @@ export class UserService {
     updateMatchPrivacy(settings: PrivacySettings): Observable<PrivacySettings> {
         return this.http.patch<PrivacySettings>("/api/privacy/match", settings);
     }
+
+    updateDisplayName(displayName: string): Observable<UserData> {
+        return this.http.patch<UserData>("/api/users/me", { displayName });
+    }
 }
