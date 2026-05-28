@@ -2,7 +2,7 @@ import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { Subscription } from "rxjs";
 import { UserService } from "../../services/UserService";
-import { UserStoreService } from "../../services/UserStoreService";
+import { UserStore } from "../../services/UserStore";
 import { AvatarForm } from "../avatar-form/avatar-form.component";
 
 @Component({
@@ -13,7 +13,7 @@ import { AvatarForm } from "../avatar-form/avatar-form.component";
 })
 export class ProfileFormComponent implements OnInit, OnDestroy {
 
-    private userStore: UserStoreService = inject(UserStoreService);
+    private userStore: UserStore = inject(UserStore);
 
     private userService: UserService = inject(UserService);
 

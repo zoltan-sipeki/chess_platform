@@ -5,15 +5,15 @@ import { UserData } from "../types";
 @Injectable({
     providedIn: "root",
 })
-export class UserStoreService {
+export class UserStore {
 
-    private user$ = new BehaviorSubject<UserData | null>(null);
+    private user$ = new BehaviorSubject<UserData>({ id: "", displayName: "", avatar: "" });
 
     setUser(user: UserData) {
         this.user$.next(user);
     }
 
-    subscribe(callback: (user: UserData | null) => void): Subscription {
+    subscribe(callback: (user: UserData) => void): Subscription {
         return this.user$.subscribe(callback);
     }
 }

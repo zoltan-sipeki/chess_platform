@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { UserService } from "./UserService";
-import { UserStoreService } from "./UserStoreService";
+import { UserStore } from "./UserStore";
 import { EventService } from "./EventService";
 
 @Injectable({
@@ -10,7 +10,7 @@ export class DashboardService {
 
     private userService: UserService = inject(UserService);
 
-    private userStore: UserStoreService = inject(UserStoreService);
+    private userStore: UserStore = inject(UserStore);
 
     private eventService: EventService = inject(EventService);
 
