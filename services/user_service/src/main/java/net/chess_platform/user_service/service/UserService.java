@@ -137,7 +137,8 @@ public class UserService {
 
             userRepository.save(user);
 
-            var payload = new UserEventData.Builder(user.getId()).displayName(user.getDisplayName()).build();
+            var payload = new UserEventData.Builder(user.getId()).displayName(user.getDisplayName())
+                    .avatar(user.getAvatar()).build();
             var event = new UserCreatedEvent(payload);
             eventService.publish(event);
 

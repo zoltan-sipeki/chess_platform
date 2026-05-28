@@ -13,7 +13,7 @@
 }
 
 <ng-template #content>
-    <img class="rounded-circle" [class]="vertical() ? 'mb-1' : 'me-1'" src="imgs/default-profile-image.jpg" [height]="avatarSize()"
-        [width]="avatarSize()">
+    <avatar [clazz]="'rounded-circle ' + (vertical() ? 'mb-1' : 'me-1')" [src]="avatar()" [width]="avatarSize()">
+    </avatar>
     <div [style.fontSize.rem]="displayNameSize()">{{ displayName() }}</div>
 </ng-template>

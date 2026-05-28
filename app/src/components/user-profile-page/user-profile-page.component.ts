@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from "@angular/router";
 import { Observable, Subscription } from "rxjs";
 import { MatchStat } from "../../services/MatchService";
 import { UserProfile, UserService } from "../../services/UserService";
+import { AvatarComponent } from "../avatar/avatar.component";
 import { MatchHistoryTable } from "../match-history-table/match-history-table.component";
 import { User } from "../user/user.component";
 
@@ -18,7 +19,7 @@ export interface MatchStatsTotal {
 @Component({
     selector: "user-profile-page",
     templateUrl: "user-profile-page.component.html",
-    imports: [User, PercentPipe, DatePipe, RouterLink, MatchHistoryTable, AsyncPipe]
+    imports: [User, PercentPipe, DatePipe, RouterLink, MatchHistoryTable, AsyncPipe, AvatarComponent]
 })
 export class UserProfilePage implements OnInit, OnDestroy {
 
@@ -38,6 +39,7 @@ export class UserProfilePage implements OnInit, OnDestroy {
             }
 
             this.profile$ = this.userService.fetchProfile(userId);
+            console.log(this.profile$);
         });
     }
 

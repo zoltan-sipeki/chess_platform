@@ -5,11 +5,13 @@ import { AvatarService } from "../../services/AvatarService";
 import { EventService } from "../../services/EventService";
 import { UserStoreService } from "../../services/UserStoreService";
 import { AvatarEditor } from "../avatar-editor/avatar-editor.component";
+import { AvatarComponent } from "../avatar/avatar.component";
 
 @Component({
     selector: 'avatar-form',
     templateUrl: 'avatar-form.component.html',
-    standalone: true
+    standalone: true,
+    imports: [AvatarComponent]
 })
 export class AvatarForm implements OnInit, OnDestroy {
 

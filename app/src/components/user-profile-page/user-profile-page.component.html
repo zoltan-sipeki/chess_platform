@@ -5,9 +5,8 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-3 text-center">
-                    <img src="imgs/default-profile-image.jpg"
-                        class="rounded-circle img-fluid border border-3 border-light shadow"
-                        style="width: 150px; height: 150px; object-fit: cover;">
+                    <avatar [src]="p.user.avatar" [width]="200"
+                        clazz="rounded-circle img-fluid border border-3 border-light shadow"></avatar>
                 </div>
 
                 <div class="col-md-6 text-center text-md-start mt-3 mt-md-0">
