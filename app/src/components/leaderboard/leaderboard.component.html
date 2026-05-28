@@ -1,3 +1,4 @@
+@if (leaderboard$ | async; as leaderboard) {
 <div class="container py-4">
 
     <div class="mb-4">
@@ -23,7 +24,7 @@
 
                 <tbody>
 
-                    @for (entry of leaderboard() | slice: (page() - 1) * pageSize : page() * pageSize; track
+                    @for (entry of leaderboard | slice: (page() - 1) * pageSize : page() * pageSize; track
                     entry.player.id) {
                     <tr>
                         <th class="ps-4 fw-semibold">{{ entry.rank | medal }}</th>
@@ -32,11 +33,12 @@
                                 <div class="d-flex justify-content-between">
                                     <user [id]="entry.player.id" [displayName]="entry.player.displayName"
                                         [avatar]="entry.player.avatar"></user>
-                                    <a [routerLink]="['/dashboard', 'users', entry.player.id]" class="btn btn-outline-primary btn-sm">View profile</a>
+                                    <a [routerLink]="['/dashboard', 'users', entry.player.id]"
+                                        class="btn btn-outline-primary btn-sm">View profile</a>
                                 </div>
                             </div>
                         </td>
-                        <td class="fw-semibold">{{ entry.rankedMmr }}</td>
+                        <td class="fw-semibold">{{ entry.mmr }}</td>
                         <td class="text-end pe-4">
                             <span class="badge bg-success-subtle text-success">{{ entry.percentile | percent }}</span>
                         </td>
@@ -46,9 +48,10 @@
             </table>
         </div>
         <div class="card-footer">
-            <pagination [(page)]="page" [pageSize]="pageSize" [collectionSize]="leaderboard().length"></pagination>
+            <pagination [(page)]="page" [pageSize]="pageSize" [collectionSize]="leaderboard.length"></pagination>
         </div>
 
     </div>
 
 </div>
+}

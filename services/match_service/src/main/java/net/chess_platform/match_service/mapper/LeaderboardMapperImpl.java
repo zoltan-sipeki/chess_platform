@@ -29,7 +29,7 @@ public class LeaderboardMapperImpl implements LeaderboardMapper {
         int rank = 0;
         float percentile = 0.0f;
 
-        mmr = leaderboard.getRankedMmr();
+        mmr = leaderboard.getMmr();
         player = playerToPlayerDto( leaderboard.getPlayer() );
         rank = leaderboard.getRank();
         percentile = leaderboard.getPercentile();

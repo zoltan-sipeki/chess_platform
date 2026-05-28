@@ -22,7 +22,7 @@ public class Leaderboard {
     @JoinColumn(name = "player_id")
     private Player player;
 
-    private int rankedMmr;
+    private int mmr;
 
     private int rank;
 
@@ -36,8 +36,8 @@ public class Leaderboard {
         return player;
     }
 
-    public int getRankedMmr() {
-        return rankedMmr;
+    public int getMmr() {
+        return mmr;
     }
 
     public int getRank() {

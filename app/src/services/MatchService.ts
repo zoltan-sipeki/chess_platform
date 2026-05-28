@@ -41,7 +41,7 @@ export interface MatchStat {
 export interface LeaderboardEntry {
     player: Player,
     rank: number,
-    rankedMmr: number,
+    mmr: number,
     percentile: number
 }
 
@@ -73,13 +73,8 @@ export class MatchService {
 
     private http: HttpClient = inject(HttpClient);
 
-    fetchLeaderboard(): Promise<LeaderboardEntry[]> {
-        return new Promise(resolve => {
-            this.http.get<LeaderboardEntry[]>("/api/leaderboard").subscribe({
-                next: result => resolve(result),
-                error: err => console.error(err)
-            });
-        });
+    fetchLeaderboard(): Observable<LeaderboardEntry[]> {
+        return this.http.get<LeaderboardEntry[]>("/api/leaderboard");
     }
 
     fetchMatchHistory(userId: string, query: MatchHistoryQuery): Observable<MatchHistoryList> {
