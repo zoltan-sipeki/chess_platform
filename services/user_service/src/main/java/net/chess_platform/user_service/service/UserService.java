@@ -100,7 +100,7 @@ public class UserService {
 
     public UserSearchResultDto findByDisplayNamePrefix(String prefix, Pageable pageable) {
         var result = writer.findByDisplayNamePrefix(prefix, pageable);
-        return new UserSearchResultDto(result.hasNext(), mapper.toDtoList(result.getContent()));
+        return new UserSearchResultDto(result.getTotalElements(), mapper.toDtoList(result.getContent()));
     }
 
     public void delete(UUID id) {

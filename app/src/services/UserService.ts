@@ -1,13 +1,18 @@
 import { HttpClient, HttpEvent } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { Observable, shareReplay } from "rxjs";
-import { UserData, UserSearchResult } from "../types";
+import { UserData } from "../types";
 import { FriendList } from "./FriendService";
 import { MatchHistoryList, MatchStat, PlayerStats } from "./MatchService";
 
 export type Relationship = "FRIENDS" | "SELF" | "NOT_RELATED";
 
 export type PrivacySetting = "PUBLIC" | "PRIVATE" | "FRIENDS";
+
+export interface UserSearchResult {
+    total: number,
+    users: UserData[]
+}
 
 export interface UserProfile {
     user: UserData,
@@ -38,6 +43,11 @@ export interface PrivacySettings {
     matchHistory?: PrivacySetting
 }
 
+export interface UserSearchQuery {
+    page?: number,
+    size?: number
+};
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
 
@@ -45,22 +55,14 @@ export class UserService {
 
     constructor() { }
 
-    findUsersByDisplayNamePrefix(prefix: string, limit: number = 5): Promise<UserSearchResult> {
-        if (prefix.length === 0) {
-            return Promise.resolve({ hasMore: false, users: [] });
-        }
-
-        return new Promise<UserSearchResult>((resolve, reject) => {
-            this.http.get<UserSearchResult>("/api/users", {
-                params: {
-                    startsWith: prefix,
-                    limit
-                }
-            }).subscribe({
-                next: result => resolve(result),
-                error: err => reject(err)
-            });
+    fetchUsersByDisplayNamePrefix(prefix: string, query: UserSearchQuery): Observable<UserSearchResult> {
+        return this.http.get<UserSearchResult>("/api/users", {
+            params: {
+                startsWith: prefix,
+                ...query
+            }
         });
+
     }
 
     fetchProfile(userId: string): Observable<UserProfile> {

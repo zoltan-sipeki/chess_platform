@@ -3,8 +3,3 @@ export interface UserData {
     displayName: string;
     avatar: string;
 }
-
-export interface UserSearchResult {
-    hasMore: boolean,
-    users: UserData[]
-}
