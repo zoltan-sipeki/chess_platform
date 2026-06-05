@@ -1,27 +1,26 @@
 package net.chess_platform.chat_service.model;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public class Notification extends AuditedEntity {
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-    public static class FriendRequestDetails {
+@Document
+public class Notification {
 
-        public enum Status {
-            PENDING,
-            ACCEPTED,
-            DECLINED
+    public static class Update {
+
+        private Long lastReadSequenceNumber;
+
+        public Long getLastReadSequenceNumber() {
+            return lastReadSequenceNumber;
         }
 
-        private Status status = Status.PENDING;
-
-        public Status getStatus() {
-            return status;
+        public void setLastReadSequenceNumber(Long lastReadSequenceNumber) {
+            this.lastReadSequenceNumber = lastReadSequenceNumber;
         }
-
-        public void setStatus(Status status) {
-            this.status = status;
-        }
-
     }
 
     public enum Type {
@@ -29,39 +28,28 @@ public class Notification extends AuditedEntity {
         FRIEND_REQUEST
     }
 
+    @Id
     private UUID id = UUID.randomUUID();
+
+    private long sequenceNumber;
 
     private Type type;
 
-    private boolean read;
-
-    private UUID senderId;
-
+    @DocumentReference
     private User sender;
 
-    private UUID receiverId;
+    private UUID receiver;
 
-    private Object details;
+    private OffsetDateTime createdAt;
 
-    public UUID getSenderId() {
-        return senderId;
+    private UUID friendRequest;
+
+    public UUID getReceiver() {
+        return receiver;
     }
 
-    public void setSenderId(UUID senderId) {
-        this.senderId = senderId;
-    }
-
-    public UUID getReceiverId() {
-        return receiverId;
-    }
-
-    public void setReceiverId(UUID receiverId) {
-        this.receiverId = receiverId;
-    }
-
-    public void setFriendRequestStatus(FriendRequestDetails.Status status) {
-        var details = (FriendRequestDetails) this.details;
-        details.setStatus(status);
+    public void setReceiver(UUID receiverId) {
+        this.receiver = receiverId;
     }
 
     public UUID getId() {
@@ -80,28 +68,36 @@ public class Notification extends AuditedEntity {
         this.type = type;
     }
 
-    public Object getDetails() {
-        return details;
-    }
-
-    public void setDetails(Object details) {
-        this.details = details;
-    }
-
-    public boolean isRead() {
-        return read;
-    }
-
-    public void setRead(boolean isRead) {
-        this.read = isRead;
-    }
-
     public User getSender() {
         return sender;
     }
 
     public void setSender(User sender) {
         this.sender = sender;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public long getSequenceNumber() {
+        return sequenceNumber;
+    }
+
+    public void setSequenceNumber(long sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
+    }
+
+    public UUID getFriendRequest() {
+        return friendRequest;
+    }
+
+    public void setFriendRequest(UUID friendRequest) {
+        this.friendRequest = friendRequest;
     }
 
 }

@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import net.chess_platform.chat_service.mapper.UserMapper;
+import net.chess_platform.chat_service.model.NotificationMetadata;
 import net.chess_platform.chat_service.model.Privacy;
 import net.chess_platform.chat_service.model.Privacy.Restriction;
 import net.chess_platform.chat_service.model.Privacy.Restriction.Resource;
 import net.chess_platform.chat_service.model.Privacy.Restriction.Setting;
 import net.chess_platform.chat_service.model.User;
+import net.chess_platform.chat_service.repository.NotificationRepository;
 import net.chess_platform.chat_service.repository.PrivacyRepository;
 import net.chess_platform.chat_service.repository.UserRepository;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
@@ -27,13 +29,16 @@ public class UserService {
 
     private PrivacyRepository privacyRepository;
 
+    private final NotificationRepository notificationRepository;
+
     private final UserMapper mapper;
 
     public UserService(DomainEventService eventService, UserRepository userRepository,
-            PrivacyRepository privacyRepository, UserMapper mapper) {
+            PrivacyRepository privacyRepository, NotificationRepository notificationRepository, UserMapper mapper) {
         this.eventService = eventService;
         this.userRepository = userRepository;
         this.privacyRepository = privacyRepository;
+        this.notificationRepository = notificationRepository;
         this.mapper = mapper;
     }
 
@@ -52,6 +57,11 @@ public class UserService {
         privacy.addRestriction(new Restriction(Resource.FRIENDS, Setting.PUBLIC));
 
         privacyRepository.save(privacy);
+
+        var notificationMetadata = new NotificationMetadata();
+        notificationMetadata.setReceiver(user.getId());
+        
+        notificationRepository.save(notificationMetadata);
 
         eventService.ack(e, SERVICE_NAME);
     }

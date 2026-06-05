@@ -1,8 +1,6 @@
 package net.chess_platform.chat_service.repository;
 
-import static net.chess_platform.chat_service.model.Notification.FriendRequestDetails.Status.PENDING;
-import static net.chess_platform.chat_service.model.Notification.Type.FRIEND_REQUEST;
-
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -12,51 +10,55 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import net.chess_platform.chat_service.model.Notification;
-import net.chess_platform.chat_service.model.Notification.FriendRequestDetails;
+import net.chess_platform.chat_service.model.FriendRequest;
 import net.chess_platform.common.permission.Authorization;
 import net.chess_platform.common.permission.MongoQueryFragment;
 
 @Repository
 public class FriendRequestRepository {
 
-	private MongoOperations mongoTemplate;
+	private final MongoOperations mongoTemplate;
 
-	private UserRepository userRepository;
-
-	public FriendRequestRepository(MongoOperations mongoTemplate, UserRepository userRepository) {
+	public FriendRequestRepository(MongoOperations mongoTemplate) {
 		this.mongoTemplate = mongoTemplate;
-		this.userRepository = userRepository;
 	}
 
 	public boolean hasPending(UUID senderId, UUID receiverId) {
-		return mongoTemplate.query(Notification.class)
-				.matching(Criteria.where("type").is(FRIEND_REQUEST).and("receiverId").is(receiverId)
-						.and("senderId").is(senderId).and("details.status").is(PENDING))
+		return mongoTemplate.query(FriendRequest.class)
+				.matching(Criteria.where("receiver").is(receiverId)
+						.and("sender").is(senderId).and("status").is(FriendRequest.Status.PENDING))
 				.exists();
 	}
 
-	public Notification updateStatusForFriendRequest(FriendRequestDetails.Status status,
+	public FriendRequest update(FriendRequest.Update update,
 			Authorization auth) {
-		MongoQueryFragment<Notification> fragment = auth.getQueryFragment(Notification.class);
+		MongoQueryFragment<FriendRequest> fragment = auth.getQueryFragment(FriendRequest.class);
+
+		var u = new Update();
+		var status = update.getStatus();
+		if (status != null) {
+			u.set("status", status);
+		}
 
 		return mongoTemplate
 				.findAndModify(
-						new Query(Criteria.where("type").is(FRIEND_REQUEST).andOperator(fragment.getCriteria())),
-						new Update().set("details.status", status),
+						new Query(fragment.getCriteria()),
+						u,
 						FindAndModifyOptions.options().returnNew(true),
-						Notification.class);
+						FriendRequest.class);
 	}
 
-	public Notification save(Notification friendRequest, Authorization auth) {
+	public FriendRequest save(FriendRequest friendRequest, Authorization auth) {
 		if (!auth.canCreate(friendRequest)) {
 			return null;
 		}
 
-		var r = mongoTemplate.save(friendRequest);
-		var sender = userRepository.findById(friendRequest.getSenderId());
-		r.setSender(sender);
-		return r;
+		return mongoTemplate.save(friendRequest);
+	}
+
+	public List<FriendRequest> findAll(Authorization auth) {
+		MongoQueryFragment<FriendRequest> fragment = auth.getQueryFragment(FriendRequest.class);
+		return mongoTemplate.query(FriendRequest.class).matching(fragment.getCriteria()).all();
 	}
 
 }
