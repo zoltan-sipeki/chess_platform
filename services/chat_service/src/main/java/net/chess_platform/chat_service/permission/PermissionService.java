@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 import net.chess_platform.chat_service.model.Channel;
 import net.chess_platform.chat_service.model.ChannelMember;
 import net.chess_platform.chat_service.model.Friend;
+import net.chess_platform.chat_service.model.FriendRequest;
+import net.chess_platform.chat_service.model.FriendRequest.Status;
 import net.chess_platform.chat_service.model.Message;
 import net.chess_platform.chat_service.model.Notification;
-import net.chess_platform.chat_service.model.Notification.FriendRequestDetails;
+import net.chess_platform.chat_service.model.NotificationMetadata;
 import net.chess_platform.chat_service.model.Privacy.Restriction.Resource;
 import net.chess_platform.chat_service.permission.PermissionService.Action;
 import net.chess_platform.chat_service.repository.ChannelMemberRepository;
@@ -38,7 +40,8 @@ public class PermissionService extends AbstractPermissionService<Action> {
         CHANNEL_LEAVE,
 
         FRIEND_REQUEST_CREATE,
-        FRIEND_REQUEST_UPDATE_STATUS,
+        FRIEND_REQUEST_UPDATE,
+        FRIEND_REQUEST_QUERY,
 
         UNFRIEND,
         FRIEND_QUERY,
@@ -50,6 +53,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
         NOTIFICATION_QUERY,
         NOTIFICATION_DELETE,
+        NOTIFICATION_UPDATE,
 
         CONTACTS_QUERY_ALL,
 
@@ -214,6 +218,21 @@ public class PermissionService extends AbstractPermissionService<Action> {
             return auth;
         });
 
+        registerPolicy(Action.FRIEND_REQUEST_QUERY, (user, attributes) -> {
+            var auth = new Authorization();
+
+            auth.setAction(Action.FRIEND_REQUEST_QUERY);
+
+            if (user.hasRole("chess_application.user")) {
+                auth.setQueryCondition(FriendRequest.class, new MongoQueryFragment<>(
+                        Criteria.where("receiver").is(user.id()).and("status").is(Status.PENDING)));
+            } else {
+                auth.setQueryCondition(FriendRequest.class, new MongoQueryFragment.False<>());
+            }
+
+            return auth;
+        });
+
         registerPolicy(Action.FRIEND_REQUEST_CREATE, (user, attributes) -> {
             var auth = new Authorization();
 
@@ -221,25 +240,25 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
             auth.setAllowed(() -> user.hasRole("chess_application.user"));
 
-            auth.setCreateCheck(Notification.class, entity -> true);
+            auth.setCreateCheck(FriendRequest.class, entity -> true);
 
             return auth;
         });
 
-        registerPolicy(Action.FRIEND_REQUEST_UPDATE_STATUS, (user, attributes) -> {
+        registerPolicy(Action.FRIEND_REQUEST_UPDATE, (user, attributes) -> {
             var friendRequestId = (UUID) attributes.get("friendRequestId");
 
             var auth = new Authorization();
 
-            auth.setAction(Action.FRIEND_REQUEST_UPDATE_STATUS);
+            auth.setAction(Action.FRIEND_REQUEST_UPDATE);
 
             if (user.hasRole("chess_application.user")) {
-                auth.setQueryCondition(Notification.class, new MongoQueryFragment<>(
+                auth.setQueryCondition(FriendRequest.class, new MongoQueryFragment<>(
                         Criteria.where("_id").is(friendRequestId)
-                                .and("receiverId").is(user.id())
-                                .and("details.status").is(FriendRequestDetails.Status.PENDING)));
+                                .and("receiver").is(user.id())
+                                .and("status").is(Status.PENDING)));
             } else {
-                auth.setQueryCondition(Notification.class, new MongoQueryFragment.False<>());
+                auth.setQueryCondition(FriendRequest.class, new MongoQueryFragment.False<>());
             }
 
             return auth;
@@ -395,9 +414,12 @@ public class PermissionService extends AbstractPermissionService<Action> {
 
             if (user.hasRole("chess_application.user")) {
                 auth.setQueryCondition(Notification.class,
-                        new MongoQueryFragment<>(Criteria.where("receiverId").is(user.id())));
+                        new MongoQueryFragment<>(Criteria.where("receiver").is(user.id())));
+                auth.setQueryCondition(NotificationMetadata.class,
+                        new MongoQueryFragment<>(Criteria.where("receiver").is(user.id())));
             } else {
                 auth.setQueryCondition(Notification.class, new MongoQueryFragment.False<>());
+                auth.setQueryCondition(NotificationMetadata.class, new MongoQueryFragment.False<>());
             }
 
             return auth;
@@ -411,12 +433,30 @@ public class PermissionService extends AbstractPermissionService<Action> {
             auth.setAction(Action.NOTIFICATION_DELETE);
 
             if (user.hasRole("chess_application.user")) {
+                var query = Criteria.where("receiver").is(user.id());
+                if (notificationId != null) {
+                    query = query.and("_id").is(notificationId);
+                }
                 auth.setQueryCondition(Notification.class,
-                        new MongoQueryFragment<>(
-                                Criteria.where("_id").is(notificationId).and("receiverId").is(user.id())));
+                        new MongoQueryFragment<>(query));
             } else {
                 auth.setQueryCondition(Notification.class, new MongoQueryFragment.False<>());
             }
+            return auth;
+        });
+
+        registerPolicy(Action.NOTIFICATION_UPDATE, (user, attributes) -> {
+            var auth = new Authorization();
+
+            auth.setAction(Action.NOTIFICATION_UPDATE);
+
+            if (user.hasRole("chess_application.user")) {
+                auth.setQueryCondition(NotificationMetadata.class,
+                        new MongoQueryFragment<>(Criteria.where("receiver").is(user.id())));
+            } else {
+                auth.setQueryCondition(NotificationMetadata.class, new MongoQueryFragment.False<>());
+            }
+
             return auth;
         });
 

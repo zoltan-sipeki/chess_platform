@@ -4,12 +4,15 @@ import java.util.List;
 import java.util.UUID;
 
 import net.chess_platform.common.domain_events.broker.DomainEvent;
-import net.chess_platform.common.dto.chat.NotificationDto;
 
-public class NotificationEvent extends SocialEvent<NotificationDto> {
+public class NotificationEvent extends SocialEvent<NotificationEvent.Payload> {
 
-    public NotificationEvent(List<UUID> recipients, NotificationDto notification) {
-        super(recipients, DomainEvent.Type.NOTIFICATION, notification);
+    public static record Payload(UUID id, String type, User sender, UUID friendRequest) {
+
+    }
+
+    public NotificationEvent(List<UUID> recipients, Payload payload) {
+        super(recipients, DomainEvent.Type.NOTIFICATION, payload);
     }
 
 }

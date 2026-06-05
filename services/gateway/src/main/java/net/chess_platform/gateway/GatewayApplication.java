@@ -53,7 +53,7 @@ public class GatewayApplication {
 				path("/api/channels/**").or(
 						path("/api/friends/**").or(
 								path("/api/notifications/**")).or(
-										path("/api/friendRequests/**"))),
+										path("/api/friend-requests/**"))),
 				http())
 				.filter(lb("chat-service"));
 	}
