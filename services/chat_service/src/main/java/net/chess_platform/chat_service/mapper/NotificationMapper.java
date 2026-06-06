@@ -2,7 +2,6 @@ package net.chess_platform.chat_service.mapper;
 
 import java.util.List;
 
-import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import net.chess_platform.chat_service.dto.NotificationDto;

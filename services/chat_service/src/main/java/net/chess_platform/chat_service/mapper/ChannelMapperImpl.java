@@ -5,21 +5,18 @@ import java.util.List;
 import java.util.UUID;
 import javax.annotation.processing.Generated;
 import net.chess_platform.chat_service.model.Channel;
+import net.chess_platform.chat_service.model.User;
 import net.chess_platform.common.dto.chat.ChannelDto;
 import net.chess_platform.common.dto.chat.UserDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-23T20:57:42+0100",
-    comments = "version: 1.6.3, compiler: javac, environment: Java 25.0.1 (Oracle Corporation)"
+    date = "2026-06-06T11:55:27+0200",
+    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
 public class ChannelMapperImpl implements ChannelMapper {
-
-    @Autowired
-    private UserMapper userMapper;
 
     @Override
     public ChannelDto toDto(Channel channel) {
@@ -37,7 +34,7 @@ public class ChannelMapperImpl implements ChannelMapper {
         if ( channel.getType() != null ) {
             type = channel.getType().name();
         }
-        members = userMapper.toDtoList( channel.getMembers() );
+        members = userListToUserDtoList( channel.getMembers() );
 
         ChannelDto channelDto = new ChannelDto( id, name, type, members );
 
@@ -56,5 +53,38 @@ public class ChannelMapperImpl implements ChannelMapper {
         }
 
         return list;
+    }
+
+    protected UserDto userToUserDto(User user) {
+        if ( user == null ) {
+            return null;
+        }
+
+        UUID id = null;
+        String displayName = null;
+        String avatar = null;
+
+        id = user.getId();
+        displayName = user.getDisplayName();
+        avatar = user.getAvatar();
+
+        String presence = null;
+
+        UserDto userDto = new UserDto( id, displayName, avatar, presence );
+
+        return userDto;
+    }
+
+    protected List<UserDto> userListToUserDtoList(List<User> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<UserDto> list1 = new ArrayList<UserDto>( list.size() );
+        for ( User user : list ) {
+            list1.add( userToUserDto( user ) );
+        }
+
+        return list1;
     }
 }

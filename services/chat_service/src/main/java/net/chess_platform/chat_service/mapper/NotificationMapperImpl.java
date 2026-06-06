@@ -9,19 +9,15 @@ import net.chess_platform.chat_service.model.Notification;
 import net.chess_platform.common.domain_events.broker.chat.NotificationEvent;
 import net.chess_platform.common.domain_events.broker.chat.User;
 import net.chess_platform.common.dto.chat.UserDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-05T15:30:46+0200",
+    date = "2026-06-06T11:55:17+0200",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
 public class NotificationMapperImpl implements NotificationMapper {
-
-    @Autowired
-    private UserMapper userMapper;
 
     @Override
     public NotificationEvent.Payload toEventPayload(Notification notification) {
@@ -77,7 +73,7 @@ public class NotificationMapperImpl implements NotificationMapper {
         if ( notification.getType() != null ) {
             type = notification.getType().name();
         }
-        sender = userMapper.toDto( notification.getSender() );
+        sender = userToUserDto( notification.getSender() );
         friendRequest = notification.getFriendRequest();
 
         NotificationDto notificationDto = new NotificationDto( id, type, seq, sender, friendRequest );
@@ -104,5 +100,25 @@ public class NotificationMapperImpl implements NotificationMapper {
         User user1 = new User( id, displayName, avatar, presence, activity );
 
         return user1;
+    }
+
+    protected UserDto userToUserDto(net.chess_platform.chat_service.model.User user) {
+        if ( user == null ) {
+            return null;
+        }
+
+        UUID id = null;
+        String displayName = null;
+        String avatar = null;
+
+        id = user.getId();
+        displayName = user.getDisplayName();
+        avatar = user.getAvatar();
+
+        String presence = null;
+
+        UserDto userDto = new UserDto( id, displayName, avatar, presence );
+
+        return userDto;
     }
 }

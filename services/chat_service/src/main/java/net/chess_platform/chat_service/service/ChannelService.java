@@ -156,9 +156,9 @@ public class ChannelService {
         channel = channelRepository.save(channel, auth);
         joinedMembers = channelMemberRepository.saveAll(joinedMembers, auth);
 
-        var joinedEvent = new GroupChannelMemberJoinedEvent(ogMembers, channelId,
-                userMapper.toDtoListFromChannelMember(joinedMembers));
-        eventService.publish(joinedEvent);
+        // var joinedEvent = new GroupChannelMemberJoinedEvent(ogMembers, channelId,
+        //         userMapper.toDtoListFromChannelMember(joinedMembers));
+        // eventService.publish(joinedEvent);
 
         var dto = channelMapper.toDto(channel);
 
