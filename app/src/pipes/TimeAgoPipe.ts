@@ -15,10 +15,10 @@ export class TimeAgoPipe implements PipeTransform {
         { ms: 1000, unit: "second(s)" },
     ];
 
-    transform(date: Date): string {
-        const ms = date.getMilliseconds();
+    transform(date: string): string {
+        const diff = Date.now() - Date.parse(date);
         for (const unit of this.units) {
-            const result = Math.floor(ms / unit.ms);
+            const result = Math.floor(diff / unit.ms);
             if (result > 0) {
                 return result + " " + unit.unit + " ago";
             }

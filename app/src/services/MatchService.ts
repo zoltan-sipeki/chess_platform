@@ -24,8 +24,8 @@ export interface PlayerStats {
     mmr: number,
     percentile: number,
     longestStreaks: LongestStreak[],
-    joinedAt: Date,
-    lastPlayedAt: Date
+    joinedAt: string,
+    lastPlayedAt: string
 }
 
 export interface MatchStat {
@@ -48,7 +48,7 @@ export interface LeaderboardEntry {
 export interface MatchHistory {
     matchId: string,
     matchType: MatchType,
-    startedAt: Date,
+    startedAt: string,
     duration: number,
     color: Color,
     score: Score,
