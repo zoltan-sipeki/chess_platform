@@ -1,24 +1,28 @@
 import { Injectable } from "@angular/core";
+import { UserData } from "../types";
 
-export type EventType = "alert";
+export type EventType = "alert" | "friend-request-accepted";
 
-export type EventListener = (event: ApplicationEvent) => void;
-
-export interface ApplicationEvent {
-    type: EventType;
-    details: any;
-}
-
-export interface AlertEventDetails {
-    type: string;
-    message: string
+export interface EventMap {
+    "alert": AlertEvent;
+    "friend-request-accepted": FriendRequestAcceptedEvent;
 }
 
 export type AlertType = "success" | "danger";
 
-export interface AlertEvent extends ApplicationEvent {
+export interface AlertEvent {
     type: "alert";
-    details: AlertEventDetails;
+    details: {
+        type: AlertType;
+        message: string
+    };
+}
+
+export interface FriendRequestAcceptedEvent {
+    type: "friend-request-accepted";
+    details: {
+        friend: UserData
+    };
 }
 
 @Injectable({
@@ -26,9 +30,9 @@ export interface AlertEvent extends ApplicationEvent {
 })
 export class EventService {
 
-    private listeners: Map<EventType, EventListener[]> = new Map();
+    private listeners: Map<EventType, Function[]> = new Map();
 
-    addEventListener(type: EventType, listener: EventListener): void {
+    addEventListener<T extends EventType>(type: T, listener: (event: EventMap[T]) => void): void {
         const listeners = this.listeners.get(type);
         if (!listeners) {
             this.listeners.set(type, [listener]);
@@ -37,14 +41,14 @@ export class EventService {
         }
     }
 
-    removeEventListener(type: EventType, listener: EventListener): void {
+    removeEventListener<T extends EventType>(type: T, listener: (event: EventMap[T]) => void): void {
         const listeners = this.listeners.get(type);
         if (listeners) {
             this.listeners.set(type, listeners.filter(l => l !== listener));
         }
     }
 
-    emit(event: ApplicationEvent): void {
+    emit<T extends EventType>(event: EventMap[T]): void {
         const listeners = this.listeners.get(event.type);
         if (listeners) {
             listeners.forEach(l => l(event));

@@ -75,7 +75,7 @@ export class AvatarForm implements OnInit, OnDestroy {
                 },
                 error: () => {
                     this.uploading.set(false);
-                    this.eventService.emit({ type: "alert", details: { type: "error", message: "Failed to upload avatar. Please try again." } });
+                    this.eventService.emit({ type: "alert", details: { type: "danger", message: "Failed to upload avatar. Please try again." } });
                 }
             });
         });

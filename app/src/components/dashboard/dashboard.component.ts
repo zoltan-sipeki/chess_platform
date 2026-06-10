@@ -28,7 +28,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
     private timeout: number = -1;
 
-    alertDetails = signal<AlertEventDetails | null>(null);
+    alertDetails = signal<{ type: AlertType, message: string } | null>(null);
 
     logoutUrl = signal<string>("");
 

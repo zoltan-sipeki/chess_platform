@@ -47,7 +47,7 @@ export class ProfileFormComponent implements OnInit, OnDestroy {
                 this.eventService.emit({ type: "alert", details: { type: "success", message: `Display name updated to "${u.displayName}".` } });
             },
             error: () => {
-                this.eventService.emit({ type: "alert", details: { type: "error", message: "Failed to update display name. Please try again." } });
+                this.eventService.emit({ type: "alert", details: { type: "danger", message: "Failed to update display name. Please try again." } });
             }
         });
     }

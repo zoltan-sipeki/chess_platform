@@ -4,7 +4,6 @@ import { FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
 import { Observable } from "rxjs";
 import { EventService } from "../../services/EventService";
 import { PrivacySetting, PrivacySettings, UserService } from "../../services/UserService";
-import { HttpDownloadProgressEvent, HttpEventType, HttpResponse } from "@angular/common/http";
 
 @Component({
     selector: "privacy-form",
@@ -41,7 +40,7 @@ export class PrivacyForm implements OnInit {
                     this.form.enable({ emitEvent: false });
                 },
                 error: () => {
-                    this.eventService.emit({ type: "alert", details: { type: "error", message: "Failed to update privacy settings. Please try again." } });
+                    this.eventService.emit({ type: "alert", details: { type: "danger", message: "Failed to update privacy settings. Please try again." } });
                     this.form.enable({ emitEvent: false });
                 }
             })
@@ -55,7 +54,7 @@ export class PrivacyForm implements OnInit {
                     this.form.enable({ emitEvent: false });
                 },
                 error: () => {
-                    this.eventService.emit({ type: "alert", details: { type: "error", message: "Failed to update privacy settings. Please try again." } });
+                    this.eventService.emit({ type: "alert", details: { type: "danger", message: "Failed to update privacy settings. Please try again." } });
                     this.form.enable({ emitEvent: false });
                 }
             });
@@ -69,7 +68,7 @@ export class PrivacyForm implements OnInit {
                     this.form.enable({ emitEvent: false });
                 },
                 error: () => {
-                    this.eventService.emit({ type: "alert", details: { type: "error", message: "Failed to update privacy settings. Please try again." } });
+                    this.eventService.emit({ type: "alert", details: { type: "danger", message: "Failed to update privacy settings. Please try again." } });
                     this.form.enable({ emitEvent: false });
                 }
             });
@@ -83,7 +82,7 @@ export class PrivacyForm implements OnInit {
                     this.form.enable({ emitEvent: false });
                 },
                 error: () => {
-                    this.eventService.emit({ type: "alert", details: { type: "error", message: "Failed to update privacy settings. Please try again." } });
+                    this.eventService.emit({ type: "alert", details: { type: "danger", message: "Failed to update privacy settings. Please try again." } });
                     this.form.enable({ emitEvent: false });
                 }
             });
