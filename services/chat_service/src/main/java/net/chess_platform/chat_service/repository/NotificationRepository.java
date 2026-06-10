@@ -1,11 +1,11 @@
 package net.chess_platform.chat_service.repository;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -28,18 +28,20 @@ public class NotificationRepository {
         this.mongoTemplate = mongoTemplate;
     }
 
-    public Page<Notification> findAll(Authorization auth, Pageable pageable) {
+    public List<Notification> findAll(Authorization auth, Long before, long limit) {
         MongoQueryFragment<Notification> fragment = auth.getQueryFragment(Notification.class);
 
+        var query = fragment.getCriteria();
+        if (before != null) {
+            query = query.and("sequenceNumber").lt(before);
+        }
+
         var a = Aggregation.newAggregation(
-                Aggregation.match(fragment.getCriteria()),
-                Aggregation.skip(pageable.getOffset()),
-                Aggregation.limit(pageable.getPageSize()));
+                Aggregation.match(query),
+                Aggregation.sort(Sort.by(Direction.DESC, "sequenceNumber")),
+                Aggregation.limit(limit));
 
-        var result = mongoTemplate.aggregate(a, Notification.class, Notification.class).getMappedResults();
-        var count = mongoTemplate.count(new Query(fragment.getCriteria()), Notification.class);
-
-        return new PageImpl<>(result, pageable, count);
+        return mongoTemplate.aggregate(a, Notification.class, Notification.class).getMappedResults();
 
     }
 
@@ -54,6 +56,13 @@ public class NotificationRepository {
                 new Query(Criteria.where("sequenceNumber").gt(metadata.getLastReadSequenceNumber())
                         .andOperator(f1.getCriteria())),
                 Notification.class);
+    }
+
+    public long getLastReadSequenceNumber(Authorization auth) {
+        MongoQueryFragment<NotificationMetadata> fragment = auth.getQueryFragment(NotificationMetadata.class);
+        return mongoTemplate
+                .findOne(new Query(fragment.getCriteria()), NotificationMetadata.class)
+                .getLastReadSequenceNumber();
     }
 
     public long deleteOne(Authorization auth) {
@@ -107,7 +116,7 @@ public class NotificationRepository {
 
         Long seq = update.getLastReadSequenceNumber();
         if (seq != null) {
-            u.set("read", seq);
+            u.set("lastReadSequenceNumber", seq);
             return mongoTemplate.updateFirst(new Query(fragment.getCriteria()), u, NotificationMetadata.class)
                     .getModifiedCount();
         }

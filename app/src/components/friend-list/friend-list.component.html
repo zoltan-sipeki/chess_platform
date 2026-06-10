@@ -92,28 +92,39 @@
             </ng-template>
         </li>
         <li [ngbNavItem]="2">
-            <button ngbNavLink>Friend Requests</button>
+            <div class="position-relative">
+                <button ngbNavLink>Friend Requests</button>
+                @if (friendRequests().length > 0) {
+                <span class="position-absolute top-0 start-100 badge rounded-pill bg-danger"
+                    style="transform: translateX(-100%);">
+                    {{ friendRequests().length }}
+                </span>
+                }
+            </div>
             <ng-template ngbNavContent>
                 <div class="list-group list-group-flush">
                     <div class="card-footer bg-white border-top">
-                        <div class="list-group-item list-group-item-action">
-                            <div ngbDropdown class="d-inline-block" display="dynamic" container="body">
-                                <user ngbDropdownToggle id="Asd" displayName="Asd"></user>
+                        @for (request of friendRequests(); track request.id) {
+                        <div class="list-group-item list-group-item-action" role="button">
+                            <div ngbDropdown class="w-100" display="dynamic" container="body">
+                                <user ngbDropdownToggle [id]="request.sender.id"
+                                    [displayName]="request.sender.displayName" [avatar]="request.sender.avatar"></user>
                                 <div ngbDropdownMenu class="shadow">
-                                    <button ngbDropdownItem><i class="bi bi-person"></i> View
-                                        profile</button>
+                                    <a [routerLink]="['/dashboard/users', request.sender.id]" ngbDropdownItem><i
+                                            class="bi bi-person"></i>
+                                        View profile</a>
                                     <div class="dropdown-divider"></div>
-                                    <button ngbDropdownItem><i class="bi bi-check text-success"></i> Accept</button>
-                                    <button ngbDropdownItem><i class="bi bi-x text-danger"></i> Reject</button>
+                                    <button ngbDropdownItem (click)="acceptFriendRequest(request.id)"><i
+                                            class="bi bi-check text-success"></i> Accept</button>
+                                    <button ngbDropdownItem (click)="rejectFriendRequest(request.id)"><i
+                                            class="bi bi-x text-danger"></i> Reject</button>
                                 </div>
                             </div>
                         </div>
-                        <div class="list-group-item list-group-item-action">
-                            <user id="asd" displayName="Asd"></user>
-                        </div>
-                        <div class="list-group-item list-group-item-action">
-                            <user id="asd" displayName="Asd"></user>
-                        </div>
+                        }
+                        @empty {
+                        <div class="list-group-item text-center">No friend requests</div>
+                        }
                     </div>
                 </div>
             </ng-template>

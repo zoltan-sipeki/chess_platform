@@ -1,0 +1,105 @@
+<div class="list-group list-group-flush">
+
+    @for (notification of list().notifications | slice:0:maxSize(); track notification.id) {
+    <div class="list-group-item py-3 px-3 position-relative">
+
+        <div class="d-flex">
+
+            <avatar [src]="notification.sender.avatar" clazz="rounded-circle flex-shrink-0" [width]="44">
+            </avatar>
+
+            <div class="ms-3 flex-grow-1">
+
+                <div class="d-flex align-items-start justify-content-between">
+
+                    <div>
+
+                        <div class="small">
+                            <span class="fw-semibold">
+                                {{ notification.sender.displayName }}
+                            </span>
+
+                            @switch (notification.type) {
+
+                            @case ("FRIEND_REQUEST") {
+                            <span class="text-body-secondary">
+                                sent you a friend request
+                            </span>
+                            }
+
+                            @case ("FRIEND_REQUEST_ACCEPTED") {
+                            <span class="text-body-secondary">
+                                accepted your friend request
+                            </span>
+                            }
+
+                            }
+                        </div>
+
+                        <div class="text-muted small mt-1">
+                            {{ notification.createdAt | timeAgo }}
+                        </div>
+
+                    </div>
+
+                    <div>
+                        <div ngbDropdown display="dynamic">
+                            <button ngbDropdownToggle
+                                class="notification-context-menu btn btn-sm btn-link text-secondary p-1 border-0">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+
+                            <div ngbDropdownMenu class="shadow">
+                                <button ngbDropdownItem (click)="deleteNotification(notification)">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+
+                        @if (list().lastReadSeq < notification.seq) { <span
+                            class="badge text-bg-primary position-absolute" style="transform: translateX(-40%)">
+                            New
+                            </span>
+                            }
+                    </div>
+                </div>
+
+                @if ( notification.type == "FRIEND_REQUEST") {
+                <div class="mt-3 d-flex gap-2">
+
+                    <button class="btn btn-primary btn-sm" (click)="acceptFriendRequest(notification)"
+                        [disabled]="isRequestPending(notification.id)">
+                        @if (isRequestAccepting(notification.id)) {
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        }
+                        Accept
+                    </button>
+
+                    <button class="btn btn-outline-danger btn-sm" (click)="rejectFriendRequest(notification)"
+                        [disabled]="isRequestPending(notification.id)">
+                        @if (isRequestRejecting(notification.id)) {
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        }
+                        Reject
+                    </button>
+
+                </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+    }
+
+</div>
+
+<div class="border-top text-center py-2">
+    <button class="btn btn-link text-decoration-none" (click)="loadMore()" [disabled]="list().last == null">
+        Load more
+    </button>
+</div>

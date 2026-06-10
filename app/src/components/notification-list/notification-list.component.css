@@ -1,0 +1,11 @@
+.dropdown-toggle:after {
+    display: none;
+}
+
+.notification-context-menu:hover {
+    background-color: rgb(228, 228, 228) !important;
+}
+
+.notification-context-menu {
+    cursor: pointer;
+}

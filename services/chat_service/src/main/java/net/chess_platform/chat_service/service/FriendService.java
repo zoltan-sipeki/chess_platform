@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import net.chess_platform.chat_service.dto.FriendListDto;
 import net.chess_platform.chat_service.dto.FriendRequestDto;
+import net.chess_platform.chat_service.dto.UserDto;
 import net.chess_platform.chat_service.exception.AccessDeniedException;
 import net.chess_platform.chat_service.exception.EntityNotFoundException;
 import net.chess_platform.chat_service.exception.InvalidFriendRequestException;
@@ -122,7 +123,7 @@ public class FriendService {
         eventService.publish(event);
     }
 
-    public void updateRequest(UUID friendRequestId, FriendRequest.Update update, CurrentUser user) {
+    public UserDto updateRequest(UUID friendRequestId, FriendRequest.Update update, CurrentUser user) {
         var status = update.getStatus();
         if (status == Status.PENDING) {
             throw new InvalidFriendRequestException("Status can be changed only to REJECTED or ACCEPTED");
@@ -140,7 +141,7 @@ public class FriendService {
 
         if (status == Status.REJECTED) {
             notificationRepository.deleteByFriendRequestId(friendRequestId);
-            return;
+            return null;
         }
 
         var currentUserId = user.id();
@@ -164,6 +165,8 @@ public class FriendService {
 
         var event = new NotificationEvent(List.of(sender.getId()), notificationMapper.toEventPayload(notification));
         eventService.publish(event);
+
+        return userMapper.toDto(receiver);
     }
 
     public List<FriendRequestDto> findAllRequests(CurrentUser user) {

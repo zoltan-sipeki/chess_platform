@@ -1,12 +1,17 @@
-import { Component } from "@angular/core";
-import { Notification } from "../notification/notification.component";
-import { NgbNav, NgbNavConfig, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavLinkButton, NgbNavOutlet } from "@ng-bootstrap/ng-bootstrap";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { NotificationListComponent } from "../notification-list/notification-list.component";
 
 @Component({
     selector: "notification-page",
     templateUrl: "notification-page.component.html",
-    imports: [Notification, NgbNav, NgbNavContent, NgbNavItem, NgbNavOutlet, NgbNavLinkButton]
+    imports: [NotificationListComponent],
+    standalone: true
 })
-export class NotificationPage {
-    active = "all";
+export class NotificationPage implements OnInit, OnDestroy {
+
+    ngOnInit(): void {
+    }
+
+    ngOnDestroy(): void {
+    }
 }

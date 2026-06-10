@@ -1,5 +1,6 @@
 package net.chess_platform.chat_service.mapper;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-06T11:55:17+0200",
+    date = "2026-06-06T12:09:40+0200",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
@@ -67,6 +68,7 @@ public class NotificationMapperImpl implements NotificationMapper {
         String type = null;
         UserDto sender = null;
         UUID friendRequest = null;
+        OffsetDateTime createdAt = null;
 
         seq = notification.getSequenceNumber();
         id = notification.getId();
@@ -75,8 +77,9 @@ public class NotificationMapperImpl implements NotificationMapper {
         }
         sender = userToUserDto( notification.getSender() );
         friendRequest = notification.getFriendRequest();
+        createdAt = notification.getCreatedAt();
 
-        NotificationDto notificationDto = new NotificationDto( id, type, seq, sender, friendRequest );
+        NotificationDto notificationDto = new NotificationDto( id, type, seq, sender, friendRequest, createdAt );
 
         return notificationDto;
     }
