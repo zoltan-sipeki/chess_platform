@@ -3,7 +3,7 @@ import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { Observable, Subscription } from "rxjs";
-import { MatchHistoryList, MatchService } from "../../services/MatchService";
+import { MatchHistoryList, MatchApi } from "../../services/MatchApi";
 import { MatchHistoryTable } from "../match-history-table/match-history-table.component";
 import { Pagination } from "../pagination/pagination.component";
 
@@ -14,7 +14,7 @@ import { Pagination } from "../pagination/pagination.component";
 })
 export class MatchHistoryPage implements OnInit, OnDestroy {
 
-    private matchService: MatchService = inject(MatchService);
+    private matchApi: MatchApi = inject(MatchApi);
 
     private route: ActivatedRoute = inject(ActivatedRoute);
 
@@ -37,7 +37,7 @@ export class MatchHistoryPage implements OnInit, OnDestroy {
         const outcome = this.form.get("outcome")?.value;
         const sort = this.form.get("dateSort")?.value;
 
-        this.matches$ = this.matchService.fetchMatchHistory(this.route.snapshot.params["id"], { matchType, outcome, page: this.page() - 1, sort, size: 10 });
+        this.matches$ = this.matchApi.fetchMatchHistory(this.route.snapshot.params["id"], { matchType, outcome, page: this.page() - 1, sort, size: 10 });
     }
 
     clearFilters(): void {

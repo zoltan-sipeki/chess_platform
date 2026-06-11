@@ -1,9 +1,8 @@
-import { Component, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from "@angular/core";
+import { Component, ElementRef, inject, OnDestroy, OnInit, Signal, signal, viewChild } from "@angular/core";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
-import { Subscription } from "rxjs";
-import { AvatarService } from "../../services/AvatarService";
 import { EventService } from "../../services/EventService";
-import { UserStore } from "../../services/UserStore";
+import { UserService } from "../../services/UserService";
+import { UserData } from "../../types";
 import { AvatarEditor } from "../avatar-editor/avatar-editor.component";
 import { AvatarComponent } from "../avatar/avatar.component";
 
@@ -17,13 +16,9 @@ export class AvatarForm implements OnInit, OnDestroy {
 
     private modalService: NgbModal = inject(NgbModal);
 
-    private avatarService: AvatarService = inject(AvatarService);
-
-    private userStore: UserStore = inject(UserStore);
+    private userService: UserService = inject(UserService);
 
     private eventService: EventService = inject(EventService);
-
-    private userStoreSub?: Subscription;
 
     private fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
@@ -33,22 +28,16 @@ export class AvatarForm implements OnInit, OnDestroy {
 
     uploading = signal<boolean>(false);
 
-    avatar = signal<string>("");
+    currentUser!: Signal<UserData>;
 
     ngOnInit(): void {
-        this.userStoreSub = this.userStore.subscribe(user => {
-            if (user != null) {
-                this.avatar.set(user.avatar);
-            }
-        });
+        this.currentUser = this.userService.currentUser;
     }
 
     ngOnDestroy(): void {
         if (this.img?.src != null) {
             URL.revokeObjectURL(this.img?.src);
         }
-
-        this.userStoreSub?.unsubscribe();
     }
 
 
@@ -67,9 +56,8 @@ export class AvatarForm implements OnInit, OnDestroy {
         modalRef.componentInstance.img = this.img;
         modalRef.closed.subscribe((blob) => {
             this.uploading.set(true);
-            this.avatarService.upload(blob).subscribe({
+            this.userService.uploadAvatar(blob).subscribe({
                 next: res => {
-                    this.avatar.set(res.id);
                     this.uploading.set(false);
                     this.eventService.emit({ type: "alert", details: { type: "success", message: "Avatar uploaded successfully." } });
                 },
@@ -83,8 +71,7 @@ export class AvatarForm implements OnInit, OnDestroy {
 
     deleteAvatar(): void {
         this.removing.set(true);
-        this.avatarService.delete().subscribe(res => {
-            this.avatar.set(res.id);
+        this.userService.deleteAvatar().subscribe(res => {
             this.removing.set(false);
             this.eventService.emit({ type: "alert", details: { type: "success", message: "Avatar deleted successfully." } });
         });

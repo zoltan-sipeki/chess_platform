@@ -3,7 +3,7 @@ import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
 import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu } from "@ng-bootstrap/ng-bootstrap";
 import { DebounceService } from "../../services/DebounceService";
-import { UserSearchResult, UserService } from "../../services/UserService";
+import { UserSearchResult, UserApi } from "../../services/UserApi";
 import { User } from "../user/user.component";
 
 @Component({
@@ -18,7 +18,7 @@ export class UserSearch implements OnInit, OnDestroy {
 
     private debounceService: DebounceService = inject(DebounceService);
 
-    private userService: UserService = inject(UserService);
+    private userApi: UserApi = inject(UserApi);
 
     private router: Router = inject(Router);
 
@@ -43,7 +43,7 @@ export class UserSearch implements OnInit, OnDestroy {
             this.loading.set(true);
 
             this.debounceService.debounce(() => {
-                this.userService.fetchUsersByDisplayNamePrefix(prefix, { size: this.MAX_USERS }).subscribe(result => {
+                this.userApi.fetchByDisplayNamePrefix(prefix, { size: this.MAX_USERS }).subscribe(result => {
                     this.searchResult.set(result);
                     this.dropdown()?.open();
                     this.loading.set(false);

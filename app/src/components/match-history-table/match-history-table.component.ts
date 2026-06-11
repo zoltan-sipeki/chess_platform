@@ -2,7 +2,7 @@ import { Component, input } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { TimeAgoPipe } from "../../pipes/TimeAgoPipe";
 import { TimeFormatPipe } from "../../pipes/TimeFormatPipe";
-import { MatchHistory } from "../../services/MatchService";
+import { MatchHistory } from "../../services/MatchApi";
 
 @Component({
     selector: 'match-history-table',

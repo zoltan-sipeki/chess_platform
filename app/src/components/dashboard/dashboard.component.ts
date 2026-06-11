@@ -2,8 +2,8 @@ import { Component, inject, OnDestroy, OnInit, signal, viewChild } from "@angula
 import { RouterLink, RouterOutlet } from "@angular/router";
 import { NgbAlert } from "@ng-bootstrap/ng-bootstrap";
 import { AuthService } from "../../services/AuthService";
-import { DashboardService } from "../../services/DashboardService";
-import { AlertEvent, AlertEventDetails, EventService } from "../../services/EventService";
+import { BootstrapService } from "../../services/BootstrapService";
+import { AlertEvent, AlertType, EventService } from "../../services/EventService";
 import { FriendList } from "../friend-list/friend-list.component";
 import { Navbar } from "../navbar/navbar.component";
 import { NotificationMenu } from "../notification-menu/notification-menu.component";
@@ -20,7 +20,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
     private authService: AuthService = inject(AuthService);
 
-    private dashboardService: DashboardService = inject(DashboardService);
+    private bootstrapService: BootstrapService = inject(BootstrapService);
 
     private eventService: EventService = inject(EventService);
 
@@ -35,7 +35,7 @@ export class Dashboard implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.eventService.addEventListener("alert", this.onAlert);
         this.logoutUrl.set(this.authService.createLogoutUrl());
-        this.dashboardService.fetch();
+        this.bootstrapService.run();
     }
 
     ngOnDestroy(): void {

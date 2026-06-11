@@ -2,7 +2,7 @@ import { AsyncPipe, PercentPipe, SlicePipe } from "@angular/common";
 import { Component, inject, OnInit, signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { Observable } from "rxjs";
-import { LeaderboardEntry, MatchService } from "../../services/MatchService";
+import { LeaderboardEntry, MatchApi } from "../../services/MatchApi";
 import { Pagination } from "../pagination/pagination.component";
 import { User } from "../user/user.component";
 import { MedalPipe } from "./MedalPipe";
@@ -15,7 +15,7 @@ import { MedalPipe } from "./MedalPipe";
 })
 export class Leaderboard implements OnInit {
 
-    private matchService: MatchService = inject(MatchService);
+    private matchApi: MatchApi = inject(MatchApi);
 
     leaderboard$?: Observable<LeaderboardEntry[]>;
 
@@ -24,7 +24,7 @@ export class Leaderboard implements OnInit {
     pageSize = 8;
 
     public ngOnInit(): void {
-        this.leaderboard$ = this.matchService.fetchLeaderboard();
+        this.leaderboard$ = this.matchApi.fetchLeaderboard();
     }
 
 }

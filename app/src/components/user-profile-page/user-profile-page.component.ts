@@ -2,8 +2,8 @@ import { AsyncPipe, DatePipe, PercentPipe } from "@angular/common";
 import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { Observable, Subscription } from "rxjs";
-import { MatchStat } from "../../services/MatchService";
-import { UserProfile, UserService } from "../../services/UserService";
+import { MatchStat } from "../../services/MatchApi";
+import { ProfileService, UserProfile } from "../../services/ProfileService";
 import { AvatarComponent } from "../avatar/avatar.component";
 import { MatchHistoryTable } from "../match-history-table/match-history-table.component";
 import { User } from "../user/user.component";
@@ -23,7 +23,7 @@ export interface MatchStatsTotal {
 })
 export class UserProfilePage implements OnInit, OnDestroy {
 
-    private userService: UserService = inject(UserService);
+    private profileService: ProfileService = inject(ProfileService);
 
     private routeSub?: Subscription;
 
@@ -38,7 +38,7 @@ export class UserProfilePage implements OnInit, OnDestroy {
                 return;
             }
 
-            this.profile$ = this.userService.fetchProfile(userId);
+            this.profile$ = this.profileService.fetch(userId);
             console.log(this.profile$);
         });
     }

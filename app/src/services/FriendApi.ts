@@ -17,7 +17,7 @@ export interface FriendList {
 @Injectable({
     providedIn: 'root'
 })
-export class FriendService {
+export class FriendApi {
 
     private http: HttpClient = inject(HttpClient);
 

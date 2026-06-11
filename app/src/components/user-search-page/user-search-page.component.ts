@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { UserSearchResult, UserService } from "../../services/UserService";
+import { UserSearchResult, UserApi } from "../../services/UserApi";
 import { Pagination } from "../pagination/pagination.component";
 import { User } from "../user/user.component";
 
@@ -15,7 +15,7 @@ export class UserSearchPage implements OnInit {
 
     private route: ActivatedRoute = inject(ActivatedRoute);
 
-    private userService: UserService = inject(UserService);
+    private userApi: UserApi = inject(UserApi);
 
     searchResult = signal<UserSearchResult | null>(null);
 
@@ -30,7 +30,7 @@ export class UserSearchPage implements OnInit {
             const prefix = params["startsWith"];
 
             this.prefix.set(prefix);
-            this.userService.fetchUsersByDisplayNamePrefix(prefix, { page: this.page() - 1, size: this.PAGE_SIZE }).subscribe(result => {
+            this.userApi.fetchByDisplayNamePrefix(prefix, { page: this.page() - 1, size: this.PAGE_SIZE }).subscribe(result => {
                 this.searchResult.set(result);
                 this.loading.set(false);
             });
@@ -39,7 +39,7 @@ export class UserSearchPage implements OnInit {
 
     onPageChange(page: number): void {
         this.loading.set(true);
-        this.userService.fetchUsersByDisplayNamePrefix(this.prefix(), { page: page - 1, size: this.PAGE_SIZE }).subscribe(result => {
+        this.userApi.fetchByDisplayNamePrefix(this.prefix(), { page: page - 1, size: this.PAGE_SIZE }).subscribe(result => {
             this.searchResult.set(result);
             this.loading.set(false);
         });

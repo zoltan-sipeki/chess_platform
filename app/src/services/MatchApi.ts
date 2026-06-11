@@ -69,7 +69,7 @@ export interface MatchHistoryQuery {
 }
 
 @Injectable({ providedIn: 'root' })
-export class MatchService {
+export class MatchApi {
 
     private http: HttpClient = inject(HttpClient);
 
@@ -79,5 +79,13 @@ export class MatchService {
 
     fetchMatchHistory(userId: string, query: MatchHistoryQuery): Observable<MatchHistoryList> {
         return this.http.get<MatchHistoryList>("/api/matches", { params: { userId, ...query } });
+    }
+
+    fetchMatchStats(userId: string): Observable<MatchStat[]> {
+        return this.http.get<MatchStat[]>("/api/matches/stats", { params: { userId } });
+    }
+
+    fetchPlayerStats(userId: string): Observable<PlayerStats> {
+        return this.http.get<PlayerStats>(`/api/players/${userId}/stats`);
     }
 }

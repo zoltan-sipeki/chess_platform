@@ -16,25 +16,16 @@ import org.springframework.web.servlet.function.ServerResponse;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
 import net.chess_platform.common.security.EnableCommonSecurity;
-import net.chess_platform.gateway.handler.DashboardHandler;
 import net.chess_platform.gateway.handler.PrivacyHandler;
-import net.chess_platform.gateway.handler.ProfileHandler;
 
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableCommonSecurity
 public class GatewayApplication {
 
-	private final ProfileHandler profileHandler;
-
-	private final DashboardHandler dashboardHandler;
-
 	private final PrivacyHandler privacyHandler;
 
-	public GatewayApplication(ProfileHandler profileHandler, DashboardHandler dashboardHandler,
-			PrivacyHandler privacyHandler) {
-		this.profileHandler = profileHandler;
-		this.dashboardHandler = dashboardHandler;
+	public GatewayApplication(PrivacyHandler privacyHandler) {
 		this.privacyHandler = privacyHandler;
 	}
 
@@ -50,17 +41,22 @@ public class GatewayApplication {
 	@Bean
 	public RouterFunction<ServerResponse> chatServiceRoutes() {
 		return route(
-				path("/api/channels/**").or(
-						path("/api/friends/**").or(
-								path("/api/notifications/**")).or(
-										path("/api/friend-requests/**"))),
+				path("/api/channels/**")
+						.or(path("/api/friends/**"))
+						.or(path("/api/notifications/**"))
+						.or(path("/api/friend-requests/**"))
+						.or(path("/api/relationships/**")),
 				http())
 				.filter(lb("chat-service"));
 	}
 
 	@Bean
 	public RouterFunction<ServerResponse> matchServiceRoutes() {
-		return route(path("/api/matches/**").or(path("/api/players/**")).or(path("/api/leaderboard/**")), http())
+		return route(
+				path("/api/matches/**")
+						.or(path("/api/players/**"))
+						.or(path("/api/leaderboard/**")),
+				http())
 				.filter(lb("match-service"));
 	}
 
@@ -72,16 +68,6 @@ public class GatewayApplication {
 	@Bean
 	public RouterFunction<ServerResponse> userServiceRoutes() {
 		return route(path("/api/users/**").or(path("/api/avatars/**")), http()).filter(lb("user-service"));
-	}
-
-	@Bean
-	public RouterFunction<ServerResponse> profiles() {
-		return route().GET("/api/profiles/{userId}", profileHandler).build();
-	}
-
-	@Bean
-	public RouterFunction<ServerResponse> dashboard() {
-		return route().GET("/api/dashboard", dashboardHandler).build();
 	}
 
 	@Bean

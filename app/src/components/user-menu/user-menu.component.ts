@@ -1,4 +1,4 @@
-import { Component, inject, input, OnDestroy, OnInit, signal } from "@angular/core";
+import { Component, inject, input, OnDestroy, OnInit, signal, Signal } from '@angular/core';
 import { RouterLink } from "@angular/router";
 import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from "@ng-bootstrap/ng-bootstrap";
 import { Subscription } from "rxjs";
@@ -6,6 +6,7 @@ import { AuthService } from "../../services/AuthService";
 import { UserStore } from "../../services/UserStore";
 import { UserData } from "../../types";
 import { AvatarComponent } from "../avatar/avatar.component";
+import { UserService } from "../../services/UserService";
 
 @Component({
     selector: "user-menu",
@@ -14,9 +15,7 @@ import { AvatarComponent } from "../avatar/avatar.component";
 })
 export class UserMenu implements OnInit, OnDestroy {
 
-    private userStore: UserStore = inject(UserStore);
-
-    private userStoreSub?: Subscription;
+    private userService: UserService = inject(UserService);
 
     private authService: AuthService = inject(AuthService);
 
@@ -24,16 +23,13 @@ export class UserMenu implements OnInit, OnDestroy {
 
     logoutUrl = signal<string>("");
 
-    userData = signal<UserData>({ id: "", displayName: "", avatar: "" });
+    currentUser!: Signal<UserData>;
 
     ngOnInit(): void {
+        this.currentUser = this.userService.currentUser;
         this.logoutUrl.set(this.authService.createLogoutUrl());
-        this.userStoreSub = this.userStore.subscribe(user => {
-            this.userData.set(user);
-        });
     }
 
     ngOnDestroy(): void {
-        this.userStoreSub?.unsubscribe();
     }
 }

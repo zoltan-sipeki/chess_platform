@@ -9,7 +9,7 @@ export interface Avatar {
 @Injectable({
     providedIn: "root",
 })
-export class AvatarService {
+export class AvatarApi {
 
     private http: HttpClient = inject(HttpClient);
 
