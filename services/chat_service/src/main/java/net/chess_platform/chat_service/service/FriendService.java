@@ -161,7 +161,7 @@ public class FriendService {
         notificationRepository.deleteByFriendRequestId(friendRequestId);
 
         friendRepository
-                .save(List.of(new Friend(currentUserId, sender.getId()), new Friend(sender.getId(), currentUserId)));
+                .save(List.of(new Friend(currentUserId, receiver.getId()), new Friend(receiver.getId(), currentUserId)));
 
         var event = new NotificationEvent(List.of(sender.getId()), notificationMapper.toEventPayload(notification));
         eventService.publish(event);
