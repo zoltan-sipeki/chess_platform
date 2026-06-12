@@ -74,7 +74,7 @@ public class FriendService {
         this.friendRequestMapper = friendRequestMapper;
     }
 
-    public void createRequest(UUID receiverId, CurrentUser user) {
+    public UserDto createRequest(UUID receiverId, CurrentUser user) {
         var auth = permissionService.authorize(Action.FRIEND_REQUEST_CREATE, user, null);
         if (!auth.isAllowed()) {
             throw new AccessDeniedException();
@@ -94,8 +94,15 @@ public class FriendService {
             throw new InvalidFriendRequestException("Already friends");
         }
 
-        if (friendRequestRepository.hasPending(senderId, receiverId)) {
-            return;
+        if (friendRequestRepository.hasPending(senderId, receiverId) != null) {
+            return null;
+        }
+
+        var r = friendRequestRepository.hasPending(receiverId, senderId);
+        if (r != null) {
+            var update = new FriendRequest.Update();
+            update.setStatus(Status.ACCEPTED);
+            return updateRequest(r.getId(), update, user);
         }
 
         var friendRequest = new FriendRequest();
@@ -121,6 +128,8 @@ public class FriendService {
 
         var event = new NotificationEvent(List.of(receiverId), notificationMapper.toEventPayload(notification));
         eventService.publish(event);
+
+        return null;
     }
 
     public UserDto updateRequest(UUID friendRequestId, FriendRequest.Update update, CurrentUser user) {

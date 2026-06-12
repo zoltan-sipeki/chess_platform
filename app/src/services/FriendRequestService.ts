@@ -4,6 +4,7 @@ import { tap } from "rxjs/operators";
 import { UserData } from "../types";
 import { EventService } from "./EventService";
 import { FriendRequest, FriendRequestApi } from './FriendRequestApi';
+import { FriendService } from "./FriendService";
 import { NotificationService } from "./NotificationService";
 
 @Injectable({
@@ -14,6 +15,8 @@ export class FriendRequestService {
     private api: FriendRequestApi = inject(FriendRequestApi);
 
     private notificationService: NotificationService = inject(NotificationService);
+
+    private friendService: FriendService = inject(FriendService);
 
     private eventService: EventService = inject(EventService);
 
@@ -31,7 +34,18 @@ export class FriendRequestService {
         }));
     }
 
-    acceptFriendRequest(id: string): Observable<UserData | null> {
+    sendRequest(userId: string): Observable<UserData | null> {
+        return this.api.sendRequest(userId).pipe(tap(friend => {
+            console.log(friend);
+            if (friend != null) {
+                this.friendService.addFriend(friend);
+                this.notificationService.deleteBy({ senderId: friend.id, type: "FRIEND_REQUEST" });
+                this._friendRequests.update(requests => requests.filter(request => request.sender.id !== friend.id));
+            }
+        }));
+    }
+
+    acceptRequest(id: string): Observable<UserData | null> {
         const request = this._friendRequests().find(request => request.id === id);
         if (request != null) {
             this._friendRequests.update(requests => requests.filter(request => request.id !== id));
@@ -39,24 +53,22 @@ export class FriendRequestService {
 
         return this.api.updateRequest(id, { status: "ACCEPTED" }).pipe(tap({
             next: (friend) => {
-                this.notificationService.deleteByFriendRequestId(id);
+                this.notificationService.deleteBy({ friendRequest: id });
                 if (friend != null) {
+                    this.friendService.addFriend(friend);
                     this.eventService.emit({ type: "friend-request-accepted", details: { friend } });
                     this.eventService.emit({ type: "alert", details: { type: "success", message: `${friend.displayName} and you are now friends.` } });
                 }
             },
             error: () => {
                 if (request != null) {
-                    this._friendRequests.update(requests => {
-                        requests.push(request);
-                        return requests;
-                    });
+                    this._friendRequests.update(requests => [...requests, request]);
                 }
             }
         }));
     }
 
-    rejectFriendRequest(id: string): Observable<UserData | null> {
+    rejectRequest(id: string): Observable<UserData | null> {
         const request = this._friendRequests().find(request => request.id === id);
         if (request != null) {
             this._friendRequests.update(requests => requests.filter(request => request.id !== id));
@@ -64,14 +76,11 @@ export class FriendRequestService {
 
         return this.api.updateRequest(id, { status: "REJECTED" }).pipe(tap({
             next: () => {
-                this.notificationService.deleteByFriendRequestId(id);
+                this.notificationService.deleteBy({ friendRequest: id });
             },
             error: () => {
                 if (request != null) {
-                    this._friendRequests.update(requests => {
-                        requests.push(request);
-                        return requests;
-                    });
+                    this._friendRequests.update(requests => [...requests, request]);
                 }
             }
         }));

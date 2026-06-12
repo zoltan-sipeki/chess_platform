@@ -5,10 +5,6 @@ import { UserData } from "../types";
 
 export type FriendRequestStatus = "ACCEPTED" | "REJECTED";
 
-export interface FriendRequestCreate {
-    receiverId: string
-}
-
 export interface FriendRequestUpdate {
     status: FriendRequestStatus
 }
@@ -30,8 +26,8 @@ export class FriendRequestApi {
         return this.http.get<FriendRequest[]>("/api/friend-requests");
     }
 
-    sendRequest(userId: string, body: FriendRequestCreate): Observable<void> {
-        return this.http.post<void>("/api/friend-requests", body);
+    sendRequest(userId: string): Observable<UserData | null> {
+        return this.http.post<UserData | null>("/api/friend-requests", { receiverId: userId });
     }
 
     updateRequest(friendRequestId: string, update: FriendRequestUpdate): Observable<UserData | null> {

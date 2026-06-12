@@ -23,11 +23,10 @@ public class FriendRequestRepository {
 		this.mongoTemplate = mongoTemplate;
 	}
 
-	public boolean hasPending(UUID senderId, UUID receiverId) {
+	public FriendRequest hasPending(UUID senderId, UUID receiverId) {
 		return mongoTemplate.query(FriendRequest.class)
 				.matching(Criteria.where("receiver").is(receiverId)
-						.and("sender").is(senderId).and("status").is(FriendRequest.Status.PENDING))
-				.exists();
+						.and("sender").is(senderId).and("status").is(FriendRequest.Status.PENDING)).oneValue();
 	}
 
 	public FriendRequest update(FriendRequest.Update update,

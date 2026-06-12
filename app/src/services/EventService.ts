@@ -1,11 +1,12 @@
 import { Injectable } from "@angular/core";
 import { UserData } from "../types";
 
-export type EventType = "alert" | "friend-request-accepted";
+export type EventType = "alert" | "friend-request-accepted" | "unfriend";
 
 export interface EventMap {
     "alert": AlertEvent;
     "friend-request-accepted": FriendRequestAcceptedEvent;
+    "unfriend": UnfriendEvent;
 }
 
 export type AlertType = "success" | "danger";
@@ -20,6 +21,13 @@ export interface AlertEvent {
 
 export interface FriendRequestAcceptedEvent {
     type: "friend-request-accepted";
+    details: {
+        friend: UserData
+    };
+}
+
+export interface UnfriendEvent {
+    type: "unfriend";
     details: {
         friend: UserData
     };

@@ -41,14 +41,14 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     acceptFriendRequest(notification: Notification): void {
         if (notification.friendRequest != null) {
             this.notificationService.setAccepting(notification.id, true);
-            this.friendRequestService.acceptFriendRequest(notification.friendRequest).subscribe();
+            this.friendRequestService.acceptRequest(notification.friendRequest).subscribe();
         }
     }
 
     rejectFriendRequest(notification: Notification): void {
         if (notification.friendRequest != null) {
             this.notificationService.setRejecting(notification.id, true);
-            this.friendRequestService.rejectFriendRequest(notification.friendRequest).subscribe();
+            this.friendRequestService.rejectRequest(notification.friendRequest).subscribe();
         }
     }
 

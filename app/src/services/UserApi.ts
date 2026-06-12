@@ -6,15 +6,19 @@ export type Relationship = "FRIENDS" | "SELF" | "NOT_RELATED";
 
 export type PrivacySetting = "PUBLIC" | "PRIVATE" | "FRIENDS";
 
+export type Presence = "ONLINE" | "OFFLINE" | "AWAY";
+
 export interface UserSearchResult {
     total: number,
     users: UserData[]
 }
 
 export interface UserData {
-    id: string;
-    displayName: string;
-    avatar: string;
+    id: string,
+    displayName: string,
+    avatar: string,
+    presence?: Presence,
+    activity?: string
 }
 
 export interface UserSearchQuery {

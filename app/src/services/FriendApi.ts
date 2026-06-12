@@ -1,9 +1,10 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { UserData } from "../types";
+import { UserData } from "./UserApi";
 
 export interface FriendQuery {
+    userId?: string,
     page?: number
     size?: number
     mutual?: boolean
@@ -21,7 +22,11 @@ export class FriendApi {
 
     private http: HttpClient = inject(HttpClient);
 
-    fetchFriends(userId: string, query: FriendQuery): Observable<FriendList> {
-        return this.http.get<FriendList>("/api/friends", { params: { userId, ...query } });
+    fetchAll(query?: FriendQuery): Observable<FriendList> {
+        return this.http.get<FriendList>("/api/friends", { params: { ...query } });
+    }
+
+    unfriend(id: string): Observable<void> {
+        return this.http.delete<void>(`/api/friends/me/${id}`);
     }
 }

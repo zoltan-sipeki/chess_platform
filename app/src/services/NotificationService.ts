@@ -1,7 +1,14 @@
 import { inject, Injectable, Signal, signal, WritableSignal } from "@angular/core";
 import { Observable } from "rxjs";
 import { tap } from 'rxjs/operators';
-import { Notification, NotificationApi, NotificationList, NotificationQuery, NotificationUpdate } from "./NotificationApi";
+import { Notification, NotificationApi, NotificationList, NotificationQuery, NotificationType, NotificationUpdate } from "./NotificationApi";
+
+export interface DeleteOptions {
+    id?: string,
+    senderId?: string,
+    type?: NotificationType,
+    friendRequest?: string
+};
 
 @Injectable({
     providedIn: 'root'
@@ -110,18 +117,22 @@ export class NotificationService {
 
                 this.friendRequestState.add(deleted.id);
 
-                const arr = this._notifications().notifications;
-                arr.push(deleted);
-                for (let i = arr.length - 1; i >= 1; --i) {
-                    if (arr[i].seq > arr[i - 1].seq) {
-                        const tmp = arr[i];
-                        arr[i] = arr[i - 1];
-                        arr[i - 1] = tmp;
+                this._notifications.update(list => {
+                    const arr = list.notifications;
+                    arr.push(deleted);
+                    for (let i = arr.length - 1; i >= 1; --i) {
+                        if (arr[i].seq > arr[i - 1].seq) {
+                            const tmp = arr[i];
+                            arr[i] = arr[i - 1];
+                            arr[i - 1] = tmp;
+                        }
+                        else {
+                            break;
+                        }
                     }
-                    else {
-                        break;
-                    }
-                }
+
+                    return { ...list, notifications: arr };
+                });
             }
         }));
     }
@@ -139,14 +150,30 @@ export class NotificationService {
         }));
     }
 
-    deleteByFriendRequestId(id: string): void {
-        this.friendRequestState.remove(id);
-        this._notifications.update(list => {
-            return {
-                ...list,
-                notifications: list.notifications.filter(notification => notification.friendRequest !== id),
-            }
-        });
+    deleteBy({ id, type, senderId, friendRequest }: DeleteOptions): void {
+        const predicates: ((n: Notification) => boolean)[] = [];
+
+        if (id != null) {
+            predicates.push((n: Notification): boolean => n.id === id);
+        }
+
+        if (type != null) {
+            predicates.push((n: Notification): boolean => n.type === type);
+        }
+
+        if (senderId != null) {
+            predicates.push((n: Notification): boolean => n.sender.id === senderId);
+        }
+
+        if (friendRequest != null) {
+            predicates.push((n: Notification): boolean => n.friendRequest === friendRequest);
+        }
+
+        this._notifications.update(list => ({
+            ...list,
+            notifications: list.notifications.filter(n => !predicates.every(predicate => predicate(n)))
+        }));
+
     }
 }
 

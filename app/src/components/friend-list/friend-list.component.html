@@ -4,7 +4,7 @@
             <button ngbNavLink>Friends</button>
             <ng-template ngbNavContent>
                 <div class="position-relative">
-                    <input type="text" class="form-control" placeholder="Search for friends">
+                    <input type="text" class="form-control" placeholder="Search for friends" [formControl]="userFilter">
                     <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                 </div>
                 <div ngbAccordion>
@@ -16,23 +16,30 @@
                             <div ngbAccordionBody class="px-0 py-0">
                                 <ng-template>
                                     <div class="list-group list-group-flush">
+                                        @for (friend of online(); track friend.id) {
                                         <div class="list-group-item list-group-item-action">
-                                            <div container="body" ngbDropdown class="d-inline-block" display="dynamic"
-                                                class="w-100">
-                                                <user ngbDropdownToggle id="Asd" displayName="Asd"></user>
+                                            <div container="body" ngbDropdown class="w-100" display="dynamic">
+                                                <user ngbDropdownToggle [id]="friend.id"
+                                                    displayName="friend.displayName" [avatar]="friend.avatar"
+                                                    role="button"></user>
                                                 <div ngbDropdownMenu class="shadow">
-                                                    <button ngbDropdownItem><i class="bi bi-person"></i> View
-                                                        profile</button>
+                                                    <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
+                                                            class="bi bi-person"></i> View
+                                                        profile</a>
                                                     <button ngbDropdownItem><i class="bi bi-chat"></i> Message</button>
                                                     <button ngbDropdownItem><i class="bi bi-controller"></i>
                                                         Invite</button>
                                                     <div class="dropdown-divider"></div>
-                                                    <button ngbDropdownItem class="text-danger"><i
+                                                    <button ngbDropdownItem class="text-danger" (click)="unfriend(friend.id)"><i
                                                             class="bi bi-person-dash"></i>
                                                         Unfriend</button>
                                                 </div>
                                             </div>
                                         </div>
+                                        }
+                                        @empty {
+                                        <div class="list-group-item text-center">No friends online</div>
+                                        }
                                     </div>
                                 </ng-template>
                             </div>
@@ -48,29 +55,28 @@
                             <div ngbAccordionBody class="px-0 py-0">
                                 <ng-template>
                                     <div class="list-group list-group-flush">
+                                        @for (friend of offline(); track friend.id) {
                                         <div class="list-group-item list-group-item-action">
-                                            <div ngbDropdown class="d-inline-block" display="dynamic">
-                                                <user ngbDropdownToggle id="Asd" displayName="Asd"></user>
+                                            <div ngbDropdown class="w-100" display="dynamic">
+                                                <user ngbDropdownToggle [id]="friend.id"
+                                                    [displayName]="friend.displayName" [avatar]="friend.avatar"
+                                                    role="button"></user>
                                                 <div ngbDropdownMenu class="shadow">
-                                                    <button ngbDropdownItem><i class="bi bi-person"></i> View
-                                                        profile</button>
+                                                    <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
+                                                            class="bi bi-person"></i> View
+                                                        profile</a>
                                                     <button ngbDropdownItem><i class="bi bi-chat"></i> Message</button>
                                                     <div class="dropdown-divider"></div>
-                                                    <button ngbDropdownItem class="text-danger"><i
+                                                    <button ngbDropdownItem class="text-danger" (click)="unfriend(friend.id)"><i
                                                             class="bi bi-person-dash"></i>
                                                         Unfriend</button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="list-group-item list-group-item-action">
-                                            <user id="Asd" displayName="Asd"></user>
-                                        </div>
-                                        <div class="list-group-item list-group-item-action">
-                                            <user id="Asd" displayName="Asd"></user>
-                                        </div>
-                                        <div class="list-group-item list-group-item-action">
-                                            <user id="Asd" displayName="Asd"></user>
-                                        </div>
+                                        }
+                                        @empty {
+                                        <div class="list-group-item text-center">No friends offline</div>
+                                        }
                                     </div>
                                 </ng-template>
                             </div>
