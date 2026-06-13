@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,7 +25,7 @@ public class WSConnections {
 
     private final Map<String, Connection> connections = new HashMap<>();
 
-    private final Map<UUID, Connection> userToConnection = new HashMap<>();
+    private final Map<UUID, List<Connection>> userToConnections = new HashMap<>();
 
     private final ObjectMapper objectMapper;
 
@@ -54,18 +55,18 @@ public class WSConnections {
         }
     }
 
-    public synchronized void remove(WebSocketSession session) {
+    public void remove(WebSocketSession session) {
         var sessionId = session.getId();
         synchronized (lock) {
             var connection = connections.remove(sessionId);
 
             if (connection != null && connection.isAuthenticated()) {
-                userToConnection.remove(connection.getUserId());
+                userToConnections.remove(connection.getUserId());
             }
         }
     }
 
-    public synchronized void setAuthenticatedUserId(WebSocketSession session, UUID userId) {
+    public void setAuthenticatedUserId(WebSocketSession session, UUID userId) {
         var sessionId = session.getId();
 
         synchronized (lock) {
@@ -75,20 +76,23 @@ public class WSConnections {
             }
 
             connection.setUserId(userId);
-
-            userToConnection.put(userId, connection);
+            userToConnections.computeIfAbsent(userId, k -> new ArrayList<>()).add(connection);
         }
     }
 
     public void disconnect(UUID userId) {
         try {
-            Connection connection;
+            List<Connection> connections;
             synchronized (lock) {
-                connection = userToConnection.get(userId);
+                connections = userToConnections.get(userId);
             }
 
-            if (connection != null) {
-                connection.getSession().close();
+            if (connections == null) {
+                return;
+            }
+
+            for (var c : connections) {
+                c.getSession().close();
             }
 
         } catch (IOException e) {
@@ -113,21 +117,24 @@ public class WSConnections {
 
     public <T> void sendMessage(UUID userId, T message) {
         try {
-            Connection connection;
+            List<Connection> connections;
             synchronized (lock) {
-                connection = userToConnection.get(userId);
+                connections = userToConnections.get(userId);
             }
 
-            if (connection == null) {
+            if (connections == null) {
                 return;
             }
 
-            var session = connection.getSession();
-            if (!session.isOpen()) {
-                return;
+            for (var c : connections) {
+                var session = c.getSession();
+                if (!session.isOpen()) {
+                    return;
+                }
+                var m = objectMapper.writeValueAsString(message);
+                session.sendMessage(new TextMessage(m));
             }
-            var m = objectMapper.writeValueAsString(message);
-            session.sendMessage(new TextMessage(m));
+
         } catch (IOException e) {
             e.printStackTrace();
         }

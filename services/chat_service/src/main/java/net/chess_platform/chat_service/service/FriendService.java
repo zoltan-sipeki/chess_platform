@@ -22,7 +22,6 @@ import net.chess_platform.chat_service.model.Friend;
 import net.chess_platform.chat_service.model.FriendRequest;
 import net.chess_platform.chat_service.model.FriendRequest.Status;
 import net.chess_platform.chat_service.model.Notification;
-import net.chess_platform.chat_service.model.User;
 import net.chess_platform.chat_service.permission.PermissionService;
 import net.chess_platform.chat_service.permission.PermissionService.Action;
 import net.chess_platform.chat_service.repository.ChannelMemberRepository;
@@ -106,8 +105,7 @@ public class FriendService {
         }
 
         var friendRequest = new FriendRequest();
-        var sender = new User();
-        sender.setId(senderId);
+        var sender = userRepository.findById(senderId);
 
         friendRequest.setSender(sender);
         friendRequest.setReceiver(receiverId);
@@ -159,8 +157,7 @@ public class FriendService {
         var notification = new Notification();
         notification.setType(FRIEND_REQUEST_ACCEPTED);
 
-        var sender = new User();
-        sender.setId(currentUserId);
+        var sender = userRepository.findById(currentUserId);
 
         notification.setSender(sender);
         notification.setReceiver(receiver.getId());
@@ -172,7 +169,7 @@ public class FriendService {
         friendRepository
                 .save(List.of(new Friend(currentUserId, receiver.getId()), new Friend(receiver.getId(), currentUserId)));
 
-        var event = new NotificationEvent(List.of(sender.getId()), notificationMapper.toEventPayload(notification));
+        var event = new NotificationEvent(List.of(receiver.getId()), notificationMapper.toEventPayload(notification));
         eventService.publish(event);
 
         return userMapper.toDto(receiver);

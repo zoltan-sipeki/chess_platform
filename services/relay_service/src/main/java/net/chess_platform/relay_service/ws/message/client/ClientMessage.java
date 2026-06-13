@@ -5,12 +5,12 @@ import java.util.Map;
 public class ClientMessage {
 
     public enum Type {
-        CONNECT,
+        AUTHENTICATE,
         UPDATE_DEFAULT_STATUS
     }
 
     public static final Map<Type, Class<?>> PAYLOAD_MAPPING = Map.of(
-            Type.CONNECT, ConnectPayload.class,
+            Type.AUTHENTICATE, AuthenticatePayload.class,
             Type.UPDATE_DEFAULT_STATUS, UpdatePreferredStatusPayload.class);
 
     private Type type;

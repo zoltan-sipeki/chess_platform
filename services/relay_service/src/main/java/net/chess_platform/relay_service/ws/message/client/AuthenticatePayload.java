@@ -1,10 +1,10 @@
 package net.chess_platform.relay_service.ws.message.client;
 
-public class ConnectPayload {
+public class AuthenticatePayload {
 
     private String accessToken;
 
-    public ConnectPayload(String accessToken) {
+    public AuthenticatePayload(String accessToken) {
         this.accessToken = accessToken;
     }
 

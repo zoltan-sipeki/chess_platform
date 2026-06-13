@@ -137,8 +137,7 @@ public class UserService {
 
             userRepository.save(user);
 
-            var payload = new UserEventData.Builder(user.getId()).displayName(user.getDisplayName())
-                    .avatar(user.getAvatar()).build();
+            var payload = new UserEventData(user.getId(), null, user.getDisplayName(), user.getAvatar(), null);
             var event = new UserCreatedEvent(payload);
             eventService.publish(event);
 
@@ -147,26 +146,23 @@ public class UserService {
 
         @Transactional
         public User update(User.Update user) {
-            var payload = new UserEventData.Builder(user.getId());
-
             boolean sendEvent = false;
 
             var avatar = user.getAvatar();
             if (avatar != null) {
-                payload.avatar(avatar);
                 sendEvent = true;
             }
 
             var displayName = user.getDisplayName();
             if (displayName != null) {
-                payload.displayName(displayName);
                 sendEvent = true;
             }
 
             var u = userRepository.updateAndFetch(user);
 
             if (u != null && sendEvent) {
-                var event = new UserUpdatedEvent(payload.build());
+                var event = new UserUpdatedEvent(
+                        new UserEventData(user.getId(), null, displayName, avatar, null));
                 eventService.publish(event);
             }
 

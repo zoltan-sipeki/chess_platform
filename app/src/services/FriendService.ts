@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from "@angular/core";
 import { Observable, tap } from "rxjs";
 import { EventService } from "./EventService";
 import { FriendApi, FriendList } from "./FriendApi";
+import { RelayService } from "./RelayService";
 import { UserData } from "./UserApi";
 
 @Injectable({
@@ -13,6 +14,8 @@ export class FriendService {
 
     private eventService: EventService = inject(EventService);
 
+    private relayService: RelayService = inject(RelayService);
+
     private friends: UserData[] = [];
 
     private _online = signal<UserData[]>([]);
@@ -22,6 +25,26 @@ export class FriendService {
     readonly online = this._online.asReadonly();
 
     readonly offline = this._offline.asReadonly();
+
+    constructor() {
+        this.relayService.subscribe("UNFRIEND", e => {
+            const { senderId } = e;
+            this.friends = this.friends.filter(friend => friend.id !== senderId);
+            this._online.update(friends => friends.filter(friend => friend.id !== senderId));
+            this._offline.update(friends => friends.filter(friend => friend.id !== senderId));
+        });
+
+        this.relayService.subscribe("USER_UPDATED", e => {
+            let f = this.friends.find(f => f.id === e.id);
+            if (f != null) {
+                f.displayName = e.displayName;
+                f.avatar = e.avatar;
+            }
+
+            this._online.set([...this._online()]);
+            this._offline.set([...this._offline()]);
+        });
+    }
 
     addFriend(friend: UserData): void {
         this.friends.push(friend);

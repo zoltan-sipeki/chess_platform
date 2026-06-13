@@ -20,9 +20,9 @@ public class PlayerMapperImpl implements PlayerMapper {
 
         Player.Update update = new Player.Update();
 
-        update.setId(dto.getId());
-        update.setDisplayName(dto.getDisplayName());
-        update.setAvatar(dto.getAvatar());
+        update.setId(dto.id());
+        update.setDisplayName(dto.displayName());
+        update.setAvatar(dto.avatar());
 
         return update;
     }

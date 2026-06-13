@@ -6,6 +6,7 @@ import { EventService } from "./EventService";
 import { FriendRequest, FriendRequestApi } from './FriendRequestApi';
 import { FriendService } from "./FriendService";
 import { NotificationService } from "./NotificationService";
+import { RelayService } from "./RelayService";
 
 @Injectable({
     providedIn: "root",
@@ -16,6 +17,8 @@ export class FriendRequestService {
 
     private notificationService: NotificationService = inject(NotificationService);
 
+    private relayService: RelayService = inject(RelayService);
+
     private friendService: FriendService = inject(FriendService);
 
     private eventService: EventService = inject(EventService);
@@ -23,6 +26,15 @@ export class FriendRequestService {
     private _friendRequests = signal<FriendRequest[]>([]);
 
     readonly friendRequests: Signal<FriendRequest[]> = this._friendRequests.asReadonly();
+
+
+    constructor() {
+        this.relayService.subscribe("NOTIFICATION", n => {
+            if (n.type === "FRIEND_REQUEST") {
+                this._friendRequests.update(requests => [{ id: n.friendRequest!, sender: n.sender }, ...requests]);
+            }
+        });
+    }
 
     fetchAll(): Observable<FriendRequest[]> {
         return this.api.fetchAll();

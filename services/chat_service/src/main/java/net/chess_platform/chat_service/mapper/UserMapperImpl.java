@@ -27,9 +27,9 @@ public class UserMapperImpl implements UserMapper {
 
         User.Update update = new User.Update();
 
-        update.setId( userDto.getId() );
-        update.setDisplayName( userDto.getDisplayName() );
-        update.setAvatar( userDto.getAvatar() );
+        update.setId( userDto.id() );
+        update.setDisplayName( userDto.displayName() );
+        update.setAvatar( userDto.avatar() );
 
         return update;
     }

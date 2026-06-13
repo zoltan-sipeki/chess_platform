@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-06T12:09:40+0200",
+    date = "2026-06-13T15:49:00+0200",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 23 (Oracle Corporation)"
 )
 @Component
@@ -26,19 +26,23 @@ public class NotificationMapperImpl implements NotificationMapper {
             return null;
         }
 
+        long seq = 0L;
         UUID id = null;
         String type = null;
         User sender = null;
         UUID friendRequest = null;
+        OffsetDateTime createdAt = null;
 
+        seq = notification.getSequenceNumber();
         id = notification.getId();
         if ( notification.getType() != null ) {
             type = notification.getType().name();
         }
         sender = userToUser( notification.getSender() );
         friendRequest = notification.getFriendRequest();
+        createdAt = notification.getCreatedAt();
 
-        NotificationEvent.Payload payload = new NotificationEvent.Payload( id, type, sender, friendRequest );
+        NotificationEvent.Payload payload = new NotificationEvent.Payload( id, seq, type, sender, friendRequest, createdAt );
 
         return payload;
     }

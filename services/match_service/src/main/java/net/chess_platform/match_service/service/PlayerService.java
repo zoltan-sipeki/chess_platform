@@ -68,9 +68,9 @@ public class PlayerService {
         try {
             var user = new Player();
             var data = e.getData();
-            user.setId(data.getId());
-            user.setDisplayName(data.getDisplayName());
-            user.setAvatar(data.getAvatar());
+            user.setId(data.id());
+            user.setDisplayName(data.displayName());
+            user.setAvatar(data.avatar());
 
             playerRepository.saveAndFlush(user);
 

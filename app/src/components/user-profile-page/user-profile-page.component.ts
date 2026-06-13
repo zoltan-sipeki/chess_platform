@@ -3,15 +3,16 @@ import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { Subscription } from "rxjs";
 import { EventService, FriendRequestAcceptedEvent, UnfriendEvent } from "../../services/EventService";
-import { FriendRequestApi } from "../../services/FriendRequestApi";
+import { FriendRequestService } from "../../services/FriendRequestService";
 import { FriendService } from "../../services/FriendService";
 import { MatchStat } from "../../services/MatchApi";
+import { Notification as NotificationRelayEvent } from "../../services/NotificationApi";
 import { ProfileService, UserProfile } from "../../services/ProfileService";
 import { RelationshipType } from "../../services/RelationshipApi";
+import { RelayService, UnfriendRelayEvent, UserUpdatedRelayEvent } from "../../services/RelayService";
 import { AvatarComponent } from "../avatar/avatar.component";
 import { MatchHistoryTable } from "../match-history-table/match-history-table.component";
 import { User } from "../user/user.component";
-import { FriendRequestService } from "../../services/FriendRequestService";
 
 export interface MatchStatsTotal {
     gamesPlayed: number;
@@ -35,6 +36,8 @@ export class UserProfilePage implements OnInit, OnDestroy {
     private friendService: FriendService = inject(FriendService);
 
     private eventService: EventService = inject(EventService);
+
+    private relayService: RelayService = inject(RelayService);
 
     private routeSub?: Subscription;
 
@@ -62,12 +65,49 @@ export class UserProfilePage implements OnInit, OnDestroy {
 
         this.eventService.addEventListener("friend-request-accepted", this.onFriendRequestAccepted);
         this.eventService.addEventListener("unfriend", this.onUnfriend);
+
+        this.relayService.subscribe("UNFRIEND", this.onRelayUnfriend);
+        this.relayService.subscribe("NOTIFICATION", this.onRelayNotification);
+        this.relayService.subscribe("USER_UPDATED", this.onRelayUserUpdated);
     }
 
     ngOnDestroy(): void {
         this.routeSub?.unsubscribe();
         this.eventService.removeEventListener("friend-request-accepted", this.onFriendRequestAccepted);
         this.eventService.removeEventListener("unfriend", this.onUnfriend);
+
+        this.relayService.unsubscribe("UNFRIEND", this.onRelayUnfriend);
+        this.relayService.unsubscribe("NOTIFICATION", this.onRelayNotification);
+        this.relayService.unsubscribe("USER_UPDATED", this.onRelayUserUpdated);
+    }
+
+
+    private onRelayNotification = (e: NotificationRelayEvent): void => {
+        if (e.type === "FRIEND_REQUEST_ACCEPTED" && e.sender.id === this.profile()?.user.id) {
+            this.updateRelationship("FRIENDS");
+            this.refreshFriends();
+        }
+    }
+
+    private onRelayUnfriend = (e: UnfriendRelayEvent): void => {
+        if (e.senderId === this.profile()?.user.id) {
+            this.updateRelationship("NOT_RELATED");
+            this.refreshFriends();
+        }
+    }
+
+    private onRelayUserUpdated = (e: UserUpdatedRelayEvent): void => {
+        if (e.id === this.profile()?.user.id) {
+            const user = this.profile()?.user;
+            if (user != null) {
+                this.profile.update(p => {
+                    if (p != null) {
+                        return { ...p, user: e };
+                    }
+                    return p;
+                });
+            }
+        }
     }
 
     calcMatchStatsTotal(matchStats: MatchStat[]): MatchStatsTotal {

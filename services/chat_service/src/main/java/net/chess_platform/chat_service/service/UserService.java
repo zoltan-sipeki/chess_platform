@@ -46,9 +46,9 @@ public class UserService {
         var eventUser = e.getData();
 
         var user = new User();
-        user.setId(eventUser.getId());
-        user.setDisplayName(eventUser.getDisplayName());
-        user.setAvatar(eventUser.getAvatar());
+        user.setId(eventUser.id());
+        user.setDisplayName(eventUser.displayName());
+        user.setAvatar(eventUser.avatar());
 
         userRepository.save(user);
 
@@ -60,7 +60,7 @@ public class UserService {
 
         var notificationMetadata = new NotificationMetadata();
         notificationMetadata.setReceiver(user.getId());
-        
+
         notificationRepository.save(notificationMetadata);
 
         eventService.ack(e, SERVICE_NAME);

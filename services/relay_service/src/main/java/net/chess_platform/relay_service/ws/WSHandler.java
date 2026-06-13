@@ -18,8 +18,8 @@ import net.chess_platform.relay_service.exception.InvalidMessageException;
 import net.chess_platform.relay_service.model.RelayUser.Presence;
 import net.chess_platform.relay_service.service.RelayUserService;
 import net.chess_platform.relay_service.ws.message.ServerMessage;
+import net.chess_platform.relay_service.ws.message.client.AuthenticatePayload;
 import net.chess_platform.relay_service.ws.message.client.ClientMessage;
-import net.chess_platform.relay_service.ws.message.client.ConnectPayload;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -62,14 +62,14 @@ public class WSHandler extends TextWebSocketHandler {
                 var id = authenticate(session, message);
                 relayUserService.updatePresence(id, Presence.ONLINE);
                 connections.setAuthenticatedUserId(session, id);
-                connections.sendMessage(id, new ServerMessage(ServerMessage.Type.CONNECTED));
+                connections.sendMessage(id, new ServerMessage(ServerMessage.Type.AUTHENTICATED));
                 return;
             }
 
             var cm = objectMapper.readValue(message.getPayload(), ClientMessage.class);
             var mtype = cm.getType();
 
-            if (mtype == null || mtype == ClientMessage.Type.CONNECT) {
+            if (mtype == null) {
                 throw new InvalidMessageException();
             }
 
@@ -87,15 +87,15 @@ public class WSHandler extends TextWebSocketHandler {
     private UUID authenticate(WebSocketSession session, TextMessage message) {
 
         var cm = objectMapper.readValue(message.getPayload(), ClientMessage.class);
-        if (cm.getType() != ClientMessage.Type.CONNECT) {
+        if (cm.getType() != ClientMessage.Type.AUTHENTICATE) {
             throw new AccessDeniedException();
         }
 
-        var m = objectMapper.convertValue(cm.getPayload(), ConnectPayload.class);
+        var m = objectMapper.convertValue(cm.getPayload(), AuthenticatePayload.class);
         return authenticate(session, m);
     }
 
-    private UUID authenticate(WebSocketSession session, ConnectPayload message) {
+    private UUID authenticate(WebSocketSession session, AuthenticatePayload message) {
         var accessToken = message.getAccessToken();
         if (accessToken == null || accessToken.isEmpty()) {
             throw new AccessDeniedException();

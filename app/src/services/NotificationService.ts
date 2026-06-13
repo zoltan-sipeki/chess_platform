@@ -2,6 +2,7 @@ import { inject, Injectable, Signal, signal, WritableSignal } from "@angular/cor
 import { Observable } from "rxjs";
 import { tap } from 'rxjs/operators';
 import { Notification, NotificationApi, NotificationList, NotificationQuery, NotificationType, NotificationUpdate } from "./NotificationApi";
+import { RelayService } from "./RelayService";
 
 export interface DeleteOptions {
     id?: string,
@@ -17,11 +18,23 @@ export class NotificationService {
 
     private api: NotificationApi = inject(NotificationApi);
 
+    private relayService: RelayService = inject(RelayService);
+
     private _notifications = signal<NotificationList>({ unread: 0, lastReadSeq: 0, notifications: [], last: -1 });
 
     readonly notifications: Signal<NotificationList> = this._notifications.asReadonly();
 
     private friendRequestState = new FriendRequestState();
+
+    constructor() {
+        this.relayService.subscribe("NOTIFICATION", n => {
+            this._notifications.update(l => ({
+                ...l,
+                unread: l.unread + 1,
+                notifications: [n, ...l.notifications]
+            }));
+        });
+    }
 
     getAccepting(id: string): Signal<boolean> | undefined {
         return this.friendRequestState.getAccepting(id);
