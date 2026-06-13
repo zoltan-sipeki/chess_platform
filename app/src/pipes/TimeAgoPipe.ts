@@ -23,6 +23,7 @@ export class TimeAgoPipe implements PipeTransform {
                 return result + " " + unit.unit + " ago";
             }
         }
-        return "";
+
+        return "1 second ago";
     }
 }
