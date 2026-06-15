@@ -39,55 +39,40 @@ public class GatewayApplication {
 	}
 
 	@Bean
-	public RouterFunction<ServerResponse> chatServiceRoutes() {
-		return route(
+	RouterFunction<ServerResponse> routes() {
+		var chatRoutes = route(
 				path("/api/channels/**")
-						.or(path("/api/friends/**"))
+						.or(path("/api/users/{id}/friends/**"))
+						.or(path("/api/users/{id}/contacts/**"))
 						.or(path("/api/notifications/**"))
 						.or(path("/api/friend-requests/**"))
 						.or(path("/api/relationships/**")),
 				http())
 				.filter(lb("chat-service"));
-	}
 
-	@Bean
-	public RouterFunction<ServerResponse> matchServiceRoutes() {
-		return route(
+		var matchRoutes = route(
 				path("/api/matches/**")
 						.or(path("/api/players/**"))
 						.or(path("/api/leaderboard/**")),
 				http())
 				.filter(lb("match-service"));
-	}
 
-	@Bean
-	public RouterFunction<ServerResponse> matchmakingServiceRoutes() {
-		return route(path("/api/queues/**"), http()).filter(lb("matchmaking-service"));
-	}
+		var matchmakingRoutes = route(path("/api/queues/**"), http()).filter(lb("matchmaking-service"));
 
-	@Bean
-	public RouterFunction<ServerResponse> userServiceRoutes() {
-		return route(path("/api/users/**").or(path("/api/avatars/**")), http()).filter(lb("user-service"));
-	}
+		var userRoutes = route(path("/api/users/**").or(path("/api/avatars/**")), http()).filter(lb("user-service"));
 
-	@Bean
-	public RouterFunction<ServerResponse> privacy() {
-		return route().GET("/api/privacy/**", privacyHandler).build();
-	}
+		var privacy = route().GET("/api/privacy/**", privacyHandler).build();
 
-	@Bean
-	public RouterFunction<ServerResponse> chatPrivacy() {
-		return route().PATCH("/api/privacy/chat/**", http())
-				.before(rewritePath("/api/privacy/chat", "/api/privacy"))
+		var chatPrivacy = route().PATCH("/api/privacy/social/**", http())
+				.before(rewritePath("/api/privacy/social", "/api/privacy"))
 				.filter(lb("chat-service")).build();
 
-	}
-
-	@Bean
-	public RouterFunction<ServerResponse> matchPrivacy() {
-		return route().PATCH("/api/privacy/match/**", http())
+		var matchPrivacy = route().PATCH("/api/privacy/match/**", http())
 				.before(rewritePath("/api/privacy/match", "/api/privacy"))
 				.filter(lb("match-service")).build();
+
+		return chatRoutes.and(matchRoutes).and(matchmakingRoutes).and(userRoutes).and(privacy).and(chatPrivacy)
+				.and(matchPrivacy);
 	}
 
 	public static void main(String[] args) {

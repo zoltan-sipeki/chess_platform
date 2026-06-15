@@ -26,7 +26,7 @@ export class FriendsPage implements OnInit, OnDestroy {
     readonly PAGE_SIZE = 10;
 
     onPageChange(page: number): void {
-        this.friends$ = this.friendApi.fetchAll({ userId: this.route.snapshot.params["id"], page: this.page() - 1, size: this.PAGE_SIZE });
+        this.friends$ = this.friendApi.fetchAll(this.route.snapshot.params["id"], { page: this.page() - 1, size: this.PAGE_SIZE });
     }
 
     ngOnInit(): void {
@@ -36,7 +36,7 @@ export class FriendsPage implements OnInit, OnDestroy {
                 return;
             }
 
-            this.friends$ = this.friendApi.fetchAll({ userId, size: 10 });
+            this.friends$ = this.friendApi.fetchAll(userId, { size: 10 });
         });
     }
 

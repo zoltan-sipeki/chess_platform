@@ -101,7 +101,7 @@ export class FriendService {
 
 
     refresh(): Observable<FriendList> {
-        return this.api.fetchAll().pipe(tap(list => {
+        return this.api.fetchAllMe().pipe(tap(list => {
             const online: UserData[] = [];
             const offline: UserData[] = [];
 

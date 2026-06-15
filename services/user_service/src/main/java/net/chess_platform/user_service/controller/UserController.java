@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.chess_platform.common.security.CurrentUser;
+import net.chess_platform.user_service.dto.AvatarDto;
 import net.chess_platform.user_service.dto.UserDto;
 import net.chess_platform.user_service.dto.UserSearchResultDto;
 import net.chess_platform.user_service.dto.UserUpdateDto;
 import net.chess_platform.user_service.model.User;
+import net.chess_platform.user_service.service.AvatarService;
 import net.chess_platform.user_service.service.UserService;
 
 @RestController
@@ -26,8 +29,11 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final AvatarService avatarService;
+
+    public UserController(UserService userService, AvatarService avatarService) {
         this.userService = userService;
+        this.avatarService = avatarService;
     }
 
     @PatchMapping("/me")
@@ -42,6 +48,11 @@ public class UserController {
     @GetMapping("/me")
     public UserDto getCurrentUser(CurrentUser currentUser) {
         return userService.findById(currentUser.id());
+    }
+
+    @DeleteMapping("/me/avatar")
+    public AvatarDto deleteAvatar(CurrentUser currentUser) {
+        return avatarService.delete(currentUser);
     }
 
     @GetMapping("/{id}")

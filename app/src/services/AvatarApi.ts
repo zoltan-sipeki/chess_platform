@@ -20,6 +20,6 @@ export class AvatarApi {
     }
 
     delete(): Observable<Avatar> {
-        return this.http.delete<Avatar>("/api/avatars/me");
+        return this.http.delete<Avatar>("/api/users/me/avatar");
     }
 }

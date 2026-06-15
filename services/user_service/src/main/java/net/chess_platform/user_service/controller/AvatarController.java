@@ -3,7 +3,6 @@ package net.chess_platform.user_service.controller;
 import java.util.UUID;
 
 import org.springframework.core.io.Resource;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,10 +32,5 @@ public class AvatarController {
     @PostMapping
     public AvatarDto uploadAvatar(MultipartFile file, CurrentUser currentUser) {
         return avatarService.upload(file, currentUser);
-    }
-
-    @DeleteMapping("/me")
-    public AvatarDto deleteAvatar(CurrentUser currentUser) {
-        return avatarService.delete(currentUser);
     }
 }

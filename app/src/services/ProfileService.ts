@@ -31,7 +31,7 @@ export class ProfileService {
         return forkJoin({
             user: this.userApi.fetch(userId),
             relationship: this.relationshipApi.fetch(userId).pipe(map(r => r.relationship)),
-            friends: this.friendApi.fetchAll({ userId, size: 10 }),
+            friends: this.friendApi.fetchAll(userId, { size: 10 }),
             playerStats: this.matchApi.fetchPlayerStats(userId).pipe(catchError(() => of(undefined))),
             matches: this.matchApi.fetchMatchHistory(userId, { size: 5 }),
             matchStats: this.matchApi.fetchMatchStats(userId).pipe(catchError(() => of(undefined)))
@@ -39,6 +39,6 @@ export class ProfileService {
     }
 
     fetchFriends(userId: string): Observable<FriendList> {
-        return this.friendApi.fetchAll({ userId, size: 10 });
+        return this.friendApi.fetchAll(userId, { size: 10 });
     }
 }

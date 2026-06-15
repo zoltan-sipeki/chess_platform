@@ -4,7 +4,6 @@ import { Observable } from "rxjs";
 import { UserData } from "./UserApi";
 
 export interface FriendQuery {
-    userId?: string,
     page?: number
     size?: number
     mutual?: boolean
@@ -22,11 +21,15 @@ export class FriendApi {
 
     private http: HttpClient = inject(HttpClient);
 
-    fetchAll(query?: FriendQuery): Observable<FriendList> {
-        return this.http.get<FriendList>("/api/friends", { params: { ...query } });
+    fetchAll(id: string, query: FriendQuery = {}): Observable<FriendList> {
+        return this.http.get<FriendList>(`/api/users/${id}/friends`, { params: { ...query } });
+    }
+
+    fetchAllMe(query: FriendQuery = {}): Observable<FriendList> {
+        return this.http.get<FriendList>("/api/users/me/friends", { params: { ...query } });
     }
 
     unfriend(id: string): Observable<void> {
-        return this.http.delete<void>(`/api/friends/me/${id}`);
+        return this.http.delete<void>(`/api/users/me/friends/${id}`);
     }
 }
