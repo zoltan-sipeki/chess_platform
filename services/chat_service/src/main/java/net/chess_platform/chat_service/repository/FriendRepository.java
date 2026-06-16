@@ -29,8 +29,7 @@ public class FriendRepository {
     public List<Friend> findAll(Authorization auth) {
         MongoQueryFragment<Friend> fragment = auth.getQueryFragment(Friend.class);
         var a = Aggregation.newAggregation(
-                Aggregation.match(fragment.getCriteria()),
-                Aggregation.lookup("user", "friendId", "_id", "friend"));
+                Aggregation.match(fragment.getCriteria()));
 
         return mongoTemplate.aggregate(a, Friend.class, Friend.class).getMappedResults();
     }
@@ -40,8 +39,7 @@ public class FriendRepository {
         var a = Aggregation.newAggregation(
                 Aggregation.match(fragment.getCriteria()),
                 Aggregation.skip(pageable.getOffset()),
-                Aggregation.limit(pageable.getPageSize()),
-                Aggregation.lookup("user", "friendId", "_id", "friend"));
+                Aggregation.limit(pageable.getPageSize()));
 
         var result = mongoTemplate.aggregate(a, Friend.class, Friend.class).getMappedResults();
         var count = mongoTemplate.count(new Query(fragment.getCriteria()), Friend.class);
@@ -56,7 +54,7 @@ public class FriendRepository {
 
     public boolean areFriends(UUID userId, UUID friendId) {
         return mongoTemplate.query(Friend.class)
-                .matching(Criteria.where("userId").is(userId).and("friendId").is(friendId))
+                .matching(Criteria.where("user").is(userId).and("friend").is(friendId))
                 .exists();
     }
 

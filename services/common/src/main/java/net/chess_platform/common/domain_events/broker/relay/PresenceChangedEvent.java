@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.UUID;
 
 import net.chess_platform.common.domain_events.broker.chat.SocialEvent;
-import net.chess_platform.common.domain_events.broker.relay.PresenceChangedEvent.PresenceChangedDto;
+import net.chess_platform.common.domain_events.broker.relay.PresenceChangedEvent.Payload;
 
-public class PresenceChangedEvent extends SocialEvent<PresenceChangedDto> {
+public class PresenceChangedEvent extends SocialEvent<Payload> {
 
-    public static record PresenceChangedDto(UUID userId, String presence) {
+    public static record Payload(UUID userId, String presence) {
     }
 
-    public PresenceChangedEvent(List<UUID> recipients, UUID userId, String presence) {
-        super(recipients, Type.PRESENCE_CHANGED, new PresenceChangedDto(userId, presence));
+    public PresenceChangedEvent(List<UUID> recipients, Payload payload) {
+        super(recipients, Type.PRESENCE_CHANGED, payload);
     }
 }

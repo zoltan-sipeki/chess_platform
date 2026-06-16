@@ -52,4 +52,8 @@ export class UserApi {
     updateDisplayName(displayName: string): Observable<UserData> {
         return this.http.patch<UserData>("/api/users/me", { displayName });
     }
+
+    updatePreferredPresence(presence: Presence): Observable<UserData> {
+        return this.http.put<UserData>("/api/users/me/preferred-presence", { presence });
+    }
 }

@@ -4,7 +4,6 @@ public class ServerMessage {
 
     public enum Type {
         ERROR,
-        AUTHENTICATED,
         EVENT
     }
 

@@ -20,8 +20,8 @@ public class UserRepository {
         this.mongoTemplate = mongoTemplate;
     }
 
-    public long update(User.Update update) {
-        if (update == null || update.getId() == null) {
+    public long update(UUID id, User.Update update) {
+        if (update == null || id == null) {
             return 0;
         }
 
@@ -37,7 +37,12 @@ public class UserRepository {
             u.set("displayName", displayName);
         }
 
-        return mongoTemplate.updateFirst(new Query(Criteria.where("_id").is(update.getId())), u, User.class)
+        var presence = update.getPresence();
+        if (presence != null) {
+            u.set("presence", update.getPresence().name());
+        }
+
+        return mongoTemplate.updateFirst(new Query(Criteria.where("_id").is(id)), u, User.class)
                 .getModifiedCount();
     }
 

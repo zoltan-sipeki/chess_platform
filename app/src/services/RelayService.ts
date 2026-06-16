@@ -1,9 +1,9 @@
 import { inject, Injectable } from "@angular/core";
 import { AuthService } from "./AuthService";
 import { Notification } from "./NotificationApi";
-import { UserData } from "./UserApi";
+import { Presence, UserData } from "./UserApi";
 
-export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED";
+export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED" | "PRESENCE_CHANGED";
 
 export type NotificationRelayEvent = Notification;
 
@@ -13,10 +13,16 @@ export interface UnfriendRelayEvent {
     senderId: string;
 }
 
+export interface PresenceChangedRelayEvent {
+    userId: string;
+    presence: Presence;
+}
+
 export interface EventMap {
     "UNFRIEND": UnfriendRelayEvent,
     "NOTIFICATION": NotificationRelayEvent,
-    "USER_UPDATED": UserUpdatedRelayEvent
+    "USER_UPDATED": UserUpdatedRelayEvent,
+    "PRESENCE_CHANGED": PresenceChangedRelayEvent
 }
 
 @Injectable({
@@ -33,10 +39,13 @@ export class RelayService {
     constructor() {
         this.ws.onmessage = async e => {
             const { type, payload } = e.data;
+            console.log(e.data);
             switch (type) {
-                case "OPEN":
-                    this.ws.postMessage({ type: "AUTHENTICATE", payload: { accessToken: await this.authService.getAccessToken() } });
+                case "OPEN": {
+                    const accessToken = await this.authService.getAccessToken();
+                    this.ws.postMessage({ type: "AUTHENTICATE", payload: { accessToken } });
                     break;
+                }
                 case "EVENT": {
                     const { type, data } = payload;
                     const listeners = this.listeners.get(type);

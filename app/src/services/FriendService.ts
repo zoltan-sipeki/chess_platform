@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from "@angular/core";
+import { inject, Injectable, signal, WritableSignal } from "@angular/core";
 import { Observable, tap } from "rxjs";
 import { EventService } from "./EventService";
 import { FriendApi, FriendList } from "./FriendApi";
@@ -44,24 +44,48 @@ export class FriendService {
             this._online.set([...this._online()]);
             this._offline.set([...this._offline()]);
         });
+
+        this.relayService.subscribe("PRESENCE_CHANGED", e => {
+            let f = this.friends.find(f => f.id === e.userId);
+            if (f == null) {
+                return;
+            }
+            const oldPresence = f.presence;;
+            f.presence = e.presence;
+
+            if (e.presence === "OFFLINE") {
+                this._online.update(friends => friends.filter(friend => friend.id !== e.userId));
+                this.add(f, this._offline);
+            }
+            else {
+                if (oldPresence === "OFFLINE") {
+                    this._offline.update(friends => friends.filter(friend => friend.id !== e.userId));
+                    this.add(f, this._online);
+
+                }
+                else {
+                    this._online.set([...this._online()]);
+                }
+            }
+        });
     }
 
     addFriend(friend: UserData): void {
         this.friends.push(friend);
         if (friend.presence === "ONLINE" || friend.presence === "AWAY") {
-            this._online.update(friends => {
-                const arr = [...friends];
-                this.insert(friend, arr);
-                return arr;
-            });
+            this.add(friend, this._online,);
         }
         else {
-            this._offline.update(friends => {
-                const arr = [...friends];
-                this.insert(friend, arr);
-                return arr;
-            });
+            this.add(friend, this._offline);
         }
+    }
+
+    private add(friend: UserData, list: WritableSignal<UserData[]>): void {
+        list.update(friends => {
+            const arr = [...friends];
+            this.insert(friend, arr);
+            return arr;
+        });
     }
 
     private insert(friend: UserData, arr: UserData[]): void {

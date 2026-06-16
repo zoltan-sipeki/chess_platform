@@ -4,21 +4,26 @@ import java.util.UUID;
 
 public class User extends AuditedEntity {
 
-    public static class Update {
+    public enum Presence {
+        ONLINE,
+        OFFLINE,
+        AWAY
+    }
 
-        private UUID id;
+    public enum Activity {
+        LOOKING_FOR_MATCH,
+        IN_MATCH
+    }
+
+    public static class Update {
 
         private String displayName;
 
         private String avatar;
 
-        public UUID getId() {
-            return id;
-        }
+        private Presence presence;
 
-        public void setId(UUID id) {
-            this.id = id;
-        }
+        private Activity activity;
 
         public String getDisplayName() {
             return displayName;
@@ -36,6 +41,22 @@ public class User extends AuditedEntity {
             this.avatar = avatar;
         }
 
+        public Presence getPresence() {
+            return presence;
+        }
+
+        public void setPresence(Presence presence) {
+            this.presence = presence;
+        }
+
+        public Activity getActivity() {
+            return activity;
+        }
+
+        public void setActivity(Activity activity) {
+            this.activity = activity;
+        }
+
     }
 
     private UUID id;
@@ -43,6 +64,10 @@ public class User extends AuditedEntity {
     private String displayName;
 
     private String avatar;
+
+    private Presence presence;
+
+    private Activity activity;
 
     public String getDisplayName() {
         return displayName;
@@ -66,6 +91,22 @@ public class User extends AuditedEntity {
 
     public void setAvatar(String statusDescription) {
         this.avatar = statusDescription;
+    }
+
+    public Presence getPresence() {
+        return presence;
+    }
+
+    public void setPresence(Presence presence) {
+        this.presence = presence;
+    }
+
+    public Activity getActivity() {
+        return activity;
+    }
+
+    public void setActivity(Activity activity) {
+        this.activity = activity;
     }
 
 }

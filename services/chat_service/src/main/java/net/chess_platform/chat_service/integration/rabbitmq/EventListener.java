@@ -6,6 +6,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import net.chess_platform.chat_service.service.UserService;
+import net.chess_platform.common.domain_events.broker.relay.PresenceChangedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 
@@ -26,6 +27,11 @@ public class EventListener {
 
     @RabbitHandler
     public void process(@Payload UserUpdatedEvent e) {
+        userService.process(e);
+    }
+
+    @RabbitHandler
+    public void process(@Payload PresenceChangedEvent e) {
         userService.process(e);
     }
 

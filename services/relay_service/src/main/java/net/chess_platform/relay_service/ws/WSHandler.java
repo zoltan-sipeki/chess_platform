@@ -2,6 +2,7 @@ package net.chess_platform.relay_service.ws;
 
 import java.util.UUID;
 
+import org.springframework.amqp.core.Binding;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -36,7 +37,7 @@ public class WSHandler extends TextWebSocketHandler {
 
     public WSHandler(WSConnections connections,
             JwtAuthenticationProvider jwtAuthenticationProvider, ObjectMapper objectMapper,
-            RelayUserService relayUserService) {
+            RelayUserService relayUserService, Binding userEventsBinding) {
         this.connections = connections;
         this.jwtAuthenticationProvider = jwtAuthenticationProvider;
         this.objectMapper = objectMapper;
@@ -50,7 +51,16 @@ public class WSHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        var userId = connections.getAuthenticatedUserId(session);
+        if (userId == null) {
+            return;
+        }
+
         connections.remove(session);
+
+        if (!connections.hasConnections(userId)) {
+            relayUserService.boardcastPresence(userId, Presence.OFFLINE);
+        }
     }
 
     @Override
@@ -60,9 +70,8 @@ public class WSHandler extends TextWebSocketHandler {
         try {
             if (userId == null) {
                 var id = authenticate(session, message);
-                relayUserService.updatePresence(id, Presence.ONLINE);
                 connections.setAuthenticatedUserId(session, id);
-                connections.sendMessage(id, new ServerMessage(ServerMessage.Type.AUTHENTICATED));
+                relayUserService.broadcastPresence(id);
                 return;
             }
 

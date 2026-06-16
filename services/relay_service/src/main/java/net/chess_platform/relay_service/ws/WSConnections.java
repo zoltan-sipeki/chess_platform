@@ -34,6 +34,14 @@ public class WSConnections {
     private WSConnections(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
+    
+    public boolean hasConnections(UUID userId) {
+        List<Connection> connections;
+        synchronized (lock) {
+            connections = userToConnections.get(userId);
+        }
+        return connections != null && !connections.isEmpty();
+    }
 
     public UUID getAuthenticatedUserId(WebSocketSession session) {
         var sessionId = session.getId();
@@ -61,7 +69,14 @@ public class WSConnections {
             var connection = connections.remove(sessionId);
 
             if (connection != null && connection.isAuthenticated()) {
-                userToConnections.remove(connection.getUserId());
+                var userConnections = userToConnections.get(connection.getUserId());
+                if (userConnections != null) {
+                    userConnections.remove(connection);
+                }
+
+                if (userConnections.isEmpty()) {
+                    userToConnections.remove(connection.getUserId());
+                }
             }
         }
     }

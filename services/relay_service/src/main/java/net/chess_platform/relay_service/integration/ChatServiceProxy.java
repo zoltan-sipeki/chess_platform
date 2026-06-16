@@ -7,30 +7,57 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import net.chess_platform.common.domain_events.broker.AckEvent;
+import net.chess_platform.common.domain_events.broker.DomainEvent;
+import net.chess_platform.common.domain_events.service.IEventPublisherService;
+
 @Service
-public class ChatServiceProxy {
+public class ChatServiceProxy implements IEventPublisherService {
 
-    private RestClient restClient;
+    @Value("${rabbitmq-messaging.routing-key.chat-service}")
+    private String ROUTING_KEY;
 
-    public ChatServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
+    private final RestClient restClient;
+
+    private final RabbitTemplate relayEvents;
+
+    public ChatServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder,
+            @Qualifier("relayEventsRabbitTemplate") RabbitTemplate relayEvents) {
         this.restClient = builder.baseUrl("lb://chat-service").build();
+        this.relayEvents = relayEvents;
     }
 
-    public static record ContactsDto(UUID userId, List<UUID> contacts) {
-    }
-
-    public ContactsDto getContacts(UUID userId) {
+    public List<UUID> getContacts(UUID userId) {
         var response = restClient.get()
                 .uri(uri -> uri.path("/api/users/{userId}/contacts").build(Map.of("userId", userId)))
                 .attributes(clientRegistrationId("keycloak"))
                 .attributes(principal("relay-service"))
                 .retrieve()
-                .body(ContactsDto.class);
+                .body(new ParameterizedTypeReference<List<UUID>>() {
+                });
         return response;
+    }
+
+    @Override
+    public String getName() {
+        return ROUTING_KEY;
+    }
+
+    @Override
+    public void publish(DomainEvent<?> e) {
+        relayEvents.convertAndSend(ROUTING_KEY, e);
+    }
+
+    @Override
+    public void publish(AckEvent e) {
+        
     }
 
 }

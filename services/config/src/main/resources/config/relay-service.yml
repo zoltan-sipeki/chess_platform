@@ -39,6 +39,10 @@ spring:
 keycloak:
   url: http://keycloak:8080
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+
 server:
   port: 8080
 

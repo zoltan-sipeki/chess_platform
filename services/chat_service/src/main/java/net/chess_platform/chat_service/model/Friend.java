@@ -1,21 +1,29 @@
 package net.chess_platform.chat_service.model;
 
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+
+@Document
 public class Friend extends AuditedEntity {
 
+    @Id
     private UUID id = UUID.randomUUID();
 
-    private UUID userId;
+    private UUID user;
 
-    private UUID friendId;
+    @DocumentReference
+    private User friend;
 
-    private List<User> friend;
+    public Friend() {}
 
     public Friend(UUID userId, UUID friendId) {
-        this.userId = userId;
-        this.friendId = friendId;
+        this.user = userId;
+        var f = new User();
+        f.setId(friendId);
+        this.friend = f;
     }
 
     public UUID getId() {
@@ -26,27 +34,19 @@ public class Friend extends AuditedEntity {
         this.id = id;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public UUID getUser() {
+        return user;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUser(UUID userId) {
+        this.user = userId;
     }
 
-    public UUID getFriendId() {
-        return friendId;
-    }
-
-    public void setFriendId(UUID friendId) {
-        this.friendId = friendId;
-    }
-
-    public List<User> getFriend() {
+    public User getFriend() {
         return friend;
     }
 
-    public void setFriend(List<User> friend) {
+    public void setFriend(User friend) {
         this.friend = friend;
     }
 

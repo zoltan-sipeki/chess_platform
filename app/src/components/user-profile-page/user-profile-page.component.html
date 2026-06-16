@@ -110,7 +110,7 @@
                 <div class="card-body">
                     <div class="d-flex flex-wrap gap-3">
                         @for (friend of p.friends.friends; track friend.id) {
-                        <user [id]="friend.id" [displayName]="friend.displayName" [avatar]="friend.avatar"
+                        <user [user]="friend"
                             [vertical]="true" [displayNameSize]="0.85" [avatarSize]="50" [profileLink]="true"></user>
                         }
                     </div>

@@ -1,5 +1,6 @@
 package net.chess_platform.user_service.integration;
 
+import net.chess_platform.user_service.controller.AvatarController;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,9 @@ public class RelayServiceProxy implements IEventPublisherService {
     @Value("${rabbitmq-messaging.routing-key.relay-service}")
     private String RELAY_SERVICE_ROUTING_KEY;
 
+    @Value("${rabbitmq-messaging.routing-key.relay-service-fanout}")
+    private String RELAY_SERVICE_FANOUT_ROUTING_KEY;
+
     private RabbitTemplate userEvents;
 
     public RelayServiceProxy(@Qualifier("userEventsRabbitTemplate") RabbitTemplate rabbitTemplate) {
@@ -24,7 +28,11 @@ public class RelayServiceProxy implements IEventPublisherService {
     @Override
     public void publish(DomainEvent<?> e) {
         if (e.getCategory() == DomainEvent.Category.USER) {
-            userEvents.convertAndSend(RELAY_SERVICE_ROUTING_KEY, e);
+            if (e.getType() == DomainEvent.Type.USER_CREATED) {
+                userEvents.convertAndSend(RELAY_SERVICE_ROUTING_KEY, e);
+            } else {
+                userEvents.convertAndSend(RELAY_SERVICE_FANOUT_ROUTING_KEY, e);
+            }
         }
     }
 

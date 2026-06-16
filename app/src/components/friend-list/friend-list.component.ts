@@ -5,7 +5,7 @@ import { NgbAccordionBody, NgbAccordionButton, NgbAccordionCollapse, NgbAccordio
 import { FriendRequest } from "../../services/FriendRequestApi";
 import { FriendRequestService } from "../../services/FriendRequestService";
 import { FriendService } from "../../services/FriendService";
-import { UserData } from "../../types";
+import { UserData } from "../../services/UserApi";
 import { User } from "../user/user.component";
 
 @Component({

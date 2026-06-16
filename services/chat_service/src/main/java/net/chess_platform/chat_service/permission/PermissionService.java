@@ -273,7 +273,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
             if (userId == null) {
                 if (user.hasRole("chess_application.user")) {
                     auth.setQueryCondition(Friend.class,
-                            new MongoQueryFragment<>(Criteria.where("userId").is(user.id())));
+                            new MongoQueryFragment<>(Criteria.where("user").is(user.id())));
                 } else {
                     auth.setQueryCondition(Friend.class, new MongoQueryFragment.False<>());
                 }
@@ -284,7 +284,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
             BiConsumer<Authorization, Boolean> rules = (a, condition) -> {
                 if (condition) {
                     auth.setQueryCondition(Friend.class, new MongoQueryFragment<>(
-                            Criteria.where("userId").is(userId)));
+                            Criteria.where("user").is(userId)));
                 } else {
                     auth.setQueryCondition(Friend.class, new MongoQueryFragment.False<>());
                 }
@@ -328,8 +328,8 @@ public class PermissionService extends AbstractPermissionService<Action> {
             if (user.hasRole("chess_application.user")) {
                 auth.setQueryCondition(Friend.class,
                         new MongoQueryFragment<>(Criteria.where(null).orOperator(
-                                Criteria.where("userId").is(userId).and("friendId").is(user.id()),
-                                Criteria.where("userId").is(user.id()).and("friendId").is(userId))));
+                                Criteria.where("user").is(userId).and("friend").is(user.id()),
+                                Criteria.where("user").is(user.id()).and("friend").is(userId))));
             } else {
                 auth.setQueryCondition(Friend.class, new MongoQueryFragment.False<>());
             }
@@ -468,7 +468,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
             auth.setAction(Action.CONTACTS_QUERY_ALL);
 
             if (user.hasRole("cp_chat_service.cp_relay_service")) {
-                auth.setQueryCondition(Friend.class, new MongoQueryFragment<>(Criteria.where("userId").is(userId)));
+                auth.setQueryCondition(Friend.class, new MongoQueryFragment<>(Criteria.where("user").is(userId)));
                 auth.setQueryCondition(Channel.class,
                         new MongoQueryFragment<>(Criteria.where("memberIds").is(userId)));
             } else {
@@ -491,7 +491,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
                     if (user.hasRole("chess_application.user")) {
                         auth.setAllowed(() -> true);
                         auth.setQueryCondition(Friend.class,
-                                new MongoQueryFragment<>(Criteria.where("userId").is(user.id()).and("friendId")
+                                new MongoQueryFragment<>(Criteria.where("user").is(user.id()).and("friend")
                                         .is(userIds.get(0))));
                     } else {
                         auth.setAllowed(() -> false);
@@ -504,7 +504,7 @@ public class PermissionService extends AbstractPermissionService<Action> {
                     if (user.hasRole("cp_chat_service.cp_match_service")) {
                         auth.setAllowed(() -> true);
                         auth.setQueryCondition(Friend.class, new MongoQueryFragment<>(
-                                Criteria.where("userId").is(userIds.get(0)).and("friendId").is(userIds.get(1))));
+                                Criteria.where("user").is(userIds.get(0)).and("friend").is(userIds.get(1))));
                     } else {
                         auth.setAllowed(() -> false);
                         auth.setQueryCondition(Friend.class, new MongoQueryFragment.False<>());

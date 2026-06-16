@@ -31,8 +31,7 @@
                         <td>
                             <div class="player-cell">
                                 <div class="d-flex justify-content-between">
-                                    <user [id]="entry.player.id" [displayName]="entry.player.displayName"
-                                        [avatar]="entry.player.avatar"></user>
+                                    <user [user]="entry.player"></user>
                                     <a [routerLink]="['/dashboard', 'users', entry.player.id]"
                                         class="btn btn-outline-primary btn-sm">View profile</a>
                                 </div>

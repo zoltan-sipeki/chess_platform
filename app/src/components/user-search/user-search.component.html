@@ -15,7 +15,7 @@
         @for (user of searchResult.users; track user.id) {
         <li ngbDropdownItem>
             <a [routerLink]="['/dashboard/users', user.id]" class="text-decoration-none" style="color: inherit;">
-                <user [id]="user.id" [displayName]="user.displayName" [avatar]="user.avatar"></user>
+                <user [user]="user"></user>
             </a>
         </li>
         } @empty {

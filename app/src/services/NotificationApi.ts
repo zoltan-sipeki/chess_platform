@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
-import { UserData } from "../types";
+import { UserData } from "./UserApi";
 
 export type NotificationType = "FRIEND_REQUEST" | "FRIEND_REQUEST_ACCEPTED";
 

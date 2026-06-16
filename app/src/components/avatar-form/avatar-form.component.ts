@@ -2,9 +2,9 @@ import { Component, ElementRef, inject, OnDestroy, OnInit, Signal, signal, viewC
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { EventService } from "../../services/EventService";
 import { UserService } from "../../services/UserService";
-import { UserData } from "../../types";
 import { AvatarEditor } from "../avatar-editor/avatar-editor.component";
 import { AvatarComponent } from "../avatar/avatar.component";
+import { UserData } from "../../services/UserApi";
 
 @Component({
     selector: 'avatar-form',

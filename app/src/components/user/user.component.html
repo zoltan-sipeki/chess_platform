@@ -1,6 +1,6 @@
 @switch (profileLink()) {
 @case (true) {
-<a [routerLink]="['/dashboard', 'users', id()]" class="d-flex align-items-center" [class.flex-column]="vertical()"
+<a [routerLink]="['/dashboard', 'users', user().id]" class="d-flex align-items-center" [class.flex-column]="vertical()"
     style="text-decoration: none; color: inherit;">
     <ng-container *ngTemplateOutlet="content"></ng-container>
 </a>
@@ -13,7 +13,28 @@
 }
 
 <ng-template #content>
-    <avatar [clazz]="'rounded-circle ' + (vertical() ? 'mb-1' : 'me-1')" [src]="avatar()" [width]="avatarSize()">
-    </avatar>
-    <div [style.fontSize.rem]="displayNameSize()">{{ displayName() }}</div>
+    <svg [attr.viewBox]="'0 0 ' + avatarSize() + ' ' +  avatarSize()" [attr.width]="avatarSize()"
+        [attr.height]="avatarSize()" class="me-2">
+        <image width="100%" height="100%" [attr.href]="'/api/avatars/' + user().avatar" [attr.mask]="'url(#' + (user().presence ?
+        mask1 : mask2) + ')'" />
+        @if (user().presence) {
+        <mask [attr.id]="mask1">
+            <circle cx="50%" cy="50%" [attr.r]="avatarSize() / 2" fill="white" />
+            <circle cx="85%" cy="85%" [attr.r]="avatarSize() / 4.5" fill="black" />
+        </mask>
+        <circle cx="85%" cy="85%" [attr.r]="avatarSize() / 7" [attr.fill]="getPresenceColor(user().presence)" />
+        }
+        @else {
+        <mask [attr.id]="mask2">
+            <circle cx="50%" cy="50%" [attr.r]="avatarSize() / 2" fill="white" />
+        </mask>
+        }
+    </svg>
+    <div>
+        <div [class]="clazz()" [style.fontSize.rem]="displayNameSize()">{{ user().displayName }}</div>
+        @if (showActivity()) {
+        <div [class]="clazz()" style="font-size: 10px; transform: translateY(-2px);">{{ user().presence |
+            snakeCaseToTitleCase }}</div>
+        }
+    </div>
 </ng-template>

@@ -22,11 +22,6 @@ public class RelayUser extends AuditedEntity implements Persistable<UUID> {
         AWAY
     }
 
-    public enum Activity {
-        LOOKING_FOR_MATCH,
-        IN_MATCH
-    }
-
     @Transient
     private boolean isNew = true;
 
@@ -34,21 +29,7 @@ public class RelayUser extends AuditedEntity implements Persistable<UUID> {
     private UUID id;
 
     @Enumerated(EnumType.STRING)
-    private Presence presence = Presence.OFFLINE;
-
-    @Enumerated(EnumType.STRING)
     private Presence preferredPresence = Presence.ONLINE;
-
-    @Enumerated(EnumType.STRING)
-    private Activity activity;
-
-    public Presence getPresence() {
-        return presence;
-    }
-
-    public void setPresence(Presence presence) {
-        this.presence = presence;
-    }
 
     public UUID getId() {
         return id;
@@ -64,14 +45,6 @@ public class RelayUser extends AuditedEntity implements Persistable<UUID> {
 
     public void setPreferredPresence(Presence preferredStatus) {
         this.preferredPresence = preferredStatus;
-    }
-
-    public Activity getActivity() {
-        return activity;
-    }
-
-    public void setActivity(Activity activity) {
-        this.activity = activity;
     }
 
     @Override

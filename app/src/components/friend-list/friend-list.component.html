@@ -19,9 +19,7 @@
                                         @for (friend of online(); track friend.id) {
                                         <div class="list-group-item list-group-item-action">
                                             <div container="body" ngbDropdown class="w-100" display="dynamic">
-                                                <user ngbDropdownToggle [id]="friend.id"
-                                                    displayName="friend.displayName" [avatar]="friend.avatar"
-                                                    role="button"></user>
+                                                <user ngbDropdownToggle [user]="friend" role="button" [showActivity]="true"></user>
                                                 <div ngbDropdownMenu class="shadow">
                                                     <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
                                                             class="bi bi-person"></i> View
@@ -30,8 +28,8 @@
                                                     <button ngbDropdownItem><i class="bi bi-controller"></i>
                                                         Invite</button>
                                                     <div class="dropdown-divider"></div>
-                                                    <button ngbDropdownItem class="text-danger" (click)="unfriend(friend.id)"><i
-                                                            class="bi bi-person-dash"></i>
+                                                    <button ngbDropdownItem class="text-danger"
+                                                        (click)="unfriend(friend.id)"><i class="bi bi-person-dash"></i>
                                                         Unfriend</button>
                                                 </div>
                                             </div>
@@ -58,17 +56,15 @@
                                         @for (friend of offline(); track friend.id) {
                                         <div class="list-group-item list-group-item-action">
                                             <div ngbDropdown class="w-100" display="dynamic">
-                                                <user ngbDropdownToggle [id]="friend.id"
-                                                    [displayName]="friend.displayName" [avatar]="friend.avatar"
-                                                    role="button"></user>
+                                                <user ngbDropdownToggle [user]="friend" role="button" [showActivity]="true"></user>
                                                 <div ngbDropdownMenu class="shadow">
                                                     <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
                                                             class="bi bi-person"></i> View
                                                         profile</a>
                                                     <button ngbDropdownItem><i class="bi bi-chat"></i> Message</button>
                                                     <div class="dropdown-divider"></div>
-                                                    <button ngbDropdownItem class="text-danger" (click)="unfriend(friend.id)"><i
-                                                            class="bi bi-person-dash"></i>
+                                                    <button ngbDropdownItem class="text-danger"
+                                                        (click)="unfriend(friend.id)"><i class="bi bi-person-dash"></i>
                                                         Unfriend</button>
                                                 </div>
                                             </div>
@@ -113,8 +109,7 @@
                         @for (request of friendRequests(); track request.id) {
                         <div class="list-group-item list-group-item-action" role="button">
                             <div ngbDropdown class="w-100" display="dynamic" container="body">
-                                <user ngbDropdownToggle [id]="request.sender.id"
-                                    [displayName]="request.sender.displayName" [avatar]="request.sender.avatar"></user>
+                                <user ngbDropdownToggle [user]="request.sender"></user>
                                 <div ngbDropdownMenu class="shadow">
                                     <a [routerLink]="['/dashboard/users', request.sender.id]" ngbDropdownItem><i
                                             class="bi bi-person"></i>

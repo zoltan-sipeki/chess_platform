@@ -2,12 +2,12 @@ package net.chess_platform.chat_service.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import net.chess_platform.chat_service.dto.ContactsDto;
 import net.chess_platform.chat_service.dto.RelationshipDto;
 import net.chess_platform.chat_service.dto.RelationshipDto.Relationship;
 import net.chess_platform.chat_service.exception.AccessDeniedException;
@@ -45,16 +45,16 @@ public class RelationshipService {
         }
 
         switch (userIds.size()) {
-        case 1:
-            if (userIds.get(0).equals(user.id())) {
-                return new RelationshipDto(Relationship.SELF);
-            }
-            break;
-        case 2:
-            if (userIds.get(0).equals(userIds.get(1))) {
-                return new RelationshipDto(Relationship.SELF);
-            }
-            break;
+            case 1:
+                if (userIds.get(0).equals(user.id())) {
+                    return new RelationshipDto(Relationship.SELF);
+                }
+                break;
+            case 2:
+                if (userIds.get(0).equals(userIds.get(1))) {
+                    return new RelationshipDto(Relationship.SELF);
+                }
+                break;
         }
 
         var friends = friendRepository.findAll(auth);
@@ -63,24 +63,24 @@ public class RelationshipService {
                 friends == null || friends.isEmpty() ? Relationship.NOT_RELATED : Relationship.FRIENDS);
     }
 
-    public ContactsDto findContacts(UUID userId, CurrentUser user) {
+    public Set<UUID> findContacts(UUID userId, CurrentUser user) {
         var auth = permissionService.authorize(Action.CONTACTS_QUERY_ALL, user, Map.of("userId", userId));
 
         var friends = friendRepository.findAll(auth);
 
         var channels = channelRepository.findAll(auth);
 
-        var ids = friends.stream().map(Friend::getFriendId).collect(Collectors.toSet());
+        var contacts = friends.stream().map(f -> f.getFriend().getId()).collect(Collectors.toSet());
 
         for (var channel : channels) {
             for (var member : channel.getMemberIds()) {
                 if (!member.equals(userId)) {
-                    ids.add(member);
+                    contacts.add(member);
                 }
             }
 
         }
-        return new ContactsDto(userId, ids);
+        return contacts;
     }
 
 }

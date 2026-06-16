@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import net.chess_platform.common.domain_events.EnableDomainEvents;
+import net.chess_platform.common.security.EnableCommonSecurity;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -15,6 +16,7 @@ import net.chess_platform.common.domain_events.EnableDomainEvents;
 @EnableDomainEvents
 @EntityScan("net.chess_platform")
 @EnableScheduling
+@EnableCommonSecurity
 public class RelayServiceApplication {
 
 	public static void main(String[] args) {

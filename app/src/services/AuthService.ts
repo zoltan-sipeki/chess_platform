@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import Keycloak from 'keycloak-js';
 import { environment } from "../environments/environment";
 import { ActivatedRoute, Router } from "@angular/router";
-import { UserData } from "../types";
+import { UserData } from "./UserApi";
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

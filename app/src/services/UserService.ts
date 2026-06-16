@@ -1,7 +1,7 @@
 import { inject, Injectable, Signal, signal } from "@angular/core";
 import { Observable, tap } from "rxjs";
 import { Avatar, AvatarApi } from "./AvatarApi";
-import { UserApi, UserData } from "./UserApi";
+import { Presence, UserApi, UserData } from "./UserApi";
 
 @Injectable({
     providedIn: "root",
@@ -51,5 +51,14 @@ export class UserService {
                 return u;
             });
         }));
+    }
+
+    updatePresence(presence: Presence): void {
+        this._currentUser.set({ ...this._currentUser(), presence });
+    }
+
+    updatePreferredPresence(presence: Presence): Observable<UserData> {
+        // this.updatePresence(presence);
+        return this.userApi.updatePreferredPresence(presence);
     }
 }

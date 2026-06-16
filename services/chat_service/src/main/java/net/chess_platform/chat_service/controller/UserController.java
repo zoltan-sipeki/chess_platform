@@ -1,5 +1,6 @@
 package net.chess_platform.chat_service.controller;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.chess_platform.chat_service.dto.ContactsDto;
 import net.chess_platform.chat_service.dto.FriendListDto;
 import net.chess_platform.chat_service.service.FriendService;
 import net.chess_platform.chat_service.service.RelationshipService;
@@ -31,7 +31,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/contacts")
-    public ContactsDto getContacts(@PathVariable UUID userId, CurrentUser currentUser) {
+    public Set<UUID> getContacts(@PathVariable UUID userId, CurrentUser currentUser) {
         return relationshipService.findContacts(userId, currentUser);
     }
 
@@ -40,14 +40,14 @@ public class UserController {
             @PathVariable UUID userId,
             @PageableDefault(size = Integer.MAX_VALUE, sort = "displayName", direction = Direction.ASC) Pageable pageable,
             CurrentUser currentUser) {
-        return friendService.findAll(userId, pageable, currentUser);
+        return friendService.findAll(userId, pageable, currentUser, false);
     }
 
     @GetMapping("/me/friends")
     public FriendListDto getFriends(
             @PageableDefault(size = Integer.MAX_VALUE, sort = "displayName", direction = Direction.ASC) Pageable pageable,
             CurrentUser currentUser) {
-        return friendService.findAll(currentUser.id(), pageable, currentUser);
+        return friendService.findAll(currentUser.id(), pageable, currentUser, true);
     }
 
     @DeleteMapping("/me/friends/{friendId}")

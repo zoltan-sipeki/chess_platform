@@ -54,3 +54,6 @@ rabbitmq-messaging:
   user-service:
     events:
       exchange: user-events-exchange
+  relay-service:
+    events:
+      exchange: relay-events-exchange

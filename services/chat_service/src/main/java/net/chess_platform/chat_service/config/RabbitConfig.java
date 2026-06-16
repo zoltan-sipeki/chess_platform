@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.amqp.autoconfigure.RabbitTemplateConfigurer;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,9 @@ public class RabbitConfig {
 
     @Value("${rabbitmq-messaging.user-service.events.exchange}")
     private String USER_EVENTS_EXCHANGE;
+
+    @Value("${rabbitmq-messaging.relay-service.events.exchange}")
+    private String RELAY_EVENTS_EXCHANGE;
 
     @Value("${rabbitmq-messaging.routing-key.service}")
     private String SERVICE_ROUTING_KEY;
@@ -65,8 +69,20 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Binding userEventsBinding(Queue eventQueue, Exchange userEventsExchange) {
+    public Exchange relayEventsExchange() {
+        return ExchangeBuilder.directExchange(RELAY_EVENTS_EXCHANGE).durable(true).build();
+    }
+
+    @Bean
+    public Binding userEventsBinding(Queue eventQueue, @Qualifier("userEventsExchange") Exchange userEventsExchange) {
         return new Binding(eventQueue.getName(), Binding.DestinationType.QUEUE, userEventsExchange.getName(),
+                SERVICE_ROUTING_KEY, null);
+    }
+
+    @Bean
+    public Binding relayEventsBinding(Queue eventQueue,
+            @Qualifier("relayEventsExchange") Exchange relayEventsExchange) {
+        return new Binding(eventQueue.getName(), Binding.DestinationType.QUEUE, relayEventsExchange.getName(),
                 SERVICE_ROUTING_KEY, null);
     }
 

@@ -10,9 +10,11 @@ import net.chess_platform.chat_service.model.Privacy.Restriction;
 import net.chess_platform.chat_service.model.Privacy.Restriction.Resource;
 import net.chess_platform.chat_service.model.Privacy.Restriction.Setting;
 import net.chess_platform.chat_service.model.User;
+import net.chess_platform.chat_service.model.User.Presence;
 import net.chess_platform.chat_service.repository.NotificationRepository;
 import net.chess_platform.chat_service.repository.PrivacyRepository;
 import net.chess_platform.chat_service.repository.UserRepository;
+import net.chess_platform.common.domain_events.broker.relay.PresenceChangedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
@@ -67,11 +69,19 @@ public class UserService {
     }
 
     public void process(UserUpdatedEvent e) {
-        var u = e.getData();
-        var update = mapper.toUpdate(u);
+        var d = e.getData();
+        var update = mapper.toUpdate(d);
 
-        userRepository.update(update);
+        userRepository.update(d.id(), update);
         eventService.ack(e, SERVICE_NAME);
+    }
+
+    public void process(PresenceChangedEvent e) {
+        var d = e.getData();
+        var update = new User.Update();
+        update.setPresence(Presence.valueOf(d.presence()));
+
+        userRepository.update(d.userId(), update);
     }
 
 }

@@ -167,7 +167,8 @@ public class FriendService {
         notificationRepository.deleteByFriendRequestId(friendRequestId);
 
         friendRepository
-                .save(List.of(new Friend(currentUserId, receiver.getId()), new Friend(receiver.getId(), currentUserId)));
+                .save(List.of(new Friend(currentUserId, receiver.getId()),
+                        new Friend(receiver.getId(), currentUserId)));
 
         var event = new NotificationEvent(List.of(receiver.getId()), notificationMapper.toEventPayload(notification));
         eventService.publish(event);
@@ -181,11 +182,18 @@ public class FriendService {
         return friendRequestMapper.toDtoList(result);
     }
 
-    public FriendListDto findAll(UUID userId, Pageable pageable, CurrentUser user) {
+    public FriendListDto findAll(UUID userId, Pageable pageable, CurrentUser user, boolean withPresence) {
         var auth = permissionService.authorize(Action.FRIEND_QUERY, user,
                 userId == null ? Map.of() : Map.of("userId", userId));
         var result = friendRepository.findAll(auth, pageable);
-        return new FriendListDto(result.getTotalElements(), userMapper.toDtoListFromFriend(result.getContent()));
+
+        List<UserDto> friends;
+        if (withPresence) {
+            friends = userMapper.toDtoListFromFriend(result.getContent());
+        } else {
+            friends = userMapper.toDtoListFromFriendWithoutPresence(result.getContent());
+        }
+        return new FriendListDto(result.getTotalElements(), friends);
     }
 
     public void unfriend(UUID friendId, CurrentUser user) {

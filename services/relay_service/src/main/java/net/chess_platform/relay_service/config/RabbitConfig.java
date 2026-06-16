@@ -161,4 +161,11 @@ public class RabbitConfig {
         return new Binding(eventQueue.getName(), Binding.DestinationType.QUEUE, userEventsExchange.getName(),
                 SERVICE_ROUTING_KEY, null);
     }
+
+    @Bean
+    public Binding userEventsFanoutBinding(@Qualifier("fanoutExchange") Exchange fanoutExchange,
+            @Qualifier("userEventsExchange") Exchange userEventsExchange) {
+        return new Binding(fanoutExchange.getName(), Binding.DestinationType.EXCHANGE, userEventsExchange.getName(),
+                SERVICE_FANOUT_ROUTING_KEY, null);
+    }
 }
