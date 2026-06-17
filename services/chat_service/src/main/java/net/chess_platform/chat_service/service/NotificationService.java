@@ -3,6 +3,7 @@ package net.chess_platform.chat_service.service;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import net.chess_platform.chat_service.dto.NotificationListDto;
@@ -37,7 +38,7 @@ public class NotificationService {
         Long last = result.isEmpty() ? null : result.getLast().getSequenceNumber();
         long unread = notificationRepository.countUnread(auth);
         long lastReadSeq = notificationRepository.getLastReadSequenceNumber(auth);
-        
+
         return new NotificationListDto(unread, lastReadSeq,
                 notificationMapper.toDtoList(result), last);
     }

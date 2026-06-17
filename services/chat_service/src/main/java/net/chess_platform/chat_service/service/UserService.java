@@ -62,7 +62,7 @@ public class UserService {
 
         var notificationMetadata = new NotificationMetadata();
         notificationMetadata.setReceiver(user.getId());
-
+        
         notificationRepository.save(notificationMetadata);
 
         eventService.ack(e, SERVICE_NAME);

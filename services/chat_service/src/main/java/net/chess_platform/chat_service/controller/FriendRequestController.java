@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import net.chess_platform.chat_service.dto.FriendRequestCreateDto;
 import net.chess_platform.chat_service.dto.FriendRequestDto;
 import net.chess_platform.chat_service.dto.FriendRequestUpdateDto;
+
 import net.chess_platform.chat_service.dto.UserDto;
 import net.chess_platform.chat_service.model.FriendRequest;
 import net.chess_platform.chat_service.service.FriendService;
