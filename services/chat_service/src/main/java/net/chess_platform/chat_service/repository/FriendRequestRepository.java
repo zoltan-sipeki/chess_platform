@@ -23,10 +23,13 @@ public class FriendRequestRepository {
 		this.mongoTemplate = mongoTemplate;
 	}
 
-	public FriendRequest hasPending(UUID senderId, UUID receiverId) {
+	public FriendRequest findPending(UUID senderId, UUID receiverId) {
 		return mongoTemplate.query(FriendRequest.class)
-				.matching(Criteria.where("receiver").is(receiverId)
-						.and("sender").is(senderId).and("status").is(FriendRequest.Status.PENDING)).oneValue();
+				.matching(Criteria.where("status").is(FriendRequest.Status.PENDING)
+						.orOperator(Criteria.where("receiver").is(receiverId)
+								.and("sender").is(senderId),
+								Criteria.where("receiver").is(senderId).and("sender").is(receiverId)))
+				.oneValue();
 	}
 
 	public FriendRequest update(FriendRequest.Update update,

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -93,12 +94,13 @@ public class FriendService {
             throw new InvalidFriendRequestException("Already friends");
         }
 
-        if (friendRequestRepository.hasPending(senderId, receiverId) != null) {
-            return null;
-        }
+        var r = friendRequestRepository.findPending(senderId, receiverId);
 
-        var r = friendRequestRepository.hasPending(receiverId, senderId);
         if (r != null) {
+            if (r.getSender().getId().equals(senderId)) {
+                return null;
+            }
+
             var update = new FriendRequest.Update();
             update.setStatus(Status.ACCEPTED);
             return updateRequest(r.getId(), update, user);
@@ -182,18 +184,21 @@ public class FriendService {
         return friendRequestMapper.toDtoList(result);
     }
 
-    public FriendListDto findAll(UUID userId, Pageable pageable, CurrentUser user, boolean withPresence) {
+    public FriendListDto findAllWithoutPresence(UUID userId, Pageable pageable, CurrentUser user) {
+        var result = findAll(userId, pageable, user);
+        return new FriendListDto(result.getTotalElements(),
+                userMapper.toDtoListFromFriendWithoutPresence(result.getContent()));
+    }
+
+    public FriendListDto findAllWithPresence(UUID userId, Pageable pageable, CurrentUser user) {
+        var result = findAll(userId, pageable, user);
+        return new FriendListDto(result.getTotalElements(), userMapper.toDtoListFromFriend(result.getContent()));
+    }
+
+    private Page<Friend> findAll(UUID userId, Pageable pageable, CurrentUser user) {
         var auth = permissionService.authorize(Action.FRIEND_QUERY, user,
                 userId == null ? Map.of() : Map.of("userId", userId));
-        var result = friendRepository.findAll(auth, pageable);
-
-        List<UserDto> friends;
-        if (withPresence) {
-            friends = userMapper.toDtoListFromFriend(result.getContent());
-        } else {
-            friends = userMapper.toDtoListFromFriendWithoutPresence(result.getContent());
-        }
-        return new FriendListDto(result.getTotalElements(), friends);
+        return friendRepository.findAll(auth, pageable);
     }
 
     public void unfriend(UUID friendId, CurrentUser user) {

@@ -40,14 +40,14 @@ public class UserController {
             @PathVariable UUID userId,
             @PageableDefault(size = Integer.MAX_VALUE, sort = "displayName", direction = Direction.ASC) Pageable pageable,
             CurrentUser currentUser) {
-        return friendService.findAll(userId, pageable, currentUser, false);
+        return friendService.findAllWithoutPresence(userId, pageable, currentUser);
     }
 
     @GetMapping("/me/friends")
     public FriendListDto getFriends(
             @PageableDefault(size = Integer.MAX_VALUE, sort = "displayName", direction = Direction.ASC) Pageable pageable,
             CurrentUser currentUser) {
-        return friendService.findAll(currentUser.id(), pageable, currentUser, true);
+        return friendService.findAllWithPresence(currentUser.id(), pageable, currentUser);
     }
 
     @DeleteMapping("/me/friends/{friendId}")
