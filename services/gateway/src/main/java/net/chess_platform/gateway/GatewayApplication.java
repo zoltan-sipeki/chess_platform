@@ -57,7 +57,7 @@ public class GatewayApplication {
 				http())
 				.filter(lb("match-service"));
 
-		var matchmakingRoutes = route(path("/api/queues/**"), http()).filter(lb("matchmaking-service"));
+		var matchmakingRoutes = route(path("/api/queues/**"), http()).filter(lb("matchmaking-connection-service"));
 
 		var relayRoutes = route(path("/api/users/{id}/preferred-presence/**"), http()).filter(lb("relay-service"));
 
