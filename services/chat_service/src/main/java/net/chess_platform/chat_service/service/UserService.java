@@ -79,7 +79,7 @@ public class UserService {
     public void process(PresenceChangedEvent e) {
         var d = e.getData();
         var update = new User.Update();
-        update.setPresence(Presence.valueOf(d.presence()));
+        update.setPresence(Presence.valueOf(d.presence().name()));
 
         userRepository.update(d.userId(), update);
     }

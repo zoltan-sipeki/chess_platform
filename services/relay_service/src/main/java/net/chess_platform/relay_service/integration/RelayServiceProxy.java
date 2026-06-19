@@ -31,7 +31,7 @@ public class RelayServiceProxy implements IEventPublisherService {
 
     @Override
     public void publish(DomainEvent<?> e) {
-        if (e.getCategory() == DomainEvent.Category.SOCIAL) {
+        if (e.getCategory() == DomainEvent.Category.RELAY) {
             relayEvents.convertAndSend(FANOUT_ROUTING_KEY, e);
         }
     }

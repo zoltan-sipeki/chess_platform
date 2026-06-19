@@ -35,28 +35,33 @@ public class RelayUserService {
         this.chatService = chatService;
     }
 
-    public void broadcastPresence(UUID userId) {
+    public Presence getPreferredPresence(UUID userId) {
         var user = relayUserRepository.findById(userId).orElseThrow(() -> new InvalidUserException());
+        return user.getPreferredPresence();
+    }
 
+    public void broadcastPresence(UUID userId) {
         List<UUID> contacts = new ArrayList<>();
-        if (user.getPreferredPresence() != Presence.OFFLINE) {
+
+        var presence = getPreferredPresence(userId);
+        if (getPreferredPresence(userId) != Presence.OFFLINE) {
             contacts = chatService.getContacts(userId);
         }
 
         contacts.add(userId);
         var event = new PresenceChangedEvent(contacts,
-                new PresenceChangedEvent.Payload(user.getId(), user.getPreferredPresence().toString()));
+                new PresenceChangedEvent.Payload(userId,
+                        PresenceChangedEvent.Presence.valueOf(presence.name())));
         eventService.publish(event);
     }
 
     public void boardcastPresence(UUID userId, Presence presence) {
-        var user = relayUserRepository.findById(userId).orElseThrow(() -> new InvalidUserException());
-        if (user.getPreferredPresence() == Presence.OFFLINE) {
+        if (getPreferredPresence(userId) == Presence.OFFLINE) {
             return;
         }
         var contacts = chatService.getContacts(userId);
         var event = new PresenceChangedEvent(contacts,
-                new PresenceChangedEvent.Payload(userId, presence.toString()));
+                new PresenceChangedEvent.Payload(userId, PresenceChangedEvent.Presence.valueOf(presence.name())));
         eventService.publish(event);
     }
 
@@ -77,7 +82,8 @@ public class RelayUserService {
         var contacts = chatService.getContacts(currentUser.id());
         contacts.add(currentUser.id());
         var event = new PresenceChangedEvent(contacts,
-                new PresenceChangedEvent.Payload(currentUser.id(), presence.toString()));
+                new PresenceChangedEvent.Payload(currentUser.id(),
+                        PresenceChangedEvent.Presence.valueOf(presence.name())));
         eventService.publish(event);
     }
 }
