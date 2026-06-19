@@ -43,7 +43,7 @@ public class DomainEventSubscriptionRegistry {
         if (ackRequired) {
             subscriptionsWithAck.computeIfAbsent(eventType, k -> new ArrayList<>()).addAll(services);
         } else {
-            subscriptionsWithoutAck.computeIfAbsent(eventType, k -> services).addAll(services);
+            subscriptionsWithoutAck.computeIfAbsent(eventType, k -> new ArrayList<>()).addAll(services);
         }
     }
 
@@ -52,7 +52,7 @@ public class DomainEventSubscriptionRegistry {
     }
 
     public void registerAck(DomainEvent.Type eventType, List<IEventPublisherService> services) {
-        ackSubscriptions.computeIfAbsent(eventType, k -> services).addAll(services);
+        ackSubscriptions.computeIfAbsent(eventType, k -> new ArrayList<>()).addAll(services);
     }
 
     public List<IEventPublisherService> getSubscriptionsWithAckFor(DomainEvent.Type eventType) {
