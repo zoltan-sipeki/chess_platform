@@ -37,7 +37,7 @@
                         <button class="btn btn-outline-secondary" [disabled]="unfriending()">
                             <i class="bi bi-chat"></i> Message
                         </button>
-                        <button class="btn btn-outline-success" [disabled]="unfriending()">
+                        <button class="btn btn-outline-success" [disabled]="unfriending()" (click)="invite(p.user.id)">
                             <i class="bi bi-controller"></i> Invite
                         </button>
                         <button class="btn btn-danger" (click)="unfriend()" [disabled]="unfriending()">

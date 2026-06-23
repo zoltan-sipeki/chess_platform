@@ -46,7 +46,7 @@ export class FriendService {
         });
 
         this.relayService.subscribe("PRESENCE_CHANGED", e => {
-            let f = this.friends.find(f => f.id === e.userId);
+            const f = this.friends.find(f => f.id === e.userId);
             if (f == null) {
                 return;
             }
@@ -54,21 +54,36 @@ export class FriendService {
             f.presence = e.presence;
 
             if (e.presence === "OFFLINE") {
+                f.presence = e.presence;
                 this._online.update(friends => friends.filter(friend => friend.id !== e.userId));
                 this.add(f, this._offline);
             }
+            else if (oldPresence === "OFFLINE") {
+                this._offline.update(friends => friends.filter(friend => friend.id !== e.userId));
+                this.add(f, this._online);
+            }
             else {
-                if (oldPresence === "OFFLINE") {
-                    this._offline.update(friends => friends.filter(friend => friend.id !== e.userId));
-                    this.add(f, this._online);
-
-                }
-                else {
-                    this._online.set([...this._online()]);
-                }
+                this._online.set([...this._online()]);
             }
         });
+
+        this.relayService.subscribe("ACTIVITY_CHANGED", e => {
+            const f = this.friends.find(f => f.id === e.userId);
+            if (f == null) {
+                return;
+            }
+            if (e.activity === "LEAVE_QUEUE") {
+                f.activity = "";
+            }
+            else {
+                f.activity = e.activity;
+            }
+
+            this._online.set([...this._online()]);
+            this._offline.set([...this._offline()]);
+        });
     }
+
 
     addFriend(friend: UserData): void {
         this.friends.push(friend);

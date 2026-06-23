@@ -13,6 +13,7 @@ import { RelayService, UnfriendRelayEvent, UserUpdatedRelayEvent } from "../../s
 import { AvatarComponent } from "../avatar/avatar.component";
 import { MatchHistoryTable } from "../match-history-table/match-history-table.component";
 import { User } from "../user/user.component";
+import { QueueService } from "../../services/QueueService";
 
 export interface MatchStatsTotal {
     gamesPlayed: number;
@@ -34,6 +35,8 @@ export class UserProfilePage implements OnInit, OnDestroy {
     private friendRequestService: FriendRequestService = inject(FriendRequestService);
 
     private friendService: FriendService = inject(FriendService);
+
+    private queueService: QueueService = inject(QueueService);
 
     private eventService: EventService = inject(EventService);
 
@@ -155,6 +158,10 @@ export class UserProfilePage implements OnInit, OnDestroy {
             });
             this.updateRelationship("NOT_RELATED");
         }
+    }
+
+    invite(id: string): void {
+        this.queueService.invite(id).subscribe();
     }
 
     private onFriendRequestAccepted = (e: FriendRequestAcceptedEvent): void => {

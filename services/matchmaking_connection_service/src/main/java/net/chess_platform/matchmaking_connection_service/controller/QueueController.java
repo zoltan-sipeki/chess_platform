@@ -13,7 +13,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.matchmaking_connection_service.dto.request.PrivateMatchRequest;
-import net.chess_platform.matchmaking_connection_service.dto.response.MMTokenResponse;
 import net.chess_platform.matchmaking_connection_service.integration.MatchmakingServiceProxy;
 
 @RestController
@@ -27,10 +26,10 @@ public class QueueController {
     }
 
     @PostMapping("/{matchType}/members")
-    public MMTokenResponse enqueue(@PathVariable @Pattern(regexp = "ranked|unranked") String matchType,
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void enqueue(@PathVariable @Pattern(regexp = "ranked|unranked") String matchType,
             CurrentUser currentUser) {
-        var matchmakingToken = matchmakingService.enqueue(currentUser, matchType);
-        return new MMTokenResponse(matchmakingToken);
+        matchmakingService.enqueue(currentUser, matchType);
     }
 
     @DeleteMapping("/members/me")
@@ -40,11 +39,10 @@ public class QueueController {
     }
 
     @PostMapping("/private")
-    @ResponseStatus(HttpStatus.CREATED)
-    public MMTokenResponse startPrivateMatch(@RequestBody @Valid PrivateMatchRequest dto,
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void startPrivateMatch(@RequestBody @Valid PrivateMatchRequest dto,
             CurrentUser currentUser) {
-        var matchmakingToken = matchmakingService.startPrivateMatch(currentUser, dto.inviteeId());
-        return new MMTokenResponse(matchmakingToken);
+        matchmakingService.createPrivateMatch(currentUser, dto.inviteeId());
     }
 
 }

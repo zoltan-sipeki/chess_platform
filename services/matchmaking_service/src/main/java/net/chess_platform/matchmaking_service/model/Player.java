@@ -15,11 +15,59 @@ import jakarta.persistence.Transient;
 @Entity
 public class Player extends AuditedEntity implements Persistable<UUID> {
 
+    public static class Update {
+        
+        private String displayName;
+
+        private String avatar;
+
+        private int rankedMmr;
+
+        private int unrankedMmr;
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getAvatar() {
+            return avatar;
+        }
+
+        public void setAvatar(String avatar) {
+            this.avatar = avatar;
+        }
+
+        public int getRankedMmr() {
+            return rankedMmr;
+        }
+
+        public void setRankedMmr(int rankedMmr) {
+            this.rankedMmr = rankedMmr;
+        }
+
+        public int getUnrankedMmr() {
+            return unrankedMmr;
+        }
+
+        public void setUnrankedMmr(int unrankedMmr) {
+            this.unrankedMmr = unrankedMmr;
+        }
+
+    }
+
     @Transient
     private boolean isNew = true;
 
     @Id
     private UUID id;
+
+    private String displayName;
+
+    private String avatar;
 
     private int rankedMmr = 1500;
 
@@ -66,4 +114,23 @@ public class Player extends AuditedEntity implements Persistable<UUID> {
         this.isNew = false;
     }
 
+    public void setNew(boolean isNew) {
+        this.isNew = isNew;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
 }

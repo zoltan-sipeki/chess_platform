@@ -8,11 +8,10 @@ import org.springframework.stereotype.Service;
 
 import net.chess_platform.common.domain_events.broker.message.queue.backend.ErrorReply;
 import net.chess_platform.common.domain_events.broker.message.queue.backend.ErrorReply.ErrorCause;
-import net.chess_platform.common.domain_events.broker.message.queue.backend.MatchmakingReply;
+import net.chess_platform.common.domain_events.broker.message.queue.frontend.CreatePrivateMatchMessage;
 import net.chess_platform.common.domain_events.broker.message.queue.frontend.DequeueMessage;
 import net.chess_platform.common.domain_events.broker.message.queue.frontend.EnqueueMessage;
 import net.chess_platform.common.domain_events.broker.message.queue.frontend.PlayerDisconnectedMessage;
-import net.chess_platform.common.domain_events.broker.message.queue.frontend.StartPrivateMatchMessage;
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.matchmaking_connection_service.exception.MatchmakingException;
 import net.chess_platform.matchmaking_connection_service.exception.ServiceUnavailableException;
@@ -27,7 +26,7 @@ public class MatchmakingServiceProxy {
         this.matchmakingServiceRabbitTemplate = matchmakingServiceRabbitTemplate;
     }
 
-    public String enqueue(CurrentUser user, String matchType) {
+    public void enqueue(CurrentUser user, String matchType) {
         var enqueueEvent = new EnqueueMessage(user.id(), matchType);
         var reply = matchmakingServiceRabbitTemplate.convertSendAndReceive(enqueueEvent);
 
@@ -44,11 +43,7 @@ public class MatchmakingServiceProxy {
             if (r.cause() == ErrorCause.SERVICE_UNAVAILABLE) {
                 throw new ServiceUnavailableException(r.message());
             }
-        } else if (reply instanceof MatchmakingReply r) {
-            return r.matchmakingToken();
         }
-
-        return null;
     }
 
     public void dequeue(CurrentUser user) {
@@ -61,9 +56,9 @@ public class MatchmakingServiceProxy {
         }
     }
 
-    public String startPrivateMatch(CurrentUser user, UUID inviteeId) {
-        var startPrivateMatchEvent = new StartPrivateMatchMessage(user.id(), inviteeId);
-        var reply = matchmakingServiceRabbitTemplate.convertSendAndReceive(startPrivateMatchEvent);
+    public void createPrivateMatch(CurrentUser user, UUID inviteeId) {
+        var m = new CreatePrivateMatchMessage(user.id(), inviteeId);
+        var reply = matchmakingServiceRabbitTemplate.convertSendAndReceive(m);
 
         if (reply == null) {
             throw new ServiceUnavailableException(
@@ -75,12 +70,6 @@ public class MatchmakingServiceProxy {
                 throw new MatchmakingException(r.message());
             }
         }
-        if (reply instanceof MatchmakingReply r) {
-            return r.matchmakingToken();
-        }
-
-        return null;
-
     }
 
     public void disconnect(UUID userId) {

@@ -1,9 +1,9 @@
 import { inject, Injectable } from "@angular/core";
 import { AuthService } from "./AuthService";
 import { Notification } from "./NotificationApi";
-import { Presence, UserData } from "./UserApi";
+import { Activity, Presence, UserData } from "./UserApi";
 
-export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED" | "PRESENCE_CHANGED";
+export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED" | "PRESENCE_CHANGED" | "ACTIVITY_CHANGED" | "MATCH_FOUND";
 
 export type NotificationRelayEvent = Notification;
 
@@ -18,11 +18,24 @@ export interface PresenceChangedRelayEvent {
     presence: Presence;
 }
 
+export interface ActivityChangedRelayEvent {
+    userId: string;
+    activity: Activity;
+}
+
+export interface MatchFoundRelayEvent {
+    inviter?: UserData,
+    invitee?: UserData,
+    matchmakingToken: string
+}
+
 export interface EventMap {
     "UNFRIEND": UnfriendRelayEvent,
     "NOTIFICATION": NotificationRelayEvent,
     "USER_UPDATED": UserUpdatedRelayEvent,
-    "PRESENCE_CHANGED": PresenceChangedRelayEvent
+    "PRESENCE_CHANGED": PresenceChangedRelayEvent,
+    "ACTIVITY_CHANGED": ActivityChangedRelayEvent,
+    "MATCH_FOUND": MatchFoundRelayEvent
 }
 
 @Injectable({

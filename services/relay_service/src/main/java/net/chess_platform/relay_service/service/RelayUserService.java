@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.chess_platform.common.domain_events.broker.relay.PresenceChangedEvent;
+import net.chess_platform.common.domain_events.broker.relay.RelayDisconnectEvent;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
 import net.chess_platform.common.security.CurrentUser;
@@ -63,6 +64,7 @@ public class RelayUserService {
         var event = new PresenceChangedEvent(contacts,
                 new PresenceChangedEvent.Payload(userId, PresenceChangedEvent.Presence.valueOf(presence.name())));
         eventService.publish(event);
+        eventService.publish(new RelayDisconnectEvent(userId));
     }
 
     @Transactional

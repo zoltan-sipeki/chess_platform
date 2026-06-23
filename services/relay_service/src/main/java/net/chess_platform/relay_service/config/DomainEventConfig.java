@@ -6,6 +6,7 @@ import net.chess_platform.common.domain_events.broker.DomainEvent;
 import net.chess_platform.common.domain_events.service.DomainEventSubscriptionRegistry;
 import net.chess_platform.common.domain_events.service.IDomainEventSubscriptionConfigurer;
 import net.chess_platform.relay_service.integration.ChatServiceProxy;
+import net.chess_platform.relay_service.integration.MatchmakingServiceProxy;
 import net.chess_platform.relay_service.integration.RelayServiceProxy;
 import net.chess_platform.relay_service.integration.UserServiceProxy;
 
@@ -18,11 +19,14 @@ public class DomainEventConfig implements IDomainEventSubscriptionConfigurer {
 
     private final RelayServiceProxy relayService;
 
+    private final MatchmakingServiceProxy matchmakingService;
+
     public DomainEventConfig(UserServiceProxy userService, RelayServiceProxy relayService,
-            ChatServiceProxy chatService) {
+            ChatServiceProxy chatService, MatchmakingServiceProxy matchmakingService) {
         this.userService = userService;
         this.relayService = relayService;
         this.chatService = chatService;
+        this.matchmakingService = matchmakingService;
     }
 
     @Override
@@ -30,6 +34,7 @@ public class DomainEventConfig implements IDomainEventSubscriptionConfigurer {
         registry.registerAck(DomainEvent.Type.USER_CREATED, userService);
         registry.registerSubscription(DomainEvent.Type.PRESENCE_CHANGED, relayService, false);
         registry.registerSubscription(DomainEvent.Type.PRESENCE_CHANGED, chatService, false);
+        registry.registerSubscription(DomainEvent.Type.RELAY_DISCONNECT, matchmakingService, false);
     }
 
 }

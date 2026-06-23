@@ -33,7 +33,8 @@
     <div>
         <div [class]="clazz()" [style.fontSize.rem]="displayNameSize()">{{ user().displayName }}</div>
         @if (showActivity()) {
-        <div [class]="clazz()" style="font-size: 10px; transform: translateY(-2px);">{{ user().presence |
+        <div [class]="clazz()" style="font-size: 10px; transform: translateY(-2px);">{{ (user().activity ?
+            user().activity : user().presence) |
             snakeCaseToTitleCase }}</div>
         }
     </div>

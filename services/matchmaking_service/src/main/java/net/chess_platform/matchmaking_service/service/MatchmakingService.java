@@ -1,7 +1,7 @@
 package net.chess_platform.matchmaking_service.service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -14,12 +14,20 @@ import org.springframework.web.client.ResourceAccessException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 
+import net.chess_platform.common.domain_events.broker.queue.DequeueEvent;
+import net.chess_platform.common.domain_events.broker.queue.EnqueueEvent;
+import net.chess_platform.common.domain_events.broker.queue.MatchFoundEvent;
+import net.chess_platform.common.domain_events.broker.queue.User;
+import net.chess_platform.common.domain_events.broker.relay.RelayDisconnectEvent;
+import net.chess_platform.common.domain_events.service.DomainEventService;
 import net.chess_platform.matchmaking_service.exception.MatchmakingException;
 import net.chess_platform.matchmaking_service.exception.ServiceUnavailableException;
 import net.chess_platform.matchmaking_service.integration.MatchServiceProxy;
 import net.chess_platform.matchmaking_service.mmqueue.MMQueue;
 import net.chess_platform.matchmaking_service.mmqueue.Match;
+import net.chess_platform.matchmaking_service.mmqueue.MatchmakingToken;
 import net.chess_platform.matchmaking_service.mmqueue.Player;
+import net.chess_platform.matchmaking_service.repository.PlayerRepository;
 
 @Service
 public class MatchmakingService {
@@ -34,18 +42,25 @@ public class MatchmakingService {
 
     private final MatchServiceProxy matchService;
 
+    private final DomainEventService eventService;
+
+    private final PlayerRepository playerRepository;
+
     public MatchmakingService(@Qualifier("unrankedQueue") MMQueue unrankedQueue,
             @Qualifier("rankedQueue") MMQueue rankedQueue,
             MMTokenParser jwtService,
-            EurekaClient discoveryClient, MatchServiceProxy matchService) {
+            EurekaClient discoveryClient, MatchServiceProxy matchService, DomainEventService eventService,
+            PlayerRepository playerRepository) {
         this.unrankedQueue = unrankedQueue;
         this.rankedQueue = rankedQueue;
         this.matchmakingTokenService = jwtService;
         this.discoveryClient = discoveryClient;
         this.matchService = matchService;
+        this.eventService = eventService;
+        this.playerRepository = playerRepository;
     }
 
-    public Match enqueuePlayer(UUID userId, Match.Type queueType) {
+    public void enqueuePlayer(UUID userId, Match.Type queueType) {
         if (queueType == Match.Type.PRIVATE) {
             throw new MatchmakingException(
                     "Only ranked or unranked matches are supported");
@@ -68,7 +83,22 @@ public class MatchmakingService {
             match = rankedQueue.addPlayer(userId);
         }
 
-        return match;
+        if (match == null) {
+            eventService.publish(
+                    new EnqueueEvent(userId));
+        } else {
+            var tokens = createMMTokens(match);
+
+            for (var token : tokens) {
+                if (!userId.equals(token.playerId())) {
+                    eventService.publish(new DequeueEvent(token.playerId()));
+                }
+
+                var payload = new MatchFoundEvent.Payload.Builder(token.jwt()).build();
+                eventService.publish(
+                        new MatchFoundEvent(List.of(token.playerId()), payload));
+            }
+        }
     }
 
     public boolean dequeuePlayer(UUID userId) {
@@ -76,22 +106,30 @@ public class MatchmakingService {
             return false;
         }
 
-        if (unrankedQueue.removePlayer(userId)) {
+        boolean dequeued = unrankedQueue.removePlayer(userId);
+        if (dequeued) {
+            eventService.publish(new DequeueEvent(userId));
             return true;
         }
 
-        return rankedQueue.removePlayer(userId);
+        dequeued = rankedQueue.removePlayer(userId);
+        if (dequeued) {
+            eventService.publish(new DequeueEvent(userId));
+            return true;
+        }
+
+        return false;
     }
 
-    public List<Match> expandRankedMmrRanges() {
+    public List<MatchmakingToken> expandRankedMmrRanges() {
         return expandMmrRanges(rankedQueue);
     }
 
-    public List<Match> expandUnrankedMmrRanges() {
+    public List<MatchmakingToken> expandUnrankedMmrRanges() {
         return expandMmrRanges(unrankedQueue);
     }
 
-    public Map<UUID, String> createMMTokensForPrivateMatch(UUID inviterId, UUID inviteeId) {
+    public void startPrivateMatch(UUID inviterId, UUID inviteeId) {
         if (inviterId.equals(inviteeId)) {
             throw new MatchmakingException(
                     "Cannot invite yourself");
@@ -117,10 +155,35 @@ public class MatchmakingService {
         }
 
         var match = new Match(List.of(new Player(inviterId), new Player(inviteeId)), Match.Type.PRIVATE);
-        return createMMTokens(match);
+        var tokens = createMMTokens(match);
+
+        var players = playerRepository.findAllById(List.of(inviterId, inviteeId));
+
+        for (var token : tokens) {
+
+            net.chess_platform.matchmaking_service.model.Player otherPlayer = null;
+            for (var p : players) {
+                if (!p.getId().equals(token.playerId())) {
+                    otherPlayer = p;
+                    break;
+                }
+            }
+
+            var u = new User(otherPlayer.getId(), otherPlayer.getDisplayName(), otherPlayer.getAvatar());
+            var payload = new MatchFoundEvent.Payload.Builder(token.jwt());
+
+            if (token.playerId().equals(inviterId)) {
+                payload.invitee(u);
+            } else {
+                payload.inviter(u);
+            }
+
+            eventService.publish(
+                    new MatchFoundEvent(List.of(token.playerId()), payload.build()));
+        }
     }
 
-    public Map<UUID, String> createMMTokens(Match match) {
+    public List<MatchmakingToken> createMMTokens(Match match) {
         InstanceInfo instanceInfo = null;
         try {
             instanceInfo = discoveryClient.getNextServerFromEureka("chess-service", false);
@@ -130,25 +193,35 @@ public class MatchmakingService {
         }
         var target = instanceInfo.getMetadata().get("uuid");
         long matchId = ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
-        var players = match.getPlayers();
         var matchType = match.getMatchType();
+        var players = match.getPlayers();
 
-        var token1 = matchmakingTokenService.createMatchmakingToken(players.get(0), matchType, matchId,
-                target);
-        var token2 = matchmakingTokenService.createMatchmakingToken(players.get(1), matchType, matchId,
-                target);
-
-        return Map.of(players.get(0).getId(), token1, players.get(1).getId(), token2);
-    }
-
-    private List<Match> expandMmrRanges(MMQueue queue) {
-        var matches = queue.expandSearchRanges();
-        for (var match : matches) {
-            var tokens = createMMTokens(match);
-            match.setMatchmakingTokens(tokens);
+        var tokens = new ArrayList<MatchmakingToken>();
+        for (var player : players) {
+            var token = matchmakingTokenService.createMatchmakingToken(player, matchType, matchId, target);
+            tokens.add(new MatchmakingToken(player.getId(), token));
         }
 
-        return matches;
+        return tokens;
+    }
+
+    private List<MatchmakingToken> expandMmrRanges(MMQueue queue) {
+        var matches = queue.expandSearchRanges();
+        var result = new ArrayList<MatchmakingToken>();
+
+        for (var match : matches) {
+            var tokens = createMMTokens(match);
+            result.addAll(tokens);
+            for (var token : tokens) {
+                eventService.publish(new DequeueEvent(token.playerId()));
+
+                var payload = new MatchFoundEvent.Payload.Builder(token.jwt()).build();
+                eventService.publish(
+                        new MatchFoundEvent(List.of(token.playerId()), payload));
+            }
+        }
+
+        return result;
     }
 
     private boolean isInMatch(UUID userId) {
@@ -165,5 +238,9 @@ public class MatchmakingService {
 
     private boolean isInQueue(UUID userId) {
         return unrankedQueue.isInQueue(userId) || rankedQueue.isInQueue(userId);
+    }
+
+    public void process(RelayDisconnectEvent e) {
+        dequeuePlayer(e.getData().userId());
     }
 }

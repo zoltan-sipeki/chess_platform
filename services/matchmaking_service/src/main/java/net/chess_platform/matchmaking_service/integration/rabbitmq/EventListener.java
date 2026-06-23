@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import net.chess_platform.common.domain_events.broker.relay.RelayDisconnectEvent;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
 import net.chess_platform.matchmaking_service.exception.UserAlreadyExistsException;
+import net.chess_platform.matchmaking_service.service.MatchmakingService;
 import net.chess_platform.matchmaking_service.service.PlayerService;
 
 @Component
@@ -22,9 +24,12 @@ public class EventListener {
 
     private final PlayerService playerService;
 
-    public EventListener(DomainEventService eventService, PlayerService playerService) {
+    private final MatchmakingService matchmakingService;
+
+    public EventListener(DomainEventService eventService, PlayerService playerService, MatchmakingService matchmakingService) {
         this.eventService = eventService;
         this.playerService = playerService;
+        this.matchmakingService = matchmakingService;
     }
 
     @RabbitHandler
@@ -35,5 +40,11 @@ public class EventListener {
         } catch (UserAlreadyExistsException ex) {
             eventService.ack(e, SERVICE_NAME);
         }
+    }
+
+    @RabbitHandler
+    public void process(@Payload RelayDisconnectEvent e) {
+        matchmakingService.process(e);
+        eventService.ack(e, SERVICE_NAME);
     }
 }

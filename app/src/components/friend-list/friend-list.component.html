@@ -19,13 +19,15 @@
                                         @for (friend of online(); track friend.id) {
                                         <div class="list-group-item list-group-item-action">
                                             <div container="body" ngbDropdown class="w-100" display="dynamic">
-                                                <user ngbDropdownToggle [user]="friend" role="button" [showActivity]="true"></user>
+                                                <user ngbDropdownToggle [user]="friend" role="button"
+                                                    [showActivity]="true"></user>
                                                 <div ngbDropdownMenu class="shadow">
                                                     <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
                                                             class="bi bi-person"></i> View
                                                         profile</a>
                                                     <button ngbDropdownItem><i class="bi bi-chat"></i> Message</button>
-                                                    <button ngbDropdownItem><i class="bi bi-controller"></i>
+                                                    <button ngbDropdownItem (click)="invite(friend.id)"><i
+                                                            class="bi bi-controller"></i>
                                                         Invite</button>
                                                     <div class="dropdown-divider"></div>
                                                     <button ngbDropdownItem class="text-danger"
@@ -56,7 +58,8 @@
                                         @for (friend of offline(); track friend.id) {
                                         <div class="list-group-item list-group-item-action">
                                             <div ngbDropdown class="w-100" display="dynamic">
-                                                <user ngbDropdownToggle [user]="friend" role="button" [showActivity]="true"></user>
+                                                <user ngbDropdownToggle [user]="friend" role="button"
+                                                    [showActivity]="true"></user>
                                                 <div ngbDropdownMenu class="shadow">
                                                     <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
                                                             class="bi bi-person"></i> View

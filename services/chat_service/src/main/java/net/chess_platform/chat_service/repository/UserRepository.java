@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import net.chess_platform.chat_service.model.User;
+import net.chess_platform.chat_service.model.User.Activity;
 
 @Repository
 public class UserRepository {
@@ -39,7 +40,12 @@ public class UserRepository {
 
         var presence = update.getPresence();
         if (presence != null) {
-            u.set("presence", update.getPresence().name());
+            u.set("presence", presence);
+        }
+
+        var activity = update.getActivity();
+        if (activity != null) {
+            u.set("activity", activity == Activity.LEAVE_QUEUE ? null : activity);
         }
 
         return mongoTemplate.updateFirst(new Query(Criteria.where("_id").is(id)), u, User.class)

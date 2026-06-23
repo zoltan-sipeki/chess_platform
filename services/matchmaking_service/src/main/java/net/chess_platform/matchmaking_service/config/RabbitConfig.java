@@ -32,6 +32,9 @@ public class RabbitConfig {
     @Value("${rabbitmq-messaging.user-service.events.exchange}")
     private String USER_EVENTS_EXCHANGE;
 
+    @Value("${rabbitmq-messaging.relay-service.events.exchange}")
+    private String RELAY_EVENTS_EXCHANGE;
+
     @Value("${rabbitmq-messaging.matchmaking-service.reply.exchange}")
     private String MATCHMAKING_REPLY_EXCHANGE;
 
@@ -90,6 +93,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Exchange relayEventsExchange() {
+        return ExchangeBuilder.directExchange(RELAY_EVENTS_EXCHANGE).durable(true).build();
+    }
+
+    @Bean
     public Binding matchmakingReplyBinding(@Qualifier("replyQueue") Queue replyQueue,
             @Qualifier("matchmakingReplyExchange") Exchange matchmakingReplyExchange) {
         return new Binding(replyQueue.getName(), Binding.DestinationType.QUEUE,
@@ -101,5 +109,12 @@ public class RabbitConfig {
             @Qualifier("userEventsExchange") Exchange userEventsExchange) {
         return new Binding(eventQueue.getName(), Binding.DestinationType.QUEUE,
                 userEventsExchange.getName(), SERVICE_ROUTING_KEY, null);
+    }
+
+    @Bean
+    public Binding relayEventsBinding(@Qualifier("eventQueue") Queue eventQueue,
+            @Qualifier("relayEventsExchange") Exchange relayEventsExchange) {
+        return new Binding(eventQueue.getName(), Binding.DestinationType.QUEUE,
+                relayEventsExchange.getName(), SERVICE_ROUTING_KEY, null);
     }
 }

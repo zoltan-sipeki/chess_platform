@@ -11,6 +11,7 @@ public class User extends AuditedEntity {
     }
 
     public enum Activity {
+        LEAVE_QUEUE,
         LOOKING_FOR_MATCH,
         IN_MATCH
     }

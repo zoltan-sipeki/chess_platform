@@ -3,7 +3,7 @@
         Play
     </a>
     <div ngbDropdownMenu>
-        <button ngbDropdownItem>Ranked</button>
-        <button ngbDropdownItem>Unranked</button>
+        <button ngbDropdownItem (click)="enqueue('ranked')">Ranked</button>
+        <button ngbDropdownItem (click)="enqueue('unranked')">Unranked</button>
     </div>
 </div>

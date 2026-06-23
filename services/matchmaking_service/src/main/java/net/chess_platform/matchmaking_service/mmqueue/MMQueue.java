@@ -88,11 +88,15 @@ public class MMQueue {
 
         for (var entries : unorderedQueue.entrySet()) {
             var player = entries.getValue();
-            if (shouldExpandSearchRange(player)) {
-                orderedQueue.remove(player);
-                player.expandSearchRange();
+            if (!shouldExpandSearchRange(player)) {
+                continue;
+            }
+            
+            orderedQueue.remove(player);
+            player.expandSearchRange();
 
-                var match = reAddPlayer(player);
+            var match = reAddPlayer(player);
+            if (match != null) {
                 matches.add(match);
             }
         }

@@ -8,6 +8,8 @@ export type PrivacySetting = "PUBLIC" | "PRIVATE" | "FRIENDS";
 
 export type Presence = "ONLINE" | "OFFLINE" | "AWAY";
 
+export type Activity = "LOOKING_FOR_MATCH" | "IN_MATCH" | "LEAVE_QUEUE";
+
 export interface UserSearchResult {
     total: number,
     users: UserData[]

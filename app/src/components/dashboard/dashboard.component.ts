@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit, signal, viewChild } from "@angular/core";
 import { RouterLink, RouterOutlet } from "@angular/router";
-import { NgbAlert } from "@ng-bootstrap/ng-bootstrap";
+import { NgbAlert, NgbToast, NgbToastHeader } from "@ng-bootstrap/ng-bootstrap";
 import { AuthService } from "../../services/AuthService";
 import { BootstrapService } from "../../services/BootstrapService";
 import { AlertEvent, AlertType, EventService } from "../../services/EventService";
@@ -10,11 +10,13 @@ import { NotificationMenu } from "../notification-menu/notification-menu.compone
 import { PlayMenu } from "../play-menu/play-menu.component";
 import { UserMenu } from "../user-menu/user-menu.component";
 import { UserSearch } from "../user-search/user-search.component";
+import { QueueToastComponent } from "../queue-toast/queue-toast.component";
 
 @Component({
     selector: "dashboard",
     templateUrl: "./dashboard.component.html",
-    imports: [Navbar, PlayMenu, UserMenu, UserSearch, RouterOutlet, RouterLink, NotificationMenu, FriendList, NgbAlert]
+    standalone: true,
+    imports: [Navbar, PlayMenu, UserMenu, UserSearch, RouterOutlet, RouterLink, NotificationMenu, FriendList, NgbAlert, QueueToastComponent]
 })
 export class Dashboard implements OnInit, OnDestroy {
 
