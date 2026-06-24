@@ -19,8 +19,8 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import net.chess_platform.chess_service.coordinator.MatchCoordinator;
 import net.chess_platform.chess_service.coordinator.MMTokenParser;
+import net.chess_platform.chess_service.coordinator.MatchCoordinator;
 import net.chess_platform.chess_service.exception.AccessDeniedException;
 import net.chess_platform.chess_service.exception.InvalidMessageException;
 import net.chess_platform.chess_service.ws.message.client.ClientMessage;
@@ -185,8 +185,14 @@ public class WSHandler extends TextWebSocketHandler {
         }
         try {
             var currentUserId = authenticate(accessToken);
-            connections.setAuthenticatedUserId(session, currentUserId);
-            connections.sendMessage(currentUserId, new ServerMessage(ServerMessage.Type.CONNECTED));
+            if (connections.hasConnection(currentUserId)) {
+                connections.sendMessage(session.getId(),
+                        new ServerMessage(ServerMessage.Type.ERROR, "User already connected"));
+                connections.disconnect(session.getId());
+            } else {
+                connections.setAuthenticatedUserId(session, currentUserId);
+                connections.sendMessage(currentUserId, new ServerMessage(ServerMessage.Type.CONNECTED));
+            }
         } catch (AuthenticationException e) {
             throw new AccessDeniedException();
         }

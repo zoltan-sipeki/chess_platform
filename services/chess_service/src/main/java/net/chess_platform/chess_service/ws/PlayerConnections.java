@@ -34,6 +34,12 @@ public class PlayerConnections {
         this.objectMapper = objectMapper;
     }
 
+    public boolean hasConnection(UUID userId) {
+        synchronized (lock) {
+            return playerToConnection.containsKey(userId);
+        }
+    }
+
     public UUID getAuthenticatedUserId(WebSocketSession session) {
         var sessionId = session.getId();
 
