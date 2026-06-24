@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, input, OnInit } from "@angular/core";
 import { RouterLink } from "@angular/router";
-import { Presence, UserData } from "../../services/UserApi";
+import { Presence, UserData } from "../../api/UserApi";
 import { SnakeCaseToTitleCasePipe } from "../../pipes/SnakeCaseToTitleCase";
 
 @Component({

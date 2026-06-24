@@ -1,9 +1,9 @@
 import { inject, Injectable } from "@angular/core";
 import { catchError, forkJoin, map, Observable, of } from "rxjs";
-import { FriendApi, FriendList } from "./FriendApi";
-import { MatchApi, MatchHistoryList, MatchStat, PlayerStats } from "./MatchApi";
-import { RelationshipApi } from "./RelationshipApi";
-import { Relationship, UserApi, UserData } from "./UserApi";
+import { FriendApi, FriendList } from "../api/FriendApi";
+import { MatchApi, MatchHistoryList, MatchStat, PlayerStats } from "../api/MatchApi";
+import { RelationshipApi } from "../api/RelationshipApi";
+import { Relationship, UserApi, UserData } from "../api/UserApi";
 
 export interface UserProfile {
     user: UserData,

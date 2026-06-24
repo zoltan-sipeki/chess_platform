@@ -2,9 +2,9 @@ import { AsyncPipe } from "@angular/common";
 import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { Observable, Subscription } from "rxjs";
-import { FriendApi, FriendList } from "../../services/FriendApi";
-import { Pagination } from "../pagination/pagination.component";
-import { User } from "../user/user.component";
+import { FriendApi, FriendList } from "../../api/FriendApi";
+import { Pagination } from "../../components/pagination/pagination.component";
+import { User } from "../../components/user/user.component";
 
 @Component({
     selector: 'friends-page',

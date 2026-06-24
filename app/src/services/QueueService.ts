@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from "@angular/core";
 import { Observable, tap } from "rxjs";
-import { QueueApi, QueueType } from "./QueueApi";
+import { QueueApi, QueueType } from "../api/QueueApi";
 import { MatchFoundRelayEvent, RelayService } from "./RelayService";
 
 @Injectable({

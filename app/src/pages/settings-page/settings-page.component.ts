@@ -1,7 +1,7 @@
 import { Component } from "@angular/core";
 import { NgbNav, NgbNavContent, NgbNavItem, NgbNavLinkBase, NgbNavLinkButton, NgbNavOutlet } from "@ng-bootstrap/ng-bootstrap";
-import { PrivacyForm } from "../privacy-form/privacy-form.component";
-import { ProfileFormComponent } from "../profile-form/profile-form.component";
+import { PrivacyForm } from "../../components/privacy-form/privacy-form.component";
+import { ProfileFormComponent } from "../../components/profile-form/profile-form.component";
 
 @Component({
     selector: "settings-page",

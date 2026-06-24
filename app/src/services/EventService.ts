@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { UserData } from "./UserApi";
+import { UserData } from "../api/UserApi";
 
 export type EventType = "alert" | "friend-request-accepted" | "unfriend";
 

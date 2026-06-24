@@ -1,7 +1,7 @@
 import { Component, inject, input } from "@angular/core";
 import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from "@ng-bootstrap/ng-bootstrap";
 import { QueueService } from "../../services/QueueService";
-import { QueueType } from "../../services/QueueApi";
+import { QueueType } from "../../api/QueueApi";
 
 @Component({
     selector: "play-menu",

@@ -3,7 +3,7 @@ import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
 import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu } from "@ng-bootstrap/ng-bootstrap";
 import { DebounceService } from "../../services/DebounceService";
-import { UserSearchResult, UserApi } from "../../services/UserApi";
+import { UserSearchResult, UserApi } from "../../api/UserApi";
 import { User } from "../user/user.component";
 
 @Component({

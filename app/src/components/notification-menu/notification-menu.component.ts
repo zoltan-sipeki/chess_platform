@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, Signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from "@ng-bootstrap/ng-bootstrap";
-import { NotificationList } from "../../services/NotificationApi";
+import { NotificationList } from "../../api/NotificationApi";
 import { NotificationService } from "../../services/NotificationService";
 import { NotificationListComponent } from "../notification-list/notification-list.component";
 

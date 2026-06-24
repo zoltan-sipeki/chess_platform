@@ -5,7 +5,7 @@ import { SnakeCaseToTitleCasePipe } from '../../pipes/SnakeCaseToTitleCase';
 import { AuthService } from "../../services/AuthService";
 import { PresenceService } from '../../services/PresenceService';
 import { PresenceChangedRelayEvent, RelayService } from '../../services/RelayService';
-import { Presence, UserData } from '../../services/UserApi';
+import { Presence, UserData } from '../../api/UserApi';
 import { UserService } from "../../services/UserService";
 import { AvatarComponent } from "../avatar/avatar.component";
 import { User } from '../user/user.component';

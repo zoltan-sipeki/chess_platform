@@ -1,16 +1,16 @@
 import { Component, inject, OnDestroy, OnInit, signal, viewChild } from "@angular/core";
 import { RouterLink, RouterOutlet } from "@angular/router";
-import { NgbAlert, NgbToast, NgbToastHeader } from "@ng-bootstrap/ng-bootstrap";
+import { NgbAlert } from "@ng-bootstrap/ng-bootstrap";
+import { FriendList } from "../../components/friend-list/friend-list.component";
+import { Navbar } from "../../components/navbar/navbar.component";
+import { NotificationMenu } from "../../components/notification-menu/notification-menu.component";
+import { PlayMenu } from "../../components/play-menu/play-menu.component";
+import { QueueToastComponent } from "../../components/queue-toast/queue-toast.component";
+import { UserMenu } from "../../components/user-menu/user-menu.component";
+import { UserSearch } from "../../components/user-search/user-search.component";
 import { AuthService } from "../../services/AuthService";
 import { BootstrapService } from "../../services/BootstrapService";
 import { AlertEvent, AlertType, EventService } from "../../services/EventService";
-import { FriendList } from "../friend-list/friend-list.component";
-import { Navbar } from "../navbar/navbar.component";
-import { NotificationMenu } from "../notification-menu/notification-menu.component";
-import { PlayMenu } from "../play-menu/play-menu.component";
-import { UserMenu } from "../user-menu/user-menu.component";
-import { UserSearch } from "../user-search/user-search.component";
-import { QueueToastComponent } from "../queue-toast/queue-toast.component";
 
 @Component({
     selector: "dashboard",

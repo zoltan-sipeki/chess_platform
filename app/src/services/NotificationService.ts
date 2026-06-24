@@ -1,7 +1,7 @@
 import { inject, Injectable, Signal, signal, WritableSignal } from "@angular/core";
 import { Observable } from "rxjs";
 import { tap } from 'rxjs/operators';
-import { Notification, NotificationApi, NotificationList, NotificationQuery, NotificationType, NotificationUpdate } from "./NotificationApi";
+import { Notification, NotificationApi, NotificationList, NotificationQuery, NotificationType, NotificationUpdate } from "../api/NotificationApi";
 import { RelayService } from "./RelayService";
 
 export interface DeleteOptions {

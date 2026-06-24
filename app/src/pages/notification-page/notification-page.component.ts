@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { NotificationListComponent } from "../notification-list/notification-list.component";
+import { NotificationListComponent } from "../../components/notification-list/notification-list.component";
 
 @Component({
     selector: "notification-page",

@@ -27,3 +27,7 @@ rabbitmq-messaging:
   matchmaking-service:
     reply:
       exchange: matchmaking-reply-exchange
+
+matchmaking:
+  token:
+    public-key: "${mmtoken-public-key}"

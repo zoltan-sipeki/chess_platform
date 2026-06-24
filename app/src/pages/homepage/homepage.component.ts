@@ -1,8 +1,7 @@
 import { Component, inject, OnInit, signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { AuthService } from "../../services/AuthService";
-import { Navbar } from "../navbar/navbar.component";
-
+import { Navbar } from "../../components/navbar/navbar.component";
 
 @Component({
     selector: 'homepage',

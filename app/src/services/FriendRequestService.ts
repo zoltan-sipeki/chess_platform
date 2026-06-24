@@ -2,11 +2,11 @@ import { inject, Injectable, Signal, signal } from "@angular/core";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { EventService } from "./EventService";
-import { FriendRequest, FriendRequestApi } from './FriendRequestApi';
+import { FriendRequest, FriendRequestApi } from '../api/FriendRequestApi';
 import { FriendService } from "./FriendService";
 import { NotificationService } from "./NotificationService";
 import { RelayService } from "./RelayService";
-import { UserData } from "./UserApi";
+import { UserData } from "../api/UserApi";
 
 @Injectable({
     providedIn: "root",

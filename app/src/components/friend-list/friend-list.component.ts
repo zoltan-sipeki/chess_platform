@@ -2,11 +2,11 @@ import { Component, inject, OnDestroy, OnInit, Signal } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 import { NgbAccordionBody, NgbAccordionButton, NgbAccordionCollapse, NgbAccordionDirective, NgbAccordionHeader, NgbAccordionItem, NgbAccordionToggle, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbNav, NgbNavContent, NgbNavItem, NgbNavItemRole, NgbNavLinkBase, NgbNavLinkButton, NgbNavOutlet } from "@ng-bootstrap/ng-bootstrap";
-import { FriendRequest } from "../../services/FriendRequestApi";
+import { FriendRequest } from "../../api/FriendRequestApi";
 import { FriendRequestService } from "../../services/FriendRequestService";
 import { FriendService } from "../../services/FriendService";
 import { QueueService } from "../../services/QueueService";
-import { UserData } from "../../services/UserApi";
+import { UserData } from "../../api/UserApi";
 import { User } from "../user/user.component";
 
 @Component({

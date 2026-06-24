@@ -2,7 +2,7 @@ import { NgTemplateOutlet, TitleCasePipe } from "@angular/common";
 import { Component, effect, ElementRef, inject, OnDestroy, OnInit, Signal, signal, viewChild } from "@angular/core";
 import { NgbToast, NgbToastHeader } from "@ng-bootstrap/ng-bootstrap";
 import { TimeFormatPipe } from "../../pipes/TimeFormatPipe";
-import { QueueType } from "../../services/QueueApi";
+import { QueueType } from "../../api/QueueApi";
 import { QueueService } from "../../services/QueueService";
 import { MatchFoundRelayEvent } from "../../services/RelayService";
 

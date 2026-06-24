@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { UserSearchResult, UserApi } from "../../services/UserApi";
+import { UserSearchResult, UserApi } from "../../api/UserApi";
 import { Pagination } from "../pagination/pagination.component";
 import { User } from "../user/user.component";
 

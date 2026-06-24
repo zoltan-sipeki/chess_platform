@@ -3,9 +3,9 @@ import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { Observable, Subscription } from "rxjs";
-import { MatchHistoryList, MatchApi } from "../../services/MatchApi";
-import { MatchHistoryTable } from "../match-history-table/match-history-table.component";
-import { Pagination } from "../pagination/pagination.component";
+import { MatchApi, MatchHistoryList } from "../../api/MatchApi";
+import { MatchHistoryTable } from "../../components/match-history-table/match-history-table.component";
+import { Pagination } from "../../components/pagination/pagination.component";
 
 @Component({
     selector: "match-history-page",

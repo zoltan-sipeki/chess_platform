@@ -3,7 +3,7 @@ import { Component, inject, input, OnDestroy, OnInit, Signal } from "@angular/co
 import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from "@ng-bootstrap/ng-bootstrap";
 import { TimeAgoPipe } from "../../pipes/TimeAgoPipe";
 import { FriendRequestService } from "../../services/FriendRequestService";
-import { Notification, NotificationList } from "../../services/NotificationApi";
+import { Notification, NotificationList } from "../../api/NotificationApi";
 import { NotificationService } from "../../services/NotificationService";
 import { AvatarComponent } from "../avatar/avatar.component";
 

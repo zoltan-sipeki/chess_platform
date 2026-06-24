@@ -3,7 +3,7 @@ import { Component, inject, OnInit } from "@angular/core";
 import { FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
 import { Observable } from "rxjs";
 import { EventService } from "../../services/EventService";
-import { PrivacyApi, PrivacySetting, PrivacySettings } from "../../services/PrivacyApi";
+import { PrivacyApi, PrivacySetting, PrivacySettings } from "../../api/PrivacyApi";
 
 @Component({
     selector: "privacy-form",

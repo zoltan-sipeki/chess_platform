@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { AuthService } from "./AuthService";
-import { Notification } from "./NotificationApi";
-import { Activity, Presence, UserData } from "./UserApi";
+import { Notification } from "../api/NotificationApi";
+import { Activity, Presence, UserData } from "../api/UserApi";
 
 export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED" | "PRESENCE_CHANGED" | "ACTIVITY_CHANGED" | "MATCH_FOUND";
 

@@ -4,7 +4,7 @@ import { EventService } from "../../services/EventService";
 import { UserService } from "../../services/UserService";
 import { AvatarEditor } from "../avatar-editor/avatar-editor.component";
 import { AvatarComponent } from "../avatar/avatar.component";
-import { UserData } from "../../services/UserApi";
+import { UserData } from "../../api/UserApi";
 
 @Component({
     selector: 'avatar-form',

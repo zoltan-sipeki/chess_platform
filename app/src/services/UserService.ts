@@ -1,7 +1,7 @@
 import { inject, Injectable, Signal, signal } from "@angular/core";
 import { Observable, tap } from "rxjs";
-import { Avatar, AvatarApi } from "./AvatarApi";
-import { Presence, UserApi, UserData } from "./UserApi";
+import { Avatar, AvatarApi } from "../api/AvatarApi";
+import { Presence, UserApi, UserData } from "../api/UserApi";
 
 @Injectable({
     providedIn: "root",
