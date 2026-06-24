@@ -3,10 +3,7 @@ package net.chess_platform.chess_service.coordinator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -31,9 +28,7 @@ import net.chess_platform.chess_service.ws.message.server.ServerMessage;
 import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
 
-public class MatchCoordinator extends Thread {
-
-    private final BlockingQueue<Object> messageQueue = new LinkedBlockingQueue<>();
+public class MatchCoordinatorThread extends Thread {
 
     private final Map<Long, ScheduledFuture<?>> connectTimeouts = new HashMap<>();
 
@@ -41,7 +36,7 @@ public class MatchCoordinator extends Thread {
 
     private final Map<UUID, Player> players = new ConcurrentHashMap<>();
 
-    private final ScheduledExecutorService scheduler;
+    private final EventQueue eventQueue;
 
     private final MatchServiceProxy matchService;
 
@@ -51,11 +46,11 @@ public class MatchCoordinator extends Thread {
 
     private final Mapper mapper;
 
-    public MatchCoordinator(PlayerConnections playerConnections, ScheduledExecutorService scheduler,
+    public MatchCoordinatorThread(EventQueue eventQueue, PlayerConnections playerConnections,
             MatchServiceProxy matchService, Mapper mapper,
             DomainEventService eventService) {
+        this.eventQueue = eventQueue;
         this.connections = playerConnections;
-        this.scheduler = scheduler;
         this.matchService = matchService;
         this.mapper = mapper;
         this.eventService = eventService;
@@ -70,10 +65,8 @@ public class MatchCoordinator extends Thread {
     public void run() {
         while (true) {
             try {
-                var message = messageQueue.take();
-
-                switch (message) {
-                    case Runnable m -> m.run();
+                var event = eventQueue.take();
+                switch (event) {
                     case DisconnectPayload m -> process(m);
                     case MatchmakingToken m -> process(m);
                     case IChessMessage m -> process(m);
@@ -89,10 +82,7 @@ public class MatchCoordinator extends Thread {
     }
 
     public void enqueueMessage(Object message) {
-        try {
-            messageQueue.put(message);
-        } catch (InterruptedException e) {
-        }
+        eventQueue.offer(message);
     }
 
     public void process(DisconnectPayload message) {
@@ -150,7 +140,7 @@ public class MatchCoordinator extends Thread {
         var match = matches.get(matchId);
 
         if (match == null) {
-            match = new Match(matchId, token.getMatchType(), scheduler, e -> messageQueue.offer(e));
+            match = new Match(matchId, token.getMatchType(), eventQueue);
             matches.put(matchId, match);
             setTimeout(matchId);
         }
@@ -262,8 +252,7 @@ public class MatchCoordinator extends Thread {
     }
 
     private void setTimeout(long matchId) {
-        var timeout = scheduler.schedule(() -> messageQueue.offer(new MatchTimeoutEvent(matchId)), 60000,
-                TimeUnit.MILLISECONDS);
+        var timeout = eventQueue.schedule(() -> new MatchTimeoutEvent(matchId), 60000, TimeUnit.MILLISECONDS);
         connectTimeouts.put(matchId, timeout);
     }
 

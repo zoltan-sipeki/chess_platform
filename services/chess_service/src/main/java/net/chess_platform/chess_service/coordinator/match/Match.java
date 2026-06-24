@@ -4,11 +4,9 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import net.chess_platform.chess_service.chess.Chessboard;
 import net.chess_platform.chess_service.chess.piece.PieceColor;
@@ -16,6 +14,7 @@ import net.chess_platform.chess_service.chess.pojo.MoveDetails;
 import net.chess_platform.chess_service.chess.pojo.MoveResult;
 import net.chess_platform.chess_service.chess.pojo.PromotionDetails;
 import net.chess_platform.chess_service.coordinator.EloRatingCalculator;
+import net.chess_platform.chess_service.coordinator.EventQueue;
 import net.chess_platform.chess_service.coordinator.match.event.FlagFallEvent;
 import net.chess_platform.chess_service.coordinator.match.event.PromotionTimeoutEvent;
 import net.chess_platform.chess_service.ws.message.client.MovePayload;
@@ -50,11 +49,9 @@ public class Match {
 
     private Chessboard chessboard;
 
-    private ScheduledExecutorService scheduler;
-
     private ScheduledFuture<?> timeout;
 
-    private Consumer<Object> eventQueue;
+    private EventQueue eventQueue;
 
     private EloRatingCalculator eloRatingService = new EloRatingCalculator();
 
@@ -66,10 +63,9 @@ public class Match {
 
     private long duration;
 
-    public Match(long id, Type type, ScheduledExecutorService scheduler, Consumer<Object> eventQueue) {
+    public Match(long id, Type type, EventQueue eventQueue) {
         this.id = id;
         this.type = type;
-        this.scheduler = scheduler;
         this.eventQueue = eventQueue;
     }
 
@@ -214,15 +210,10 @@ public class Match {
         if (timeout != null) {
             timeout.cancel(true);
         }
-        timeout = scheduler.schedule(() -> {
-            eventQueue.accept(new Runnable() {
-                @Override
-                public void run() {
-                    var result = process(chessboard.flagFall());
-                    var event = new FlagFallEvent(id, result);
-                    eventQueue.accept(event);
-                }
-            });
+
+        timeout = eventQueue.schedule(() -> {
+            var result = process(chessboard.flagFall());
+            return new FlagFallEvent(id, result);
         }, FLAG_FALL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 
@@ -230,15 +221,10 @@ public class Match {
         if (timeout != null) {
             timeout.cancel(true);
         }
-        timeout = scheduler.schedule(() -> {
-            eventQueue.accept(new Runnable() {
-                @Override
-                public void run() {
-                    var result = process(chessboard.promoteRandomly());
-                    var event = new PromotionTimeoutEvent(id, result);
-                    eventQueue.accept(event);
-                }
-            });
+
+        timeout = eventQueue.schedule(() -> {
+            var result = process(chessboard.promoteRandomly());
+            return new PromotionTimeoutEvent(id, result);
         }, PROMOTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 

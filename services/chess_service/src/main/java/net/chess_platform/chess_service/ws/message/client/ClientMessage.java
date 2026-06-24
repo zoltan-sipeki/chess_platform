@@ -5,8 +5,8 @@ import java.util.Map;
 public class ClientMessage {
 
     public enum Type {
-        MATCHMAKING_TOKEN,
         CONNECT,
+        AUTHENTICATE,
         RECONNECT,
         MOVE,
         PROMOTION,
@@ -14,12 +14,12 @@ public class ClientMessage {
     }
 
     public static final Map<Type, Class<?>> PAYLOAD_MAPPING = Map.of(
-            Type.CONNECT, ConnectPayload.class,
+            Type.AUTHENTICATE, AuthenticatePayload.class,
             Type.RECONNECT, ReconnectPayload.class,
             Type.MOVE, MovePayload.class,
             Type.PROMOTION, PromotionPayload.class,
             Type.RESIGN, ResignPayload.class,
-            Type.MATCHMAKING_TOKEN, MMTokenPayload.class);
+            Type.CONNECT, ConnectPayload.class);
 
     private Type type;
 

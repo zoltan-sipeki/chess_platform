@@ -20,15 +20,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import net.chess_platform.chess_service.coordinator.MMTokenParser;
-import net.chess_platform.chess_service.coordinator.MatchCoordinator;
+import net.chess_platform.chess_service.coordinator.MatchCoordinatorThread;
 import net.chess_platform.chess_service.exception.AccessDeniedException;
 import net.chess_platform.chess_service.exception.InvalidMessageException;
 import net.chess_platform.chess_service.ws.message.client.ClientMessage;
 import net.chess_platform.chess_service.ws.message.client.ClientMessage.Type;
-import net.chess_platform.chess_service.ws.message.client.ConnectPayload;
+import net.chess_platform.chess_service.ws.message.client.AuthenticatePayload;
 import net.chess_platform.chess_service.ws.message.client.DisconnectPayload;
 import net.chess_platform.chess_service.ws.message.client.IChessMessage;
-import net.chess_platform.chess_service.ws.message.client.MMTokenPayload;
+import net.chess_platform.chess_service.ws.message.client.ConnectPayload;
 import net.chess_platform.chess_service.ws.message.server.ServerMessage;
 
 @Component
@@ -36,7 +36,7 @@ public class WSHandler extends TextWebSocketHandler {
 
     private final ObjectMapper objectMapper;
 
-    private final List<MatchCoordinator> coordinatorThreads;
+    private final List<MatchCoordinatorThread> coordinatorThreads;
 
     private final MMTokenParser mmTokenParser;
 
@@ -45,7 +45,7 @@ public class WSHandler extends TextWebSocketHandler {
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
 
     public WSHandler(ObjectMapper objectMapper,
-            @Qualifier("coordinatorThreads") List<MatchCoordinator> coordinatorThreads,
+            @Qualifier("coordinatorThreads") List<MatchCoordinatorThread> coordinatorThreads,
             MMTokenParser mmTokenParser,
             PlayerConnections connections,
             JwtAuthenticationProvider jwtAuthenticationProvider) {
@@ -77,24 +77,28 @@ public class WSHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         var userId = connections.getAuthenticatedUserId(session);
 
-        try {
+        try {            
             if (userId == null) {
                 authenticate(session, message);
                 return;
             }
-
+            
             var cm = objectMapper.readValue(message.getPayload(), ClientMessage.class);
             var mtype = cm.getType();
 
-            if (mtype == null || mtype == Type.CONNECT) {
+            if (mtype == Type.AUTHENTICATE) {
+                return;
+            }
+            
+            if (mtype == null) {
                 throw new InvalidMessageException();
             }
 
             var m = objectMapper.convertValue(cm.getPayload(), ClientMessage.PAYLOAD_MAPPING.get(mtype));
             checkNotEmpty(m);
 
-            if (mtype == Type.MATCHMAKING_TOKEN) {
-                handleMMTokenMessage((MMTokenPayload) m, userId);
+            if (mtype == Type.CONNECT) {
+                handleConnectMessage((ConnectPayload) m, userId);
             } else {
                 var chessMessage = (IChessMessage) m;
                 chessMessage.setUserId(userId);
@@ -116,16 +120,16 @@ public class WSHandler extends TextWebSocketHandler {
 
     }
 
-    private void handleMMTokenMessage(MMTokenPayload message, UUID userId) throws InvalidMessageException {
+    private void handleConnectMessage(ConnectPayload message, UUID userId) throws InvalidMessageException {
         if (getMatchIdByUserId(userId) > 0) {
             connections.sendMessage(userId, new ServerMessage(ServerMessage.Type.ERROR, "Already in match"));
             connections.disconnect(userId);
             return;
         }
 
-        var token = mmTokenParser.verifyMatchmakingToken(message.getToken());
+        var token = mmTokenParser.verifyMatchmakingToken(message.getMatchmakingToken());
         if (!token.getUserId().equals(userId)) {
-            connections.sendMessage(userId, new ServerMessage(ServerMessage.Type.ERROR, "Invalid token"));
+            connections.sendMessage(userId, new ServerMessage(ServerMessage.Type.ERROR, "Invalid matchmaking token"));
             connections.disconnect(userId);
         } else {
             dispatchMessage(token);
@@ -170,15 +174,15 @@ public class WSHandler extends TextWebSocketHandler {
     private void authenticate(WebSocketSession session, TextMessage message)
             throws JsonProcessingException, AccessDeniedException {
         var cm = objectMapper.readValue(message.getPayload(), ClientMessage.class);
-        if (cm.getType() != ClientMessage.Type.CONNECT) {
+        if (cm.getType() != ClientMessage.Type.AUTHENTICATE) {
             throw new AccessDeniedException();
         }
 
-        var m = objectMapper.convertValue(cm.getPayload(), ConnectPayload.class);
+        var m = objectMapper.convertValue(cm.getPayload(), AuthenticatePayload.class);
         authenticate(session, m);
     }
 
-    private void authenticate(WebSocketSession session, ConnectPayload message) {
+    private void authenticate(WebSocketSession session, AuthenticatePayload message) {
         var accessToken = message.getAccessToken();
         if (accessToken == null || accessToken.isEmpty()) {
             throw new AccessDeniedException();
@@ -187,7 +191,7 @@ public class WSHandler extends TextWebSocketHandler {
             var currentUserId = authenticate(accessToken);
             if (connections.hasConnection(currentUserId)) {
                 connections.sendMessage(session.getId(),
-                        new ServerMessage(ServerMessage.Type.ERROR, "User already connected"));
+                        new ServerMessage(ServerMessage.Type.ERROR, "Already connected"));
                 connections.disconnect(session.getId());
             } else {
                 connections.setAuthenticatedUserId(session, currentUserId);

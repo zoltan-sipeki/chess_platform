@@ -2,17 +2,17 @@ package net.chess_platform.chess_service.ws.message.client;
 
 public class ConnectPayload {
 
-    private String accessToken;
-
-    public ConnectPayload(String accessToken) {
-        this.accessToken = accessToken;
-    }
+    private String matchmakingToken;
 
     public ConnectPayload() {
     }
 
-    public String getAccessToken() {
-        return accessToken;
+    public ConnectPayload(String token) {
+        this.matchmakingToken = token;
+    }
+
+    public String getMatchmakingToken() {
+        return matchmakingToken;
     }
 
 }

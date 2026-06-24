@@ -43,12 +43,10 @@ public class PlayerConnections {
     public UUID getAuthenticatedUserId(WebSocketSession session) {
         var sessionId = session.getId();
 
-        Connection connection;
         synchronized (lock) {
-            connection = connections.get(sessionId);
+            var connection = connections.get(sessionId);
+            return connection == null ? null : connection.getUserId();
         }
-
-        return connection == null ? null : connection.getUserId();
 
     }
 
@@ -194,7 +192,7 @@ public class PlayerConnections {
 
         private final OffsetDateTime createdAt = OffsetDateTime.now();
 
-        private volatile UUID userId;
+        private UUID userId;
 
         public Connection(WebSocketSession session) {
             this.session = session;
