@@ -16,11 +16,7 @@
 <div class="container-fluid position-relative">
     <div class="row">
         <div class="col-md-10">
-            @if (alertDetails()) {
-            <ngb-alert #alert (closed)="onAlertClose()" [type]="alertDetails()?.type ?? ''"
-                class="position-fixed top-0 start-50 translate-middle-x mt-3 shadow" style="min-width: 500px;">{{
-                alertDetails()?.message }}</ngb-alert>
-            }
+            <alert></alert>
             <router-outlet></router-outlet>
         </div>
         <div class="col-md-2">
