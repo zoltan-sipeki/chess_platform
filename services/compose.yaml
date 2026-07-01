@@ -159,10 +159,12 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-  matchmaking-connection:
-    image: cp-matchmaking-connection-service:latest
+  matchmaking-api:
+    image: cp-matchmaking-api-service:latest
     build:
-      context: ./matchmaking_connection_service
+      context: ./matchmaking_api_service
+    secrets:
+      - postgres-matchmaking-api-service-password
     environment:
       - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
     ports:
@@ -349,6 +351,8 @@ secrets:
     file: ./secrets/postgres/match_service_password
   postgres-matchmaking-service-password:
     file: ./secrets/postgres/matchmaking_service_password
+  postgres-matchmaking-api-service-password:
+    file: ./secrets/postgres/matchmaking_api_service_password
   postgres-relay-service-password:
     file: ./secrets/postgres/relay_service_password
   postgres-user-service-password:

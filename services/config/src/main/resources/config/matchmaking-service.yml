@@ -47,9 +47,10 @@ eureka:
 matchmaking:
   expand-mmr-range-interval-ms: 150000 # 2.5 mins
   max-time-in-queue-ms: 300000 # 5 mins
+  routing-clean-up-interval-ms: 90000
   token:
     issuer: matchmaking-service
-    expiration: 365d
+    expiration: 1m
     algorithm: RSA512
     private-key: "${mmtoken-private-key}"
     public-key: "${mmtoken-public-key}"

@@ -1,7 +1,7 @@
 import { Component, inject, input } from "@angular/core";
 import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from "@ng-bootstrap/ng-bootstrap";
-import { QueueService } from "../../services/QueueService";
-import { QueueType } from "../../api/QueueApi";
+import { MatchmakingService } from "../../services/MatchmakingService";
+import { QueueType } from "../../api/MatchmakingApi";
 
 @Component({
     selector: "play-menu",
@@ -10,11 +10,11 @@ import { QueueType } from "../../api/QueueApi";
 })
 export class PlayMenu {
     
-    private queueService: QueueService = inject(QueueService);
+    private matchmakingService: MatchmakingService = inject(MatchmakingService);
 
     clazz = input<string>("");
 
     enqueue(queueType: QueueType): void {
-        this.queueService.enqueue(queueType).subscribe();
+        this.matchmakingService.enqueue(queueType).subscribe();
     }
 }

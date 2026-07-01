@@ -57,7 +57,7 @@ public class GatewayApplication {
 				http())
 				.filter(lb("match-service"));
 
-		var matchmakingRoutes = route(path("/api/queues/**"), http()).filter(lb("matchmaking-connection-service"));
+		var matchmakingRoutes = route(path("/api/matchmaking/**"), http()).filter(lb("matchmaking-api-service"));
 
 		var relayRoutes = route(path("/api/users/{id}/preferred-presence/**"), http()).filter(lb("relay-service"));
 
@@ -73,7 +73,8 @@ public class GatewayApplication {
 				.before(rewritePath("/api/privacy/match", "/api/privacy"))
 				.filter(lb("match-service")).build();
 
-		return chatRoutes.and(matchRoutes).and(matchmakingRoutes).and(relayRoutes).and(userRoutes).and(privacy).and(chatPrivacy)
+		return chatRoutes.and(matchRoutes).and(matchmakingRoutes).and(relayRoutes).and(userRoutes).and(privacy)
+				.and(chatPrivacy)
 				.and(matchPrivacy);
 	}
 

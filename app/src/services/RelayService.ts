@@ -1,11 +1,14 @@
 import { inject, Injectable } from "@angular/core";
-import { AuthService } from "./AuthService";
 import { Notification } from "../api/NotificationApi";
 import { Activity, Presence, UserData } from "../api/UserApi";
+import { AuthService } from "./AuthService";
+import { CurrentMatch } from "../api/MatchmakingApi";
 
 export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED" | "PRESENCE_CHANGED" | "ACTIVITY_CHANGED" | "MATCH_FOUND";
 
 export type NotificationRelayEvent = Notification;
+
+export type MatchFoundRelayEvent = CurrentMatch;
 
 export type UserUpdatedRelayEvent = UserData;
 
@@ -21,12 +24,6 @@ export interface PresenceChangedRelayEvent {
 export interface ActivityChangedRelayEvent {
     userId: string;
     activity: Activity;
-}
-
-export interface MatchFoundRelayEvent {
-    inviter?: UserData,
-    invitee?: UserData,
-    matchmakingToken: string
 }
 
 export interface EventMap {

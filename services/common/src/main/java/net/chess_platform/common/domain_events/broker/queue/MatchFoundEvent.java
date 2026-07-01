@@ -15,8 +15,8 @@ public class MatchFoundEvent extends BroadcastEvent<Payload> {
 
             private Payload instance;
 
-            public Builder(String matchmakingToken) {
-                this.instance = new Payload(matchmakingToken);
+            public Builder(String token, UUID target) {
+                this.instance = new Payload(token, target);
             }
 
             public Builder inviter(User inviter) {
@@ -38,12 +38,18 @@ public class MatchFoundEvent extends BroadcastEvent<Payload> {
 
         private User invitee;
 
-        private String matchmakingToken;
+        private UUID target;
 
-        public Payload() {}
+        private String token;
 
-        private Payload(String matchmakingToken) {
-            this.matchmakingToken = matchmakingToken;
+        private String status = "PENDING";
+
+        public Payload() {
+        }
+
+        private Payload(String token, UUID target) {
+            this.token = token;
+            this.target = target;
         }
 
         public User getInviter() {
@@ -54,10 +60,17 @@ public class MatchFoundEvent extends BroadcastEvent<Payload> {
             return invitee;
         }
 
-        public String getMatchmakingToken() {
-            return matchmakingToken;
+        public String getToken() {
+            return token;
         }
 
+        public UUID getTarget() {
+            return target;
+        }
+
+        public String getStatus() {
+            return status;
+        }
     }
 
     public MatchFoundEvent(List<UUID> recipients, Payload data) {

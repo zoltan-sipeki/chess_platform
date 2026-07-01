@@ -1,10 +1,11 @@
 import { NgTemplateOutlet, TitleCasePipe } from "@angular/common";
 import { Component, effect, ElementRef, inject, OnDestroy, OnInit, Signal, signal, viewChild } from "@angular/core";
 import { NgbToast, NgbToastHeader } from "@ng-bootstrap/ng-bootstrap";
+import { CurrentMatch, QueueType } from "../../api/MatchmakingApi";
 import { TimeFormatPipe } from "../../pipes/TimeFormatPipe";
-import { QueueType } from "../../api/QueueApi";
-import { QueueService } from "../../services/QueueService";
-import { MatchFoundRelayEvent } from "../../services/RelayService";
+import { MatchmakingService } from "../../services/MatchmakingService";
+import { UserService } from "../../services/UserService";
+import { UserData } from "../../api/UserApi";
 
 @Component({
     selector: "queue-toast",
@@ -21,7 +22,9 @@ import { MatchFoundRelayEvent } from "../../services/RelayService";
 })
 export class QueueToastComponent implements OnInit, OnDestroy {
 
-    private queueService: QueueService = inject(QueueService);
+    private matchmakingService: MatchmakingService = inject(MatchmakingService);
+
+    private userService: UserService = inject(UserService);
 
     private elementRef: ElementRef = inject(ElementRef);
 
@@ -39,9 +42,11 @@ export class QueueToastComponent implements OnInit, OnDestroy {
 
     queue!: Signal<QueueType | null>;
 
-    matchInfo!: Signal<MatchFoundRelayEvent | null>;
+    currentMatch!: Signal<CurrentMatch | null>;
 
     timeInQueue!: Signal<number>;
+
+    currentUser!: Signal<UserData>;
 
     constructor() {
         effect(() => {
@@ -56,9 +61,11 @@ export class QueueToastComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.queue = this.queueService.queue;
-        this.matchInfo = this.queueService.matchInfo;
-        this.timeInQueue = this.queueService.timeInQueue;
+        this.queue = this.matchmakingService.queue;
+        this.currentMatch = this.matchmakingService.currentMatch;
+        this.timeInQueue = this.matchmakingService.timeInQueue;
+        this.currentUser = this.userService.currentUser;
+        
         document.addEventListener("mousemove", this.drag);
         document.addEventListener("mouseup", this.stopDragging);
     }
@@ -87,10 +94,10 @@ export class QueueToastComponent implements OnInit, OnDestroy {
     }
 
     dequeue(): void {
-        this.queueService.dequeue().subscribe();
+        this.matchmakingService.dequeue().subscribe();
     }
 
-    deleteMatchInfo(): void {
-        this.queueService.deleteMatchInfo();
+    declineCurrentMatch(): void {
+        this.matchmakingService.declineCurrentMatch().subscribe();
     }
 }

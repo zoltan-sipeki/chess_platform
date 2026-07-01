@@ -13,7 +13,7 @@ import { RelayService, UnfriendRelayEvent, UserUpdatedRelayEvent } from "../../s
 import { AvatarComponent } from "../avatar/avatar.component";
 import { MatchHistoryTable } from "../match-history-table/match-history-table.component";
 import { User } from "../user/user.component";
-import { QueueService } from "../../services/QueueService";
+import { MatchmakingService } from "../../services/MatchmakingService";
 
 export interface MatchStatsTotal {
     gamesPlayed: number;
@@ -36,7 +36,7 @@ export class UserProfilePage implements OnInit, OnDestroy {
 
     private friendService: FriendService = inject(FriendService);
 
-    private queueService: QueueService = inject(QueueService);
+    private queueService: MatchmakingService = inject(MatchmakingService);
 
     private eventService: EventService = inject(EventService);
 

@@ -1,4 +1,4 @@
-package net.chess_platform.matchmaking_service.model;
+package net.chess_platform.matchmaking_api_service.model;
 
 import java.time.Instant;
 

@@ -25,7 +25,7 @@
         
     <module>match_service</module>
         
-    <module>matchmaking_connection_service</module>
+    <module>matchmaking_api_service</module>
         
     <module>matchmaking_service</module>
         

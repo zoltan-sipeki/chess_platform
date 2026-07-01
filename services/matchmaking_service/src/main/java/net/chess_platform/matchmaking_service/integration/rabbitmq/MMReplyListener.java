@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 import net.chess_platform.common.domain_events.broker.message.queue.backend.ErrorReply;
 import net.chess_platform.common.domain_events.broker.message.queue.backend.ErrorReply.ErrorCause;
 import net.chess_platform.common.domain_events.broker.message.queue.frontend.CreatePrivateMatchMessage;
+import net.chess_platform.common.domain_events.broker.message.queue.frontend.DeclineMatchMessage;
 import net.chess_platform.common.domain_events.broker.message.queue.frontend.DequeueMessage;
 import net.chess_platform.common.domain_events.broker.message.queue.frontend.EnqueueMessage;
-import net.chess_platform.common.domain_events.broker.message.queue.frontend.PlayerDisconnectedMessage;
 import net.chess_platform.matchmaking_service.exception.MatchmakingException;
 import net.chess_platform.matchmaking_service.exception.ServiceUnavailableException;
 import net.chess_platform.matchmaking_service.mmqueue.Match;
@@ -47,8 +47,8 @@ public class MMReplyListener {
     }
 
     @RabbitHandler
-    public void disconnect(@Payload PlayerDisconnectedMessage e) {
-        matchmakingService.dequeuePlayer(e.userId());
+    public boolean deletePendingMatch(@Payload DeclineMatchMessage e) {
+        return matchmakingService.declineMatch(e.userId());
     }
 
     @RabbitHandler

@@ -5,7 +5,7 @@ import { NgbAccordionBody, NgbAccordionButton, NgbAccordionCollapse, NgbAccordio
 import { FriendRequest } from "../../api/FriendRequestApi";
 import { FriendRequestService } from "../../services/FriendRequestService";
 import { FriendService } from "../../services/FriendService";
-import { QueueService } from "../../services/QueueService";
+import { MatchmakingService } from "../../services/MatchmakingService";
 import { UserData } from "../../api/UserApi";
 import { User } from "../user/user.component";
 
@@ -40,7 +40,7 @@ import { User } from "../user/user.component";
 })
 export class FriendList implements OnDestroy, OnInit {
 
-    private queueService: QueueService = inject(QueueService);
+    private queueService: MatchmakingService = inject(MatchmakingService);
 
     private friendRequestService: FriendRequestService = inject(FriendRequestService);
 
