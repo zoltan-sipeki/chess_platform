@@ -1,6 +1,6 @@
 package net.chess_platform.matchmaking_service.mmqueue;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,8 +11,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import net.chess_platform.matchmaking_service.exception.MatchmakingException;
-import net.chess_platform.matchmaking_service.repository.PlayerRepository;
+import net.chess_platform.matchmaking_service.model.Player;
 
 public class MMQueue {
 
@@ -25,49 +24,16 @@ public class MMQueue {
 
     private final Match.Type matchType;
 
-    private final PlayerRepository matchmakingUserRepository;
-
-    public MMQueue(Match.Type queueType, PlayerRepository matchmakingUserRepository) {
+    public MMQueue(Match.Type queueType) {
         this.matchType = queueType;
-        this.matchmakingUserRepository = matchmakingUserRepository;
     }
 
-    public synchronized Match addPlayer(UUID userId) {
-        if (unorderedQueue.get(userId) != null) {
+    public synchronized Match addPlayer(Player player) {
+        if (unorderedQueue.get(player.getId()) != null) {
             return null;
         }
 
-        var matchUser = matchmakingUserRepository.findById(userId)
-                .orElseThrow(() -> new MatchmakingException("Player with id " + userId + " not found"));
-
-        var player = new Player(userId, matchUser.getRankedMmr(), matchUser.getUnrankedMmr());
-
         return reAddPlayer(player);
-    }
-
-    private Match reAddPlayer(Player player) {
-        if (player.getLastExpanded() == null) {
-            var mmr = matchType == Match.Type.RANKED ? player.getRankedMmr() : player.getUnrankedMmr();
-            player.setSearchRange(new SearchRange(mmr));
-            player.setLastExpanded(LocalDateTime.now());
-        }
-
-        if (orderedQueue.contains(player)) {
-            var otherPlayer = orderedQueue.ceiling(player);
-            unorderedQueue.remove(player.getId());
-            unorderedQueue.remove(otherPlayer.getId());
-            orderedQueue.remove(otherPlayer);
-
-            onPlayerRemove(player);
-            onPlayerRemove(otherPlayer);
-
-            return new Match(List.of(player, otherPlayer), matchType);
-        }
-
-        orderedQueue.add(player);
-        unorderedQueue.put(player.getId(), player);
-
-        return null;
     }
 
     public synchronized boolean removePlayer(UUID userId) {
@@ -91,7 +57,7 @@ public class MMQueue {
             if (!shouldExpandSearchRange(player)) {
                 continue;
             }
-            
+
             orderedQueue.remove(player);
             player.expandSearchRange();
 
@@ -108,13 +74,38 @@ public class MMQueue {
         return unorderedQueue.containsKey(userId);
     }
 
+    private Match reAddPlayer(Player player) {
+        if (player.getLastExpandedAt() == null) {
+            var mmr = matchType == Match.Type.RANKED ? player.getRankedMmr() : player.getUnrankedMmr();
+            player.setSearchRange(new SearchRange(mmr));
+            player.setLastExpandedAt(Instant.now());
+        }
+
+        if (orderedQueue.contains(player)) {
+            var otherPlayer = orderedQueue.ceiling(player);
+            unorderedQueue.remove(player.getId());
+            unorderedQueue.remove(otherPlayer.getId());
+            orderedQueue.remove(otherPlayer);
+
+            onPlayerRemove(player);
+            onPlayerRemove(otherPlayer);
+
+            return new Match(List.of(player, otherPlayer), matchType);
+        }
+
+        orderedQueue.add(player);
+        unorderedQueue.put(player.getId(), player);
+
+        return null;
+    }
+
     private void onPlayerRemove(Player player) {
-        player.setLastExpanded(null);
+        player.setLastExpandedAt(null);
         player.setSearchRange(null);
     }
 
     private boolean shouldExpandSearchRange(Player player) {
-        return player.getLastExpanded().plus(MAX_TIME_IN_QUEUE_MS, ChronoUnit.MILLIS)
-                .isBefore(LocalDateTime.now());
+        return player.getLastExpandedAt().plus(MAX_TIME_IN_QUEUE_MS, ChronoUnit.MILLIS)
+                .isBefore(Instant.now());
     }
 }

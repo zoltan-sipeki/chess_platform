@@ -22,7 +22,6 @@ import net.chess_platform.matchmaking_service.exception.MatchmakingException;
 import net.chess_platform.matchmaking_service.exception.ServiceUnavailableException;
 import net.chess_platform.matchmaking_service.mmqueue.MMQueue;
 import net.chess_platform.matchmaking_service.mmqueue.Match;
-import net.chess_platform.matchmaking_service.mmqueue.Player;
 import net.chess_platform.matchmaking_service.model.MatchRouting;
 import net.chess_platform.matchmaking_service.model.MatchRoutingFactory;
 import net.chess_platform.matchmaking_service.repository.MatchRoutingRepository;
@@ -75,11 +74,14 @@ public class MatchmakingService {
                     "Already in match");
         }
 
+        var player = playerRepository.findById(userId).orElseThrow(() -> new MatchmakingException(
+                "Player not found"));
+
         Match match = null;
         if (queueType == Match.Type.UNRANKED) {
-            match = unrankedQueue.addPlayer(userId);
+            match = unrankedQueue.addPlayer(player);
         } else {
-            match = rankedQueue.addPlayer(userId);
+            match = rankedQueue.addPlayer(player);
         }
 
         if (match == null) {
@@ -161,14 +163,12 @@ public class MatchmakingService {
                     "Invitee is in match");
         }
 
-        var match = new Match(List.of(new Player(inviterId), new Player(inviteeId)), Match.Type.PRIVATE);
+        var players = playerRepository.findAllById(List.of(inviterId, inviteeId));
+        var match = new Match(players, Match.Type.PRIVATE);
         var routingData = createRoutingData(match);
 
         try {
             save(routingData);
-
-            var players = playerRepository.findAllById(List.of(inviterId, inviteeId));
-
             for (var d : routingData) {
 
                 var payload = new MatchFoundEvent.Payload.Builder(d.getToken(), d.getTarget());

@@ -5,19 +5,18 @@ import org.springframework.context.annotation.Configuration;
 
 import net.chess_platform.matchmaking_service.mmqueue.MMQueue;
 import net.chess_platform.matchmaking_service.mmqueue.Match;
-import net.chess_platform.matchmaking_service.repository.PlayerRepository;
 
 @Configuration
 public class MMQueueConfig {
 
     @Bean
-    public MMQueue unrankedQueue(PlayerRepository matchmakingUserRepository) {
-        return new MMQueue(Match.Type.UNRANKED, matchmakingUserRepository);
+    public MMQueue unrankedQueue() {
+        return new MMQueue(Match.Type.UNRANKED);
     }
 
     @Bean
-    public MMQueue rankedQueue(PlayerRepository matchmakingUserRepository) {
-        return new MMQueue(Match.Type.RANKED, matchmakingUserRepository);
+    public MMQueue rankedQueue() {
+        return new MMQueue(Match.Type.RANKED);
     }
 
 }

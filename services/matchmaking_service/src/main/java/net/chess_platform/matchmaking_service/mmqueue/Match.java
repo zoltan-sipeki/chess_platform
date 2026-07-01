@@ -2,6 +2,8 @@ package net.chess_platform.matchmaking_service.mmqueue;
 
 import java.util.List;
 
+import net.chess_platform.matchmaking_service.model.Player;
+
 public class Match {
 
 	public enum Type {

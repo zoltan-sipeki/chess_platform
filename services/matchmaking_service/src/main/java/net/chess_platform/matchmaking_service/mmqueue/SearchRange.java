@@ -28,6 +28,10 @@ public class SearchRange implements Comparable<SearchRange> {
 
     @Override
     public int compareTo(SearchRange o) {
+        if (o == null) {
+            throw new IllegalArgumentException("Cannot compare to null");
+        }
+
         if (o.minMmr > this.maxMmr) {
             return -1;
         }

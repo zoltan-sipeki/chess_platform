@@ -24,7 +24,6 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import net.chess_platform.matchmaking_service.mmqueue.Match;
-import net.chess_platform.matchmaking_service.mmqueue.Player;
 
 @Component
 public class MatchRoutingFactory {

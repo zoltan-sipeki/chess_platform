@@ -51,7 +51,7 @@ public class MatchRouting extends AuditedEntity {
     protected MatchRouting() {
     }
 
-    protected MatchRouting(net.chess_platform.matchmaking_service.mmqueue.Player player, long matchId,
+    protected MatchRouting(Player player, long matchId,
             Match.Type matchType, UUID target,
             Instant expiresAt) {
         Integer mmr = null;
