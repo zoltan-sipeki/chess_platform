@@ -45,6 +45,5 @@ public class EventListener {
     @RabbitHandler
     public void process(@Payload RelayDisconnectEvent e) {
         matchmakingService.process(e);
-        eventService.ack(e, SERVICE_NAME);
     }
 }
