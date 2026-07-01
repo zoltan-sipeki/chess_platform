@@ -1,10 +1,10 @@
-package net.chess_platform.matchmaking_api_service.dto.request;
+package net.chess_platform.matchmaking_api_service.dto;
 
 import java.util.UUID;
 
 import jakarta.validation.constraints.NotNull;
 
-public record PrivateMatchRequest(
+public record CreatePrivateMatchDto(
         @NotNull UUID inviteeId) {
 
 }

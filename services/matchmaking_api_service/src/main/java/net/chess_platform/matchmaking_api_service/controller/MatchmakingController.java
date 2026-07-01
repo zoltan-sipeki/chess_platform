@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import net.chess_platform.common.security.CurrentUser;
+import net.chess_platform.matchmaking_api_service.dto.CreatePrivateMatchDto;
 import net.chess_platform.matchmaking_api_service.dto.CurrentMatchDto;
-import net.chess_platform.matchmaking_api_service.dto.request.PrivateMatchRequest;
 import net.chess_platform.matchmaking_api_service.service.MatchmakingService;
 
 @RestController
@@ -42,7 +42,7 @@ public class MatchmakingController {
 
     @PostMapping("/private-match")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void startPrivateMatch(@RequestBody @Valid PrivateMatchRequest dto,
+    public void startPrivateMatch(@RequestBody @Valid CreatePrivateMatchDto dto,
             CurrentUser currentUser) {
         matchmakingService.createPrivateMatch(currentUser, dto.inviteeId());
     }

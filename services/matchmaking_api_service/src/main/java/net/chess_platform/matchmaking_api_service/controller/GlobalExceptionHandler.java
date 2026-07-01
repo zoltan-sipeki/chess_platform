@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
-import net.chess_platform.matchmaking_api_service.dto.response.ErrorResponse;
+import net.chess_platform.matchmaking_api_service.dto.ErrorDto;
 import net.chess_platform.matchmaking_api_service.exception.EntityNotFoundException;
 import net.chess_platform.matchmaking_api_service.exception.MatchmakingException;
 import net.chess_platform.matchmaking_api_service.exception.ServiceUnavailableException;
@@ -19,28 +19,28 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleException(MatchmakingException e, HttpServletRequest request) {
-        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage(), request.getRequestURI(),
+    public ErrorDto handleException(MatchmakingException e, HttpServletRequest request) {
+        return new ErrorDto(HttpStatus.BAD_REQUEST.value(), e.getMessage(), request.getRequestURI(),
                 OffsetDateTime.now());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleException(EntityNotFoundException e, HttpServletRequest request) {
-        return new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), request.getRequestURI(),
+    public ErrorDto handleException(EntityNotFoundException e, HttpServletRequest request) {
+        return new ErrorDto(HttpStatus.NOT_FOUND.value(), e.getMessage(), request.getRequestURI(),
                 OffsetDateTime.now());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
-    public ErrorResponse handleException(ServiceUnavailableException e, HttpServletRequest request) {
-        return new ErrorResponse(HttpStatus.SERVICE_UNAVAILABLE.value(), e.getMessage(),
+    public ErrorDto handleException(ServiceUnavailableException e, HttpServletRequest request) {
+        return new ErrorDto(HttpStatus.SERVICE_UNAVAILABLE.value(), e.getMessage(),
                 request.getRequestURI(), OffsetDateTime.now());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleException(MethodArgumentNotValidException e, HttpServletRequest request) {
+    public ErrorDto handleException(MethodArgumentNotValidException e, HttpServletRequest request) {
         var errorMessage = new StringBuilder();
         var errors = e.getBindingResult().getFieldErrors();
         for (int i = 0; i < errors.size(); i++) {
@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
                 errorMessage.append("; ");
             }
         }
-        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), errorMessage.toString(), request.getRequestURI(),
+        return new ErrorDto(HttpStatus.BAD_REQUEST.value(), errorMessage.toString(), request.getRequestURI(),
                 OffsetDateTime.now());
     }
 }
