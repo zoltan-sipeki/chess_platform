@@ -2,6 +2,8 @@ package net.chess_platform.chess_service.ws.message.client;
 
 import java.util.Map;
 
+import net.chess_platform.chess_service.coordinator.message.ReconnectMessage;
+
 public class ClientMessage {
 
     public enum Type {
@@ -15,7 +17,7 @@ public class ClientMessage {
 
     public static final Map<Type, Class<?>> PAYLOAD_MAPPING = Map.of(
             Type.AUTHENTICATE, AuthenticatePayload.class,
-            Type.RECONNECT, ReconnectPayload.class,
+            Type.RECONNECT, ReconnectMessage.class,
             Type.MOVE, MovePayload.class,
             Type.PROMOTION, PromotionPayload.class,
             Type.RESIGN, ResignPayload.class,

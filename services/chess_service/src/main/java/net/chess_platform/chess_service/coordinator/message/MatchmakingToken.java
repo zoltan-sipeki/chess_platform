@@ -1,25 +1,24 @@
-package net.chess_platform.chess_service.coordinator;
+package net.chess_platform.chess_service.coordinator.message;
 
 import java.util.UUID;
 
 import net.chess_platform.chess_service.coordinator.match.Match;
-import net.chess_platform.chess_service.ws.message.client.IChessMessage;
 
-public class MatchmakingToken implements IChessMessage {
+public class MatchmakingToken implements IRoutableMessage {
 
     private long matchId;
 
-    private UUID userId;
+    private UUID playerId;
 
     private Integer mmr;
 
     private Match.Type matchType;
 
-    private String target;
+    private UUID target;
 
-    public MatchmakingToken(long matchId, UUID userId, Integer mmr, Match.Type matchType, String target) {
+    public MatchmakingToken(long matchId, UUID userId, Integer mmr, Match.Type matchType, UUID target) {
         this.matchId = matchId;
-        this.userId = userId;
+        this.playerId = userId;
         this.mmr = mmr;
         this.matchType = matchType;
         this.target = target;
@@ -29,9 +28,8 @@ public class MatchmakingToken implements IChessMessage {
         return mmr;
     }
 
-    @Override
-    public UUID getUserId() {
-        return userId;
+    public UUID getPlayerId() {
+        return playerId;
     }
 
     public long getMatchId() {
@@ -42,13 +40,13 @@ public class MatchmakingToken implements IChessMessage {
         return matchType;
     }
 
-    public String getTarget() {
+    public UUID getTarget() {
         return target;
     }
 
     @Override
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public long getRoutingKey() {
+        return matchId;
     }
 
 }

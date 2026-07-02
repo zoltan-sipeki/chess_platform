@@ -17,9 +17,9 @@ import net.chess_platform.chess_service.coordinator.EloRatingCalculator;
 import net.chess_platform.chess_service.coordinator.EventQueue;
 import net.chess_platform.chess_service.coordinator.match.event.FlagFallEvent;
 import net.chess_platform.chess_service.coordinator.match.event.PromotionTimeoutEvent;
-import net.chess_platform.chess_service.ws.message.client.MovePayload;
-import net.chess_platform.chess_service.ws.message.client.PromotionPayload;
-import net.chess_platform.chess_service.ws.message.client.ResignPayload;
+import net.chess_platform.chess_service.coordinator.message.MoveMessage;
+import net.chess_platform.chess_service.coordinator.message.PromotionMessage;
+import net.chess_platform.chess_service.coordinator.message.ResignMessage;
 
 public class Match {
 
@@ -115,8 +115,8 @@ public class Match {
         return players.size() == 2;
     }
 
-    public MoveProcessingResult process(MovePayload message) {
-        var player = findPlayer(message.getUserId());
+    public MoveProcessingResult process(MoveMessage message) {
+        var player = findPlayer(message.getPlayerId());
         MoveDetails moveDetails = new MoveDetails(player.getColor(), message.getFrom(), message.getTo());
 
         var moveResult = chessboard.makeMove(moveDetails);
@@ -124,8 +124,8 @@ public class Match {
         return process(moveResult);
     }
 
-    public MoveProcessingResult process(PromotionPayload message) {
-        var player = findPlayer(message.getUserId());
+    public MoveProcessingResult process(PromotionMessage message) {
+        var player = findPlayer(message.getPlayerId());
         var promotionDetails = new PromotionDetails(player.getColor(), message.getPromotee());
 
         var moveResult = chessboard.makeMove(promotionDetails);
@@ -133,8 +133,8 @@ public class Match {
         return process(moveResult);
     }
 
-    public MoveProcessingResult process(ResignPayload message) {
-        var player = findPlayer(message.getUserId());
+    public MoveProcessingResult process(ResignMessage message) {
+        var player = findPlayer(message.getPlayerId());
         var moveResult = chessboard.resign(player.getColor());
 
         return process(moveResult);

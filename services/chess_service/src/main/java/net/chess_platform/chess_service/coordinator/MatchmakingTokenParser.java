@@ -20,9 +20,10 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 import jakarta.annotation.PostConstruct;
 import net.chess_platform.chess_service.coordinator.match.Match;
+import net.chess_platform.chess_service.coordinator.message.MatchmakingToken;
 
 @Component
-public class MMTokenParser {
+public class MatchmakingTokenParser {
 
     @Value("${matchmaking.token.algorithm}")
     private String ALGORITHM;
@@ -47,18 +48,13 @@ public class MMTokenParser {
     }
 
     public MatchmakingToken verifyMatchmakingToken(String token) {
-        var decodedToken = verifier.verify(token);
-        return createMatchmakingToken(decodedToken);
+        var decoded = verifier.verify(token);
+        return createToken(decoded);
     }
 
-    public MatchmakingToken parseMatchmakingToken(String token) {
-        var decodedToken = JWT.decode(token);
-        return createMatchmakingToken(decodedToken);
-    }
-
-    private MatchmakingToken createMatchmakingToken(DecodedJWT decodedToken) {
+    private MatchmakingToken createToken(DecodedJWT decodedToken) {
         var matchId = decodedToken.getClaim("matchId").asLong();
-        var target = decodedToken.getClaim("target").asString();
+        var target = UUID.fromString(decodedToken.getClaim("target").asString());
         var playerId = decodedToken.getClaim("playerId").as(UUID.class);
         var mmr = decodedToken.getClaim("mmr").asInt();
         var matchType = decodedToken.getClaim("matchType").as(Match.Type.class);

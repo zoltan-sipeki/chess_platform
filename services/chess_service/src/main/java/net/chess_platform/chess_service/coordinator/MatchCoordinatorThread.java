@@ -67,9 +67,9 @@ public class MatchCoordinatorThread extends Thread {
             try {
                 var event = eventQueue.take();
                 switch (event) {
-                    case DisconnectPayload m -> process(m);
+                    case DisconnectMessage m -> process(m);
                     case MatchmakingToken m -> process(m);
-                    case IChessMessage m -> process(m);
+                    case IMatchMessage m -> process(m);
                     case FlagFallEvent m -> process(m);
                     case PromotionTimeoutEvent m -> process(m);
                     case MatchTimeoutEvent m -> process(m);
@@ -85,8 +85,8 @@ public class MatchCoordinatorThread extends Thread {
         eventQueue.offer(message);
     }
 
-    public void process(DisconnectPayload message) {
-        var userId = message.getUserId();
+    public void process(DisconnectMessage message) {
+        var userId = message.getPlayerId();
         var player = players.get(userId);
         if (player == null) {
             return;
@@ -106,36 +106,32 @@ public class MatchCoordinatorThread extends Thread {
                 new ServerMessage(ServerMessage.Type.PLAYER_DISCONNECTED, userId));
     }
 
-    private void process(IChessMessage message) {
+    private void process(IMatchMessage message) {
         var matchId = message.getMatchId();
-        var userId = message.getUserId();
+        var userId = message.getPlayerId();
         var match = matches.get(matchId);
         if (match == null) {
-            connections.sendMessage(userId,
-                    new ServerMessage(ServerMessage.Type.ERROR, "Invalid match id"));
             connections.disconnect(userId);
             return;
         }
 
         if (match.findPlayer(userId) == null) {
-            connections.sendMessage(userId,
-                    new ServerMessage(ServerMessage.Type.ERROR, "Invalid player id"));
             connections.disconnect(userId);
             return;
         }
 
         switch (message) {
-            case ReconnectPayload m -> process(m);
-            case MovePayload m -> process(m);
-            case PromotionPayload m -> process(m);
-            case ResignPayload m -> process(m);
+            case ReconnectMessage m -> process(m, match);
+            case MoveMessage m -> process(m, match);
+            case PromotionMessage m -> process(m, match);
+            case ResignMessage m -> process(m, match);
             default -> throw new IllegalArgumentException("Invalid message type.");
         }
 
     }
 
     private void process(MatchmakingToken token) {
-        var userId = token.getUserId();
+        var userId = token.getPlayerId();
         var matchId = token.getMatchId();
         var match = matches.get(matchId);
 
@@ -146,7 +142,11 @@ public class MatchCoordinatorThread extends Thread {
         }
 
         var player = new Player(userId, token.getMmr(), matchId);
-        players.put(userId, player);
+        var prev = players.put(userId, player);
+        if (prev != null) {
+            return;
+        }
+
         match.addPlayer(player);
 
         if (!match.isEveryBodyConnected()) {
@@ -175,11 +175,8 @@ public class MatchCoordinatorThread extends Thread {
         }
     }
 
-    private void process(ReconnectPayload message) {
-        var matchId = message.getMatchId();
-        var userId = message.getUserId();
-
-        var match = matches.get(matchId);
+    private void process(ReconnectMessage message, Match match) {
+        var userId = message.getPlayerId();
 
         var otherPlayer = match.getPlayerOtherThan(userId);
         if (otherPlayer != null) {
@@ -193,9 +190,7 @@ public class MatchCoordinatorThread extends Thread {
                 new ServerMessage(ServerMessage.Type.GAME_STATE, gameState));
     }
 
-    private void process(MovePayload message) {
-        var match = matches.get(message.getMatchId());
-
+    private void process(MoveMessage message, Match match) {
         var moveResult = match.process(message);
 
         sendMoveResult(match, moveResult);
@@ -205,9 +200,7 @@ public class MatchCoordinatorThread extends Thread {
         }
     }
 
-    private void process(PromotionPayload message) {
-        var match = matches.get(message.getMatchId());
-
+    private void process(PromotionMessage message, Match match) {
         var moveResult = match.process(message);
 
         sendMoveResult(match, moveResult);
@@ -217,8 +210,7 @@ public class MatchCoordinatorThread extends Thread {
         }
     }
 
-    private void process(ResignPayload message) {
-        var match = matches.get(message.getMatchId());
+    private void process(ResignMessage message, Match match) {
         var moveResult = match.process(message);
 
         sendMoveResult(match, moveResult);
