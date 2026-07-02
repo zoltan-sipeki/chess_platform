@@ -1,6 +1,5 @@
 package net.chess_platform.matchmaking_service.model;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.data.domain.Persistable;
@@ -12,10 +11,9 @@ import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
 import jakarta.persistence.Transient;
-import net.chess_platform.matchmaking_service.mmqueue.SearchRange;
 
 @Entity
-public class Player extends AuditedEntity implements Persistable<UUID>, Comparable<Player> {
+public class Player extends AuditedEntity implements Persistable<UUID> {
 
     public static class Update {
 
@@ -74,12 +72,6 @@ public class Player extends AuditedEntity implements Persistable<UUID>, Comparab
     private int rankedMmr = 1500;
 
     private int unrankedMmr = 1500;
-
-    @Transient
-    private Instant lastExpandedAt;
-
-    @Transient
-    private SearchRange searchRange;
 
     public UUID getId() {
         return id;
@@ -142,34 +134,14 @@ public class Player extends AuditedEntity implements Persistable<UUID>, Comparab
         this.avatar = avatar;
     }
 
-    public Instant getLastExpandedAt() {
-        return lastExpandedAt;
-    }
-
-    public void setLastExpandedAt(Instant lastExpandedAt) {
-        this.lastExpandedAt = lastExpandedAt;
-    }
-
-    public SearchRange getSearchRange() {
-        return searchRange;
-    }
-
-    public void setSearchRange(SearchRange searchRange) {
-        this.searchRange = searchRange;
-    }
-
-    public void expandSearchRange() {
-        if (searchRange != null) {
-            searchRange.expand();
-        }
-    }
-
-    @Override
-    public int compareTo(Player o) {
-        if (this.searchRange == null || o.searchRange == null) {
-            throw new IllegalArgumentException("Cannot compare to null");
-        }
-        return searchRange.compareTo(o.searchRange);
+    public Player clone() {
+        var clone = new Player();
+        clone.setId(id);
+        clone.setDisplayName(displayName);
+        clone.setAvatar(avatar);
+        clone.setRankedMmr(rankedMmr);
+        clone.setUnrankedMmr(unrankedMmr);
+        return clone;
     }
 
 }

@@ -79,9 +79,9 @@ public class MatchmakingService {
 
         Match match = null;
         if (queueType == Match.Type.UNRANKED) {
-            match = unrankedQueue.addPlayer(player);
+            match = unrankedQueue.addPlayer(player.clone());
         } else {
-            match = rankedQueue.addPlayer(player);
+            match = rankedQueue.addPlayer(player.clone());
         }
 
         if (match == null) {

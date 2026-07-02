@@ -18,9 +18,9 @@ public class MMQueue {
     @Value("${matchmaking.max-time-in-queue-ms}")
     private int MAX_TIME_IN_QUEUE_MS;
 
-    private final Map<UUID, Player> unorderedQueue = new HashMap<>();
+    private final Map<UUID, QueuePlayer> unorderedQueue = new HashMap<>();
 
-    private final TreeSet<Player> orderedQueue = new TreeSet<>((a, b) -> a.compareTo(b));
+    private final TreeSet<QueuePlayer> orderedQueue = new TreeSet<>((a, b) -> a.compareTo(b));
 
     private final Match.Type matchType;
 
@@ -33,7 +33,7 @@ public class MMQueue {
             return null;
         }
 
-        return reAddPlayer(player);
+        return reAddPlayer(new QueuePlayer(player));
     }
 
     public synchronized boolean removePlayer(UUID userId) {
@@ -44,8 +44,7 @@ public class MMQueue {
 
         unorderedQueue.remove(queuedPlayer.getId());
         orderedQueue.remove(queuedPlayer);
-        onPlayerRemove(queuedPlayer);
-
+        
         return true;
     }
 
@@ -74,7 +73,7 @@ public class MMQueue {
         return unorderedQueue.containsKey(userId);
     }
 
-    private Match reAddPlayer(Player player) {
+    private Match reAddPlayer(QueuePlayer player) {
         if (player.getLastExpandedAt() == null) {
             var mmr = matchType == Match.Type.RANKED ? player.getRankedMmr() : player.getUnrankedMmr();
             player.setSearchRange(new SearchRange(mmr));
@@ -87,10 +86,7 @@ public class MMQueue {
             unorderedQueue.remove(otherPlayer.getId());
             orderedQueue.remove(otherPlayer);
 
-            onPlayerRemove(player);
-            onPlayerRemove(otherPlayer);
-
-            return new Match(List.of(player, otherPlayer), matchType);
+            return new Match(List.of(player.getPlayer(), otherPlayer.getPlayer()), matchType);
         }
 
         orderedQueue.add(player);
@@ -99,12 +95,7 @@ public class MMQueue {
         return null;
     }
 
-    private void onPlayerRemove(Player player) {
-        player.setLastExpandedAt(null);
-        player.setSearchRange(null);
-    }
-
-    private boolean shouldExpandSearchRange(Player player) {
+    private boolean shouldExpandSearchRange(QueuePlayer player) {
         return player.getLastExpandedAt().plus(MAX_TIME_IN_QUEUE_MS, ChronoUnit.MILLIS)
                 .isBefore(Instant.now());
     }
