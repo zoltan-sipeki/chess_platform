@@ -9,10 +9,10 @@ import net.chess_platform.chess_service.chess.piece.behavior.KnightBehavior;
 
 public class Knight extends AbstractPiece {
 
-    private IPieceBehavior knightMoves = new KnightBehavior();
+    private final IPieceBehavior knightMoves = new KnightBehavior();
 
-    public Knight(int row, int col, PieceColor color, Chessboard board) {
-        super(row, col, color, board);
+    public Knight(int row, int col, Color color, Chessboard board) {
+        super(row, col, color, board, Type.KNIGHT);
     }
 
     @Override
@@ -22,6 +22,6 @@ public class Knight extends AbstractPiece {
 
     @Override
     public String toString() {
-        return getColor() == PieceColor.WHITE ? Character.toString(9816) : Character.toString(9822);
+        return getColor() == Color.WHITE ? Character.toString(9816) : Character.toString(9822);
     }
 }

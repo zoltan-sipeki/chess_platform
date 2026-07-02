@@ -10,7 +10,7 @@ public class EnPassantMove extends AbstractMove {
     private Position capturedPos;
 
     public EnPassantMove(Chessboard board, Position from, Position to, Position capturedPos) {
-        super(board, from, to);
+        super(board, from, to, Type.EN_PASSANT);
         this.capturedPos = capturedPos;
         this.capturedPawn = board.getPiece(capturedPos);
         setAlgebraicNotation(getMovedPiece().toString() + getFrom().toString() + "x"

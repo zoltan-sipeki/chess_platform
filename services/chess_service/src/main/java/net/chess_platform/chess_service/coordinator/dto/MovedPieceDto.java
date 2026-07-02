@@ -1,7 +1,9 @@
-package net.chess_platform.chess_service.ws.dto;
+package net.chess_platform.chess_service.coordinator.dto;
 
 public record MovedPieceDto(
+
         String color,
+
         String type) {
 
 }

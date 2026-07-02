@@ -2,7 +2,7 @@ package net.chess_platform.chess_service.coordinator.match;
 
 import java.util.UUID;
 
-import net.chess_platform.chess_service.chess.piece.PieceColor;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
 
 public class Player {
 
@@ -14,7 +14,7 @@ public class Player {
 
     private Float score;
 
-    private PieceColor color;
+    private Color color;
 
     private volatile long matchId;
 
@@ -32,11 +32,11 @@ public class Player {
         return mmr;
     }
 
-    public PieceColor getColor() {
+    public Color getColor() {
         return color;
     }
 
-    public void setColor(PieceColor color) {
+    public void setColor(Color color) {
         this.color = color;
     }
 

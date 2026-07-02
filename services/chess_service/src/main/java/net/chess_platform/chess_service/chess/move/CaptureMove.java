@@ -8,7 +8,7 @@ public class CaptureMove extends AbstractMove {
     private AbstractPiece capturedPiece;
 
     public CaptureMove(Chessboard board, Position from, Position to) {
-        super(board, from, to);
+        super(board, from, to, Type.CAPTURE);
         this.capturedPiece = board.getPiece(to);
         setAlgebraicNotation(
                 getMovedPiece().toString() + getFrom().toString() + "x" + getTo().toString());
@@ -39,4 +39,5 @@ public class CaptureMove extends AbstractMove {
     public AbstractPiece getCapturedPiece() {
         return capturedPiece;
     }
+    
 }

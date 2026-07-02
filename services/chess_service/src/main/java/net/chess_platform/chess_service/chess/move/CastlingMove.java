@@ -9,15 +9,12 @@ public class CastlingMove extends AbstractMove {
 
     private Position rookPosition;
 
-    private MoveType type;
-
     public CastlingMove(Chessboard board, Position from, Position to, Position rookPosition) {
-        super(board, from, to);
+        super(board, from, to, rookPosition.col() == Chessboard.LEFT_ROOK_COL ? Type.QUEENSIDE_CASTLING
+                : Type.KINGSIDE_CASTLING);
         this.rookPosition = rookPosition;
-        this.type = rookPosition.col() == Chessboard.LEFT_ROOK_COL ? MoveType.QUEENSIDE_CASTLING
-                : MoveType.KINGSIDE_CASTLING;
         this.rook = board.getPiece(rookPosition);
-        setAlgebraicNotation(type == MoveType.QUEENSIDE_CASTLING ? "O-O-O" : "O-O");
+        setAlgebraicNotation(getType() == Type.QUEENSIDE_CASTLING ? "O-O-O" : "O-O");
     }
 
     @Override
@@ -47,7 +44,7 @@ public class CastlingMove extends AbstractMove {
         board.setPiece(movedPiece, to);
         board.setPiece(null, from);
 
-        if (type == MoveType.QUEENSIDE_CASTLING) {
+        if (getType() == Type.QUEENSIDE_CASTLING) {
             board.setPiece(rook, to.row(), to.col() + 1);
         } else {
             board.setPiece(rook, to.row(), to.col() - 1);
@@ -66,7 +63,7 @@ public class CastlingMove extends AbstractMove {
         board.setPiece(null, to);
         board.setPiece(movedPiece, from);
 
-        if (type == MoveType.QUEENSIDE_CASTLING) {
+        if (getType() == Type.QUEENSIDE_CASTLING) {
             board.setPiece(null, to.row(), to.col() + 1);
         } else {
             board.setPiece(null, to.row(), to.col() - 1);
@@ -74,10 +71,6 @@ public class CastlingMove extends AbstractMove {
 
         board.setPiece(rook, rookPosition);
         super.undo();
-    }
-
-    public MoveType getType() {
-        return type;
     }
 
 }

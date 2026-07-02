@@ -11,10 +11,10 @@ import net.chess_platform.chess_service.chess.piece.behavior.KingBasicBehavior;
 
 public class King extends AbstractPiece {
 
-    private IPieceBehavior kingBasicMoves = new KingBasicBehavior();
+    private final IPieceBehavior kingBasicMoves = new KingBasicBehavior();
 
-    public King(int row, int col, PieceColor color, Chessboard board) {
-        super(row, col, color, board);
+    public King(int row, int col, Color color, Chessboard board) {
+        super(row, col, color, board, Type.KING);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class King extends AbstractPiece {
 
     @Override
     public String toString() {
-        return getColor() == PieceColor.WHITE ? Character.toString(9812) : Character.toString(9818);
+        return getColor() == Color.WHITE ? Character.toString(9812) : Character.toString(9818);
     }
 
 }

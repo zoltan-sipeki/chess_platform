@@ -7,13 +7,15 @@ import net.chess_platform.chess_service.chess.piece.AbstractPiece;
 
 public abstract class AbstractMove implements IMove {
 
-    private Chessboard board;
+    private final Chessboard board;
 
-    private Position from;
+    private final Position from;
 
-    private Position to;
+    private final Position to;
 
-    private AbstractPiece movedPiece;
+    private final AbstractPiece movedPiece;
+
+    private final Type type;
 
     private String algebraicNotation;
 
@@ -21,10 +23,11 @@ public abstract class AbstractMove implements IMove {
 
     private long timestamp;
 
-    public AbstractMove(Chessboard board, Position from, Position to) {
+    public AbstractMove(Chessboard board, Position from, Position to, Type type) {
         this.board = board;
         this.from = from;
         this.to = to;
+        this.type = type;
         this.movedPiece = board.getPiece(from);
     }
 
@@ -106,6 +109,11 @@ public abstract class AbstractMove implements IMove {
     @Override
     public AbstractPiece getPromotee() {
         return null;
+    }
+
+    @Override
+    public Type getType() {
+        return type;
     }
 
 }

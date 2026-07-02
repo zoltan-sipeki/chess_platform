@@ -11,8 +11,8 @@ public class Rook extends AbstractPiece {
 
     private IPieceBehavior rookMoves = new RookBehavior();
 
-    public Rook(int row, int col, PieceColor color, Chessboard board) {
-        super(row, col, color, board);
+    public Rook(int row, int col, Color color, Chessboard board) {
+        super(row, col, color, board, Type.ROOK);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class Rook extends AbstractPiece {
 
     @Override
     public String toString() {
-        return getColor() == PieceColor.WHITE ? Character.toString(9814) : Character.toString(9820);
+        return getColor() == Color.WHITE ? Character.toString(9814) : Character.toString(9820);
     }
 
 }

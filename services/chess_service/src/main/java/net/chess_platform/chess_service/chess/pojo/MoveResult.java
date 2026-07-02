@@ -3,56 +3,32 @@ package net.chess_platform.chess_service.chess.pojo;
 import net.chess_platform.chess_service.chess.Chessboard;
 import net.chess_platform.chess_service.chess.Chessboard.GameOverReason;
 import net.chess_platform.chess_service.chess.move.IMove;
-import net.chess_platform.chess_service.chess.move.MoveType;
-import net.chess_platform.chess_service.chess.move.Position;
-import net.chess_platform.chess_service.chess.piece.PieceColor;
-import net.chess_platform.chess_service.chess.piece.PieceType;
-import net.chess_platform.chess_service.coordinator.Mapper;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
 
 public class MoveResult {
 
-    private String algebraicNotation;
+    private Color activeColor;
 
-    private PieceColor activeColor;
-
-    private PieceColor color;
-
-    private MoveType move = MoveType.INVALID;
-
-    private Position from;
-
-    private Position to;
+    private IMove move;
 
     private boolean promotionInProgress;
 
-    private PieceType promotee;
-
     private Chessboard.GameOverReason gameOverReason;
 
-    private PieceColor winnerColor;
+    private Color winnerColor;
 
-    public MoveResult(PieceColor activeColor) {
+    public MoveResult(IMove move, Color activeColor) {
+        this.move = move;
         this.activeColor = activeColor;
     }
 
-    public MoveResult(IMove move, PieceColor activeColor, Chessboard.GameOverReason gameOverReason,
-            PieceColor winnerColor,
-            boolean promotionInProgress) {
-        this(move, activeColor, gameOverReason, winnerColor);
+    public MoveResult(IMove move, Color activeColor, boolean promotionInProgress) {
+        this(move, activeColor);
         this.promotionInProgress = promotionInProgress;
     }
 
-    public MoveResult(IMove move, PieceColor activeColor, Chessboard.GameOverReason gameOverReason,
-            PieceColor winnerColor) {
-        this.activeColor = activeColor;
-        if (move != null) {
-            this.color = move.getMovedPiece().getColor();
-            this.move = Mapper.toMoveType(move);
-            this.promotee = Mapper.toPieceType(move.getPromotee());
-            this.from = move.getFrom();
-            this.to = move.getTo();
-            this.algebraicNotation = move.getAlgebraicNotation();
-        }
+    public MoveResult(IMove move, Chessboard.GameOverReason gameOverReason, Color winnerColor) {
+        this(move, null);
         this.gameOverReason = gameOverReason;
         this.winnerColor = winnerColor;
     }
@@ -61,36 +37,16 @@ public class MoveResult {
         return gameOverReason != null;
     }
 
-    public String getAlgebraicNotation() {
-        return algebraicNotation;
-    }
-
-    public PieceColor getColor() {
-        return color;
-    }
-
-    public PieceType getPromotee() {
-        return promotee;
-    }
-
-    public Position getFrom() {
-        return from;
-    }
-
-    public Position getTo() {
-        return to;
-    }
-
-    public MoveType getMove() {
+    public IMove getMove() {
         return move;
     }
 
-    public PieceColor getActiveColor() {
+    public Color getActiveColor() {
         return activeColor;
     }
 
     public boolean isDraw() {
-        return winnerColor == PieceColor.NONE;
+        return winnerColor == null;
     }
 
     public boolean isPromotionInProgress() {
@@ -98,10 +54,10 @@ public class MoveResult {
     }
 
     public boolean isInvalid() {
-        return move == MoveType.INVALID;
+        return move == null;
     }
 
-    public PieceColor getWinnerColor() {
+    public Color getWinnerColor() {
         return winnerColor;
     }
 

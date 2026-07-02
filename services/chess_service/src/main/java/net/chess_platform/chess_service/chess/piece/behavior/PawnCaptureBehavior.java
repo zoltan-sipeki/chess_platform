@@ -9,9 +9,9 @@ import net.chess_platform.chess_service.chess.move.IMove;
 import net.chess_platform.chess_service.chess.move.Position;
 import net.chess_platform.chess_service.chess.move.PromotionMove;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
 import net.chess_platform.chess_service.chess.piece.King;
 import net.chess_platform.chess_service.chess.piece.Pawn;
-import net.chess_platform.chess_service.chess.piece.PieceColor;
 
 public class PawnCaptureBehavior implements IPieceBehavior {
 
@@ -21,7 +21,7 @@ public class PawnCaptureBehavior implements IPieceBehavior {
     }
 
     @Override
-    public List<IMove> getMoves(Chessboard board, PieceColor color, int row, int col) {
+    public List<IMove> getMoves(Chessboard board, Color color, int row, int col) {
         var moveList = new ArrayList<IMove>();
 
         int dir = Chessboard.getPawnDirection(color);
@@ -49,7 +49,7 @@ public class PawnCaptureBehavior implements IPieceBehavior {
         return moveList;
     }
 
-    private static boolean isValidCapture(AbstractPiece target, PieceColor color) {
+    private static boolean isValidCapture(AbstractPiece target, Color color) {
         return target != null && target.getColor() != color && !(target instanceof King);
     }
 

@@ -128,4 +128,9 @@ public class PromotionMove implements IMove {
     public IMove getMove() {
         return move;
     }
+
+    @Override
+    public Type getType() {
+        return move.getType();
+    }
 }

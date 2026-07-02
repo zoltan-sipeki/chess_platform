@@ -5,7 +5,7 @@ import net.chess_platform.chess_service.chess.Chessboard;
 public class SimpleMove extends AbstractMove {
 
     public SimpleMove(Chessboard board, Position from, Position to) {
-        super(board, from, to);
+        super(board, from, to, Type.SIMPLE);
         setAlgebraicNotation(getMovedPiece().toString() + getFrom().toString() + "-" + getTo().toString());
     }
 

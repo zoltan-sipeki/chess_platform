@@ -1,13 +1,13 @@
 package net.chess_platform.chess_service.chess.move;
 
 import net.chess_platform.chess_service.chess.Chessboard;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
 import net.chess_platform.chess_service.chess.piece.King;
-import net.chess_platform.chess_service.chess.piece.PieceColor;
 
 public class MoveUtils {
 
     public static IMove createBasicMove(Chessboard board, Position from, Position to,
-            PieceColor color) {
+            Color color) {
         var target = board.getPiece(to);
 
         if (target == null) {

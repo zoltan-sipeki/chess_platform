@@ -8,21 +8,38 @@ import net.chess_platform.chess_service.chess.move.Position;
 
 public abstract class AbstractPiece {
 
+    public enum Type {
+        PAWN,
+        KNIGHT,
+        BISHOP,
+        ROOK,
+        QUEEN,
+        KING
+    }
+
+    public enum Color {
+        WHITE,
+        BLACK
+    }
+
     private int moveCount = 0;
 
     private int row;
 
     private int col;
 
-    private PieceColor color;
+    private final Color color;
 
-    private Chessboard board;
+    private final Chessboard board;
 
-    public AbstractPiece(int row, int col, PieceColor color, Chessboard board) {
+    private final Type type;
+
+    public AbstractPiece(int row, int col, Color color, Chessboard board, Type type) {
         this.row = row;
         this.col = col;
         this.color = color;
         this.board = board;
+        this.type = type;
     }
 
     public int getRow() {
@@ -41,7 +58,7 @@ public abstract class AbstractPiece {
         this.col = col;
     }
 
-    public PieceColor getColor() {
+    public Color getColor() {
         return color;
     }
 
@@ -85,5 +102,9 @@ public abstract class AbstractPiece {
 
     public int getMoveCount() {
         return moveCount;
+    }
+
+    public Type getType() {
+        return type;
     }
 }

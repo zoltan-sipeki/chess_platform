@@ -11,12 +11,12 @@ import net.chess_platform.chess_service.chess.move.IMove;
 import net.chess_platform.chess_service.chess.move.Position;
 import net.chess_platform.chess_service.chess.move.PromotionMove;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece.Type;
 import net.chess_platform.chess_service.chess.piece.Bishop;
 import net.chess_platform.chess_service.chess.piece.King;
 import net.chess_platform.chess_service.chess.piece.Knight;
 import net.chess_platform.chess_service.chess.piece.Pawn;
-import net.chess_platform.chess_service.chess.piece.PieceColor;
-import net.chess_platform.chess_service.chess.piece.PieceType;
 import net.chess_platform.chess_service.chess.piece.Queen;
 import net.chess_platform.chess_service.chess.piece.Rook;
 import net.chess_platform.chess_service.chess.piece.behavior.BishopBehavior;
@@ -47,7 +47,7 @@ public class Chessboard {
 
     public static final int RIGHT_ROOK_COL = 7;
 
-    private static final PieceType[] PIECE_TYPES = PieceType.values();
+    private static final Type[] PIECE_TYPES = Type.values();
 
     private AbstractPiece[] board = new AbstractPiece[SIZE * SIZE];
 
@@ -55,7 +55,7 @@ public class Chessboard {
 
     private Map<BoardPosition, Integer> threefoldRepetitionTracker = new HashMap<>();
 
-    private PieceColor activeColor = PieceColor.WHITE;
+    private Color activeColor = Color.WHITE;
 
     private boolean promotionInProgress = false;
 
@@ -73,41 +73,41 @@ public class Chessboard {
         for (int i = 0; i < SIZE; ++i) {
             for (int j = 0; j < SIZE; ++j) {
                 if (i == 1) {
-                    board[i * SIZE + j] = createPiece(i, j, PieceType.PAWN, PieceColor.BLACK);
+                    board[i * SIZE + j] = createPiece(i, j, Type.PAWN, Color.BLACK);
                 } else if (i == 6) {
-                    board[i * SIZE + j] = createPiece(i, j, PieceType.PAWN, PieceColor.WHITE);
+                    board[i * SIZE + j] = createPiece(i, j, Type.PAWN, Color.WHITE);
                 } else if (i > 1 && i < 6) {
                     board[i * SIZE + j] = null;
                 }
             }
         }
 
-        board[0 * SIZE + 0] = createPiece(0, 0, PieceType.ROOK, PieceColor.BLACK);
-        board[0 * SIZE + 1] = createPiece(0, 1, PieceType.KNIGHT, PieceColor.BLACK);
-        board[0 * SIZE + 2] = createPiece(0, 2, PieceType.BISHOP, PieceColor.BLACK);
-        board[0 * SIZE + 3] = createPiece(0, 3, PieceType.QUEEN, PieceColor.BLACK);
-        blackKing = createPiece(0, 4, PieceType.KING, PieceColor.BLACK);
+        board[0 * SIZE + 0] = createPiece(0, 0, Type.ROOK, Color.BLACK);
+        board[0 * SIZE + 1] = createPiece(0, 1, Type.KNIGHT, Color.BLACK);
+        board[0 * SIZE + 2] = createPiece(0, 2, Type.BISHOP, Color.BLACK);
+        board[0 * SIZE + 3] = createPiece(0, 3, Type.QUEEN, Color.BLACK);
+        blackKing = createPiece(0, 4, Type.KING, Color.BLACK);
         board[0 * SIZE + 4] = blackKing;
-        board[0 * SIZE + 5] = createPiece(0, 5, PieceType.BISHOP, PieceColor.BLACK);
-        board[0 * SIZE + 6] = createPiece(0, 6, PieceType.KNIGHT, PieceColor.BLACK);
-        board[0 * SIZE + 7] = createPiece(0, 7, PieceType.ROOK, PieceColor.BLACK);
+        board[0 * SIZE + 5] = createPiece(0, 5, Type.BISHOP, Color.BLACK);
+        board[0 * SIZE + 6] = createPiece(0, 6, Type.KNIGHT, Color.BLACK);
+        board[0 * SIZE + 7] = createPiece(0, 7, Type.ROOK, Color.BLACK);
 
-        board[7 * SIZE + 0] = createPiece(7, 0, PieceType.ROOK, PieceColor.WHITE);
-        board[7 * SIZE + 1] = createPiece(7, 1, PieceType.KNIGHT, PieceColor.WHITE);
-        board[7 * SIZE + 2] = createPiece(7, 2, PieceType.BISHOP, PieceColor.WHITE);
-        board[7 * SIZE + 3] = createPiece(7, 3, PieceType.QUEEN, PieceColor.WHITE);
-        whiteKing = createPiece(7, 4, PieceType.KING, PieceColor.WHITE);
+        board[7 * SIZE + 0] = createPiece(7, 0, Type.ROOK, Color.WHITE);
+        board[7 * SIZE + 1] = createPiece(7, 1, Type.KNIGHT, Color.WHITE);
+        board[7 * SIZE + 2] = createPiece(7, 2, Type.BISHOP, Color.WHITE);
+        board[7 * SIZE + 3] = createPiece(7, 3, Type.QUEEN, Color.WHITE);
+        whiteKing = createPiece(7, 4, Type.KING, Color.WHITE);
         board[7 * SIZE + 4] = whiteKing;
-        board[7 * SIZE + 5] = createPiece(7, 5, PieceType.BISHOP, PieceColor.WHITE);
-        board[7 * SIZE + 6] = createPiece(7, 6, PieceType.KNIGHT, PieceColor.WHITE);
-        board[7 * SIZE + 7] = createPiece(7, 7, PieceType.ROOK, PieceColor.WHITE);
+        board[7 * SIZE + 5] = createPiece(7, 5, Type.BISHOP, Color.WHITE);
+        board[7 * SIZE + 6] = createPiece(7, 6, Type.KNIGHT, Color.WHITE);
+        board[7 * SIZE + 7] = createPiece(7, 7, Type.ROOK, Color.WHITE);
     }
 
     public AbstractPiece[] getBoard() {
         return board;
     }
 
-    public PieceColor getActiveColor() {
+    public Color getActiveColor() {
         return activeColor;
     }
 
@@ -117,28 +117,28 @@ public class Chessboard {
 
     public MoveResult makeMove(MoveDetails moveDetails) {
         if (activeColor != moveDetails.color()) {
-            return new MoveResult(activeColor);
+            return new MoveResult(null, activeColor);
         }
 
         if (promotionInProgress) {
-            return new MoveResult(activeColor);
+            return new MoveResult(null, activeColor, true);
         }
 
         var from = moveDetails.from();
         var to = moveDetails.to();
         if (from.row() < 0 || from.col() >= SIZE || to.row() < 0 || to.col() >= SIZE) {
-            return new MoveResult(activeColor);
+            return new MoveResult(null, activeColor);
         }
 
         var piece = getPiece(from);
         var move = piece.getMove(to);
 
         if (move == null) {
-            return new MoveResult(activeColor);
+            return new MoveResult(null, activeColor);
         }
 
         if (!move.validate()) {
-            return new MoveResult(activeColor);
+            return new MoveResult(null, activeColor);
         }
 
         move.execute();
@@ -150,16 +150,16 @@ public class Chessboard {
 
     private MoveResult evaluateMove(IMove move) {
         var reason = checkEndConditions(move);
-        PieceColor winnerColor = null;
         if (reason == null) {
             activeColor = getOpponentColor(activeColor);
-        } else if (isDraw(reason)) {
-            winnerColor = PieceColor.NONE;
-        } else {
-            winnerColor = activeColor;
+            return new MoveResult(move, activeColor, promotionInProgress);
         }
 
-        return new MoveResult(move, activeColor, reason, winnerColor, promotionInProgress);
+        if (isDraw(reason)) {
+            return new MoveResult(move, reason, null);
+        }
+
+        return new MoveResult(move, reason, activeColor);
     }
 
     public static boolean isDraw(GameOverReason reason) {
@@ -200,11 +200,11 @@ public class Chessboard {
 
     public MoveResult makeMove(PromotionDetails message) {
         if (activeColor != message.color()) {
-            return new MoveResult(activeColor);
+            return new MoveResult(null, activeColor);
         }
 
         if (!promotionInProgress) {
-            return new MoveResult(activeColor);
+            return new MoveResult(null, activeColor);
         }
 
         var moveResult = promote(message.promotee());
@@ -212,22 +212,22 @@ public class Chessboard {
     }
 
     public MoveResult flagFall() {
-        return new MoveResult(null, activeColor, GameOverReason.FLAG_FALL, getOpponentColor(activeColor));
+        return new MoveResult(null, GameOverReason.FLAG_FALL, getOpponentColor(activeColor));
     }
 
-    public MoveResult resign(PieceColor color) {
+    public MoveResult resign(Color color) {
         if (activeColor == color) {
-            return new MoveResult(null, activeColor, GameOverReason.RESIGNATION, getOpponentColor(activeColor));
+            return new MoveResult(null, GameOverReason.RESIGNATION, getOpponentColor(activeColor));
         }
 
-        return new MoveResult(null, activeColor, GameOverReason.RESIGNATION, activeColor);
+        return new MoveResult(null, GameOverReason.RESIGNATION, activeColor);
     }
 
     public MoveResult promoteRandomly() {
-        return promote(getRandomPieceType());
+        return promote(getRandomType());
     }
 
-    private MoveResult promote(PieceType promotee) {
+    private MoveResult promote(Type promotee) {
         var move = (PromotionMove) moves.getLast();
         var to = move.getTo();
         move.setPromotee(createPiece(to.row(), to.col(), promotee, activeColor));
@@ -236,15 +236,15 @@ public class Chessboard {
         return evaluateMove(move);
     }
 
-    private PieceType getRandomPieceType() {
+    private Type getRandomType() {
         return PIECE_TYPES[ThreadLocalRandom.current().nextInt(PIECE_TYPES.length)];
     }
 
-    private static PieceColor getOpponentColor(PieceColor color) {
-        return color == PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
+    private static Color getOpponentColor(Color color) {
+        return color == Color.WHITE ? Color.BLACK : Color.WHITE;
     }
 
-    private boolean checkThreefoldRepetition(PieceColor opponentColor) {
+    private boolean checkThreefoldRepetition(Color opponentColor) {
         var canEnPassant = canEnPassant();
         var canCastle = canCastle();
         var boardPosition = new BoardPosition(stringifyBoard(), opponentColor, canEnPassant, canCastle);
@@ -288,7 +288,7 @@ public class Chessboard {
         int whiteCount = 0;
         int blackCount = 0;
         for (var piece : board) {
-            if (piece.getColor() == PieceColor.WHITE) {
+            if (piece.getColor() == Color.WHITE) {
                 ++whiteCount;
             } else {
                 ++blackCount;
@@ -309,7 +309,7 @@ public class Chessboard {
         AbstractPiece whiteBishop = null;
 
         for (var piece : board) {
-            if (piece.getColor() == PieceColor.WHITE) {
+            if (piece.getColor() == Color.WHITE) {
                 if (piece instanceof Knight) {
                     whiteKnight = piece;
                 } else if (piece instanceof Bishop) {
@@ -338,11 +338,11 @@ public class Chessboard {
         return p1parity == p2parity;
     }
 
-    public static int getPawnDirection(PieceColor color) {
-        return color == PieceColor.WHITE ? -1 : 1;
+    public static int getPawnDirection(Color color) {
+        return color == Color.WHITE ? -1 : 1;
     }
 
-    private boolean canMove(PieceColor color) {
+    private boolean canMove(Color color) {
         for (var piece : board) {
             if (piece.getColor() == color && piece.canMove()) {
                 return true;
@@ -386,15 +386,15 @@ public class Chessboard {
         return builder.toString();
     }
 
-    public static int getPromotionRow(PieceColor color) {
-        return color == PieceColor.WHITE ? 0 : SIZE;
+    public static int getPromotionRow(Color color) {
+        return color == Color.WHITE ? 0 : SIZE;
     }
 
-    public static int getEnPassantRow(PieceColor color) {
-        return color == PieceColor.WHITE ? 3 : 4;
+    public static int getEnPassantRow(Color color) {
+        return color == Color.WHITE ? 3 : 4;
     }
 
-    public AbstractPiece createPiece(int row, int col, PieceType type, PieceColor color) {
+    public AbstractPiece createPiece(int row, int col, Type type, Color color) {
         return switch (type) {
             case PAWN -> new Pawn(row, col, color, this);
             case KNIGHT -> new Knight(row, col, color, this);
@@ -428,6 +428,10 @@ public class Chessboard {
         }
     }
 
+    public boolean isPromotionInProgress() {
+        return promotionInProgress;
+    }
+
     public void setPromotionInProgress(boolean val) {
         this.promotionInProgress = val;
     }
@@ -436,15 +440,15 @@ public class Chessboard {
         return moves.getLast();
     }
 
-    public boolean isKingInCheck(PieceColor color) {
-        if (color == PieceColor.WHITE) {
+    public boolean isKingInCheck(Color color) {
+        if (color == Color.WHITE) {
             return isUnderAttack(whiteKing.getRow(), whiteKing.getCol(), color);
         }
 
         return isUnderAttack(blackKing.getRow(), blackKing.getCol(), color);
     }
 
-    public boolean isUnderAttack(int row, int col, PieceColor color) {
+    public boolean isUnderAttack(int row, int col, Color color) {
         var behaviors = List.of(new PawnCaptureBehavior(), new KnightBehavior(), new KingBasicBehavior(),
                 new RookBehavior(), new BishopBehavior());
         for (var behavior : behaviors) {
@@ -456,7 +460,7 @@ public class Chessboard {
         return false;
     }
 
-    private boolean isAttacked(int row, int col, PieceColor color, IPieceBehavior behavior) {
+    private boolean isAttacked(int row, int col, Color color, IPieceBehavior behavior) {
         var moveList = behavior.getMoves(this, color, row, col);
         for (var move : moveList) {
             if (!(move instanceof CaptureMove m)) {

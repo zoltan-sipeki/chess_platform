@@ -17,10 +17,10 @@ public class Pawn extends AbstractPiece {
 
     private final int direction;
 
-    private IPieceBehavior pawnCaptureMoves = new PawnCaptureBehavior();
+    private final IPieceBehavior pawnCaptureMoves = new PawnCaptureBehavior();
 
-    public Pawn(int row, int col, PieceColor color, Chessboard board) {
-        super(row, col, color, board);
+    public Pawn(int row, int col, Color color, Chessboard board) {
+        super(row, col, color, board, Type.PAWN);
         direction = Chessboard.getPawnDirection(color);
     }
 
@@ -119,6 +119,6 @@ public class Pawn extends AbstractPiece {
 
     @Override
     public String toString() {
-        return getColor() == PieceColor.WHITE ? Character.toString(9817) : Character.toString(9823);
+        return getColor() == Color.WHITE ? Character.toString(9817) : Character.toString(9823);
     }
 }

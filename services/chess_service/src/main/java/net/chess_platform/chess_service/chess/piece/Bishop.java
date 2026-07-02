@@ -9,10 +9,11 @@ import net.chess_platform.chess_service.chess.piece.behavior.IPieceBehavior;
 
 public class Bishop extends AbstractPiece {
 
-    private IPieceBehavior bishopMoves = new BishopBehavior();
+    private final IPieceBehavior bishopMoves = new BishopBehavior();
 
-    public Bishop(int row, int col, PieceColor color, Chessboard board) {
-        super(row, col, color, board);
+    public Bishop(int row, int col, Color color, Chessboard board) {
+        super(row, col, color, board, Type.BISHOP);
+
     }
 
     @Override
@@ -22,6 +23,6 @@ public class Bishop extends AbstractPiece {
 
     @Override
     public String toString() {
-        return getColor() == PieceColor.WHITE ? Character.toString(9815) : Character.toString(9821);
+        return getColor() == Color.WHITE ? Character.toString(9815) : Character.toString(9821);
     }
 }

@@ -236,8 +236,13 @@ public class MatchCoordinatorThread extends Thread {
 
     private void process(PromotionTimeoutEvent e) {
         var match = matches.get(e.matchId());
-        sendMoveResult(match, e.moveResult());
-        handleGameOver(match);
+        var moveResult = e.moveResult();
+
+        sendMoveResult(match, moveResult);
+
+        if (moveResult.isGameOver()) {
+            handleGameOver(match);
+        }
     }
 
     private void setTimeout(long matchId) {
@@ -263,8 +268,8 @@ public class MatchCoordinatorThread extends Thread {
             connections.disconnect(p.getId());
         }
 
-        var matchResult = mapper.toMatchResult(match);
-        eventService.publish(new MatchEndedEvent(matchResult));
+        // var matchResult = mapper.toMatchResult(match);
+        // eventService.publish(new MatchEndedEvent(matchResult));
 
         cleanUp(match);
     }

@@ -8,7 +8,7 @@ import net.chess_platform.chess_service.chess.move.IMove;
 import net.chess_platform.chess_service.chess.move.MoveUtils;
 import net.chess_platform.chess_service.chess.move.Position;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece;
-import net.chess_platform.chess_service.chess.piece.PieceColor;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
 import net.chess_platform.chess_service.chess.piece.Queen;
 import net.chess_platform.chess_service.chess.piece.Rook;
 
@@ -20,7 +20,7 @@ public class RookBehavior implements IPieceBehavior {
     }
 
     @Override
-    public List<IMove> getMoves(Chessboard board, PieceColor color, int row, int col) {
+    public List<IMove> getMoves(Chessboard board, Color color, int row, int col) {
         var moveList = new ArrayList<IMove>();
 
         for (int j = col; j < Chessboard.SIZE; ++j) {

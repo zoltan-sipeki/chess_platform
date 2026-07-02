@@ -5,6 +5,17 @@ import net.chess_platform.chess_service.chess.piece.AbstractPiece;
 
 public interface IMove {
 
+    public enum Type {
+        SIMPLE,
+        EN_PASSANT,
+        CASTLING,
+        QUEENSIDE_CASTLING,
+        KINGSIDE_CASTLING,
+        CAPTURE,
+        PROMOTION,
+        INVALID
+    }
+
     public boolean validate();
 
     public void execute();
@@ -24,14 +35,16 @@ public interface IMove {
     public String getAlgebraicNotation();
 
     public void setAlgebraicNotation(String notation);
-    
+
     public void setCheckmate();
-    
+
     public boolean isCheck();
-    
+
     public void setCheck();
-    
+
     public long getTimestamp();
-    
+
     public void setTimestamp();
+
+    public Type getType();
 }

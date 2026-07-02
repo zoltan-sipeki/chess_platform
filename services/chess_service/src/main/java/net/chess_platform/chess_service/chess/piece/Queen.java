@@ -15,8 +15,8 @@ public class Queen extends AbstractPiece {
 
     private IPieceBehavior bishopMoves = new BishopBehavior();
 
-    public Queen(int row, int col, PieceColor color, Chessboard board) {
-        super(row, col, color, board);
+    public Queen(int row, int col, Color color, Chessboard board) {
+        super(row, col, color, board, Type.QUEEN);
     }
 
     @Override
@@ -32,6 +32,6 @@ public class Queen extends AbstractPiece {
 
     @Override
     public String toString() {
-        return getColor() == PieceColor.WHITE ? Character.toString(9813) : Character.toString(9819);
+        return getColor() == Color.WHITE ? Character.toString(9813) : Character.toString(9819);
     }
 }

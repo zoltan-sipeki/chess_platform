@@ -1,6 +1,6 @@
 package net.chess_platform.chess_service.coordinator.match;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.piece.PieceColor;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
 import net.chess_platform.chess_service.chess.pojo.MoveDetails;
 import net.chess_platform.chess_service.chess.pojo.MoveResult;
 import net.chess_platform.chess_service.chess.pojo.PromotionDetails;
@@ -39,7 +39,7 @@ public class Match {
 
     private static final long PROMOTION_TIMEOUT_MS = 30 * 1000;
 
-    private static final PieceColor[] COLORS = PieceColor.values();
+    private static final Color[] COLORS = Color.values();
 
     private long id;
 
@@ -57,9 +57,9 @@ public class Match {
 
     private long nextTurn;
 
-    private OffsetDateTime startedAt;
+    private Instant startedAt;
 
-    private OffsetDateTime endedAt;
+    private Instant endedAt;
 
     private long duration;
 
@@ -150,10 +150,8 @@ public class Match {
         }
 
         if (moveResult.isPromotionInProgress()) {
-            setNextTurn(FLAG_FALL_TIMEOUT_MS);
             startPromotionTimer();
         } else if (!moveResult.isInvalid()) {
-            setNextTurn(PROMOTION_TIMEOUT_MS);
             startFlagFallTimer();
         }
 
@@ -182,15 +180,7 @@ public class Match {
         loser.setNewMmr(newMmrs[1]);
     }
 
-    private int getPlayerIndexByColor(PieceColor color) {
-        if (color == null) {
-            return -1;
-        }
-
-        if (color == PieceColor.NONE) {
-            return 0;
-        }
-
+    private int getPlayerIndexByColor(Color color) {
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).getColor() == color) {
                 return i;
@@ -207,6 +197,7 @@ public class Match {
     }
 
     private void startFlagFallTimer() {
+        setNextTurn(FLAG_FALL_TIMEOUT_MS);
         if (timeout != null) {
             timeout.cancel(true);
         }
@@ -218,6 +209,8 @@ public class Match {
     }
 
     private void startPromotionTimer() {
+        setNextTurn(PROMOTION_TIMEOUT_MS);
+
         if (timeout != null) {
             timeout.cancel(true);
         }
@@ -236,7 +229,7 @@ public class Match {
         return type;
     }
 
-    public OffsetDateTime getStartedAt() {
+    public Instant getStartedAt() {
         return startedAt;
     }
 
@@ -253,22 +246,22 @@ public class Match {
     }
 
     private void setStartedAt() {
-        startedAt = OffsetDateTime.now();
+        startedAt = Instant.now();
     }
 
     private void setNextTurn(long duration) {
-        nextTurn = OffsetDateTime.now().toInstant().plusMillis(duration).toEpochMilli();
+        nextTurn = Instant.now().plusMillis(duration).toEpochMilli();
     }
 
     public boolean hasStarted() {
         return startedAt != null;
     }
 
-    public OffsetDateTime getEndedAt() {
+    public Instant getEndedAt() {
         return endedAt;
     }
 
     private void setEndedAt() {
-        endedAt = OffsetDateTime.now();
+        endedAt = Instant.now();
     }
 }
