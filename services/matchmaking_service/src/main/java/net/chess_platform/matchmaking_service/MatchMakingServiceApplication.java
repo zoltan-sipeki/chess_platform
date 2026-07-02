@@ -9,8 +9,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import net.chess_platform.common.domain_events.EnableDomainEvents;
+import net.chess_platform.common.security.EnableCommonSecurity;
 
 @SpringBootApplication
+@EnableCommonSecurity
 @EnableScheduling
 @EnableDiscoveryClient
 @EnableJpaAuditing

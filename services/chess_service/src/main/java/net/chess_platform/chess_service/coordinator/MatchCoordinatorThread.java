@@ -15,15 +15,15 @@ import net.chess_platform.chess_service.coordinator.match.Player;
 import net.chess_platform.chess_service.coordinator.match.event.FlagFallEvent;
 import net.chess_platform.chess_service.coordinator.match.event.MatchTimeoutEvent;
 import net.chess_platform.chess_service.coordinator.match.event.PromotionTimeoutEvent;
-import net.chess_platform.chess_service.integration.MatchServiceProxy;
-import net.chess_platform.chess_service.integration.MatchServiceProxy.OngoingMatchRequest;
+import net.chess_platform.chess_service.coordinator.message.DisconnectMessage;
+import net.chess_platform.chess_service.coordinator.message.IMatchMessage;
+import net.chess_platform.chess_service.coordinator.message.MatchmakingToken;
+import net.chess_platform.chess_service.coordinator.message.MoveMessage;
+import net.chess_platform.chess_service.coordinator.message.PromotionMessage;
+import net.chess_platform.chess_service.coordinator.message.ReconnectMessage;
+import net.chess_platform.chess_service.coordinator.message.ResignMessage;
+import net.chess_platform.chess_service.integration.MatchmakingServiceProxy;
 import net.chess_platform.chess_service.ws.PlayerConnections;
-import net.chess_platform.chess_service.ws.message.client.DisconnectPayload;
-import net.chess_platform.chess_service.ws.message.client.IChessMessage;
-import net.chess_platform.chess_service.ws.message.client.MovePayload;
-import net.chess_platform.chess_service.ws.message.client.PromotionPayload;
-import net.chess_platform.chess_service.ws.message.client.ReconnectPayload;
-import net.chess_platform.chess_service.ws.message.client.ResignPayload;
 import net.chess_platform.chess_service.ws.message.server.ServerMessage;
 import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
@@ -38,7 +38,7 @@ public class MatchCoordinatorThread extends Thread {
 
     private final EventQueue eventQueue;
 
-    private final MatchServiceProxy matchService;
+    private final MatchmakingServiceProxy matchmakingService;
 
     private final DomainEventService eventService;
 
@@ -47,11 +47,11 @@ public class MatchCoordinatorThread extends Thread {
     private final Mapper mapper;
 
     public MatchCoordinatorThread(EventQueue eventQueue, PlayerConnections playerConnections,
-            MatchServiceProxy matchService, Mapper mapper,
+            MatchmakingServiceProxy matchmakingService, Mapper mapper,
             DomainEventService eventService) {
         this.eventQueue = eventQueue;
         this.connections = playerConnections;
-        this.matchService = matchService;
+        this.matchmakingService = matchmakingService;
         this.mapper = mapper;
         this.eventService = eventService;
     }
@@ -155,11 +155,8 @@ public class MatchCoordinatorThread extends Thread {
 
         clearTimeout(matchId);
         var players = match.getPlayers();
-        var request = players.stream()
-                .map(p -> new OngoingMatchRequest(matchId, p.getId(), token.getTarget()))
-                .toList();
         try {
-            matchService.createOngoingMatch(request);
+            matchmakingService.updateMatchRouting(matchId);
             match.start();
             sendToAllPlayers(match, new ServerMessage(ServerMessage.Type.GAME_STATE, mapper.toGameStateDto(match)));
         } catch (RestClientException e) {

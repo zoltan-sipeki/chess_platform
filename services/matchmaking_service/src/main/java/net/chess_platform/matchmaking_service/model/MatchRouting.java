@@ -16,6 +16,19 @@ import net.chess_platform.matchmaking_service.mmqueue.Match;
 @Entity
 public class MatchRouting extends AuditedEntity {
 
+    public static class Update {
+
+        private Status matchStatus;
+
+        public Status getMatchStatus() {
+            return matchStatus;
+        }
+
+        public void setMatchStatus(Status matchStatus) {
+            this.matchStatus = matchStatus;
+        }
+    }
+
     public enum Status {
         PENDING, ACTIVE
     }

@@ -32,6 +32,9 @@ spring:
             issuer-uri: "${keycloak.url}/realms/chess"
             jwk-set-uri: "${keycloak.url}/realms/chess/protocol/openid-connect/certs"
             token-uri: "${keycloak.url}/realms/chess/protocol/openid-connect/token"
+      resourceserver:
+        jwt:
+          issuer-uri: "${keycloak.url}/realms/chess"
 
 keycloak:
   url: http://keycloak:8080

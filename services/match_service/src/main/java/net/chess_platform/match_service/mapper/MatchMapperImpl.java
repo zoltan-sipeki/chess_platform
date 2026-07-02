@@ -4,13 +4,16 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import javax.annotation.processing.Generated;
+
+import org.springframework.stereotype.Component;
+
 import net.chess_platform.match_service.dto.MatchHistoryDto;
 import net.chess_platform.match_service.dto.OngoingMatchDto;
 import net.chess_platform.match_service.model.Match;
 import net.chess_platform.match_service.model.MatchResult;
 import net.chess_platform.match_service.model.OngoingMatch;
-import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
@@ -68,53 +71,6 @@ public class MatchMapperImpl implements MatchMapper {
         MatchHistoryDto matchHistoryDto = new MatchHistoryDto( matchId, matchType, startedAt, duration, color, outcome, mmrChange );
 
         return matchHistoryDto;
-    }
-
-    @Override
-    public OngoingMatchDto toDto(OngoingMatch ongoingMatch) {
-        if ( ongoingMatch == null ) {
-            return null;
-        }
-
-        long matchId = 0L;
-        String target = null;
-
-        matchId = ongoingMatch.getMatchId();
-        target = ongoingMatch.getTarget();
-
-        UUID userId = null;
-
-        OngoingMatchDto ongoingMatchDto = new OngoingMatchDto( matchId, userId, target );
-
-        return ongoingMatchDto;
-    }
-
-    @Override
-    public List<OngoingMatchDto> toDto(List<OngoingMatch> ongoingMatches) {
-        if ( ongoingMatches == null ) {
-            return null;
-        }
-
-        List<OngoingMatchDto> list = new ArrayList<OngoingMatchDto>( ongoingMatches.size() );
-        for ( OngoingMatch ongoingMatch : ongoingMatches ) {
-            list.add( toDto( ongoingMatch ) );
-        }
-
-        return list;
-    }
-
-    @Override
-    public List<OngoingMatch> toModelList(List<OngoingMatchDto> ongoingMatchRequest) {
-        if ( ongoingMatchRequest == null ) {
-            return null;
-        }
-
-        List<OngoingMatch> list = new ArrayList<OngoingMatch>( ongoingMatchRequest.size() );
-        for ( OngoingMatchDto ongoingMatchDto : ongoingMatchRequest ) {
-            list.add( ongoingMatchDtoToOngoingMatch( ongoingMatchDto ) );
-        }
-
-        return list;
     }
 
     private UUID matchResponseMatchId(MatchResult matchDetail) {

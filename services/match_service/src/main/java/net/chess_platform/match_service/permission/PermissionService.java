@@ -15,7 +15,6 @@ import net.chess_platform.match_service.model.Leaderboard;
 import net.chess_platform.match_service.model.LongestStreak;
 import net.chess_platform.match_service.model.MatchResult;
 import net.chess_platform.match_service.model.MatchStat;
-import net.chess_platform.match_service.model.OngoingMatch;
 import net.chess_platform.match_service.model.Player;
 import net.chess_platform.match_service.model.PrivacySetting;
 import net.chess_platform.match_service.permission.PermissionService.Action;
@@ -28,8 +27,6 @@ public class PermissionService extends AbstractPermissionService<Action> {
         MATCH_HISTORY_QUERY,
         MATCH_STATS_QUERY,
         PRIVACY_SETTING_UPDATE,
-        ONGOING_MATCH_QUERY,
-        ONGOING_MATCH_CREATE,
         LEADERBOARD_QUERY,
         PLAYER_STATS_QUERY
     }
@@ -148,41 +145,6 @@ public class PermissionService extends AbstractPermissionService<Action> {
                 auth.setQueryCondition(PrivacySetting.class, new FalseJPAQueryFragment<>());
             }
 
-            return auth;
-        });
-
-        registerPolicy(Action.ONGOING_MATCH_QUERY, (user, attributes) -> {
-            var auth = new Authorization();
-
-            auth.setAction(Action.ONGOING_MATCH_QUERY);
-
-            if (user.hasRole("chess_application.user")) {
-                auth.setQueryCondition(OngoingMatch.class,
-                        new JPAQueryFragment<>((root, query, cb) -> cb.equal(root.get("player").get("id"), user.id())));
-                return auth;
-            }
-
-            if (user.hasRole("cp_match_service.cp_matchmaking_service")) {
-                var userId = (UUID) attributes.get("userId");
-                if (userId == null) {
-                    auth.setQueryCondition(OngoingMatch.class, new FalseJPAQueryFragment<>());
-                } else {
-                    auth.setQueryCondition(OngoingMatch.class,
-                            new JPAQueryFragment<>(
-                                    (root, query, cb) -> cb.equal(root.get("player").get("id"), userId)));
-                }
-            }
-
-            return auth;
-        });
-
-        registerPolicy(Action.ONGOING_MATCH_CREATE, (user, attributes) -> {
-            var auth = new Authorization();
-
-            auth.setAction(Action.ONGOING_MATCH_CREATE);
-
-            auth.setAllowed(() -> user.hasRole("cp_match_service.cp_chess_service"));
-            auth.setCreateCheck(OngoingMatch.class, entity -> true);
             return auth;
         });
 

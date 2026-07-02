@@ -26,20 +26,21 @@ public class MatchmakingService {
 
     private final RabbitTemplate service;
 
-    private final MatchRoutingRepository mmTokenRepository;
+    private final MatchRoutingRepository mmRoutingRepository;
 
     private final MatchRoutingMapper mapper;
 
     public MatchmakingService(
             @Qualifier("matchmakingServiceRabbitTemplate") RabbitTemplate matchmakingServiceRabbitTemplate,
-            MatchRoutingRepository mmTokenRepository, MatchRoutingMapper mapper) {
+            MatchRoutingRepository mmRoutingRepository, MatchRoutingMapper mapper) {
         this.service = matchmakingServiceRabbitTemplate;
-        this.mmTokenRepository = mmTokenRepository;
+        this.mmRoutingRepository = mmRoutingRepository;
         this.mapper = mapper;
     }
 
     public CurrentMatchDto findCurrentMatch(CurrentUser user) {
-        var routingData = mmTokenRepository.findByPlayerId(user.id()).orElseThrow(() -> new EntityNotFoundException());
+        var routingData = mmRoutingRepository.findByPlayerId(user.id())
+                .orElseThrow(() -> new EntityNotFoundException());
         if (routingData.getMatchStatus() == MatchRouting.Status.PENDING) {
             return mapper.toDto(routingData);
         }

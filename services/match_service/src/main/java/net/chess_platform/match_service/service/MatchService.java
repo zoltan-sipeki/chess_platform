@@ -1,6 +1,5 @@
 package net.chess_platform.match_service.service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,11 +21,8 @@ import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.match_service.dto.MatchHistoryListDto;
 import net.chess_platform.match_service.dto.MatchHistorySearchParams;
 import net.chess_platform.match_service.dto.MatchStatsDto;
-import net.chess_platform.match_service.dto.OngoingMatchDto;
-import net.chess_platform.match_service.exception.AccessDeniedException;
 import net.chess_platform.match_service.exception.EntityNotFoundException;
 import net.chess_platform.match_service.exception.MatchAlreadyExistsException;
-import net.chess_platform.match_service.exception.UserAlreadyInMatchException;
 import net.chess_platform.match_service.mapper.MatchMapper;
 import net.chess_platform.match_service.mapper.MatchStatMapper;
 import net.chess_platform.match_service.mapper.PlayerMapper;
@@ -35,22 +31,18 @@ import net.chess_platform.match_service.model.MatchResult;
 import net.chess_platform.match_service.model.MatchResult.Color;
 import net.chess_platform.match_service.model.MatchResult.Outcome;
 import net.chess_platform.match_service.model.MatchStat;
-import net.chess_platform.match_service.model.OngoingMatch;
 import net.chess_platform.match_service.model.Player;
 import net.chess_platform.match_service.permission.PermissionService;
 import net.chess_platform.match_service.permission.PermissionService.Action;
 import net.chess_platform.match_service.repository.MatchRepository;
 import net.chess_platform.match_service.repository.MatchResultRepository;
 import net.chess_platform.match_service.repository.MatchStatRepository;
-import net.chess_platform.match_service.repository.OngoingMatchRepository;
 import net.chess_platform.match_service.repository.PlayerRepository;
 
 @Service
 public class MatchService {
 
     private final MatchRepository matchRepository;
-
-    private final OngoingMatchRepository ongoingMatchRepository;
 
     private final MatchResultRepository matchDetailRepository;
 
@@ -71,14 +63,13 @@ public class MatchService {
     @PersistenceContext
     private EntityManager em;
 
-    public MatchService(MatchRepository matchRepository, OngoingMatchRepository ongoingMatchRepository,
+    public MatchService(MatchRepository matchRepository,
             MatchResultRepository matchDetailRepository, MatchStatRepository matchStatRepository,
             PlayerRepository playerRepository,
             PermissionService permissionService, MatchMapper matchMapper, MatchStatMapper matchStatMapper,
             PlayerMapper playerMapper,
             ObjectMapper objectMapper) {
         this.matchRepository = matchRepository;
-        this.ongoingMatchRepository = ongoingMatchRepository;
         this.matchDetailRepository = matchDetailRepository;
         this.matchStatRepository = matchStatRepository;
         this.playerRepository = playerRepository;
@@ -111,33 +102,6 @@ public class MatchService {
     public String findReplay(UUID matchId) {
         return matchRepository.findById(matchId).orElseThrow(() -> new EntityNotFoundException())
                 .getReplay();
-    }
-
-    @Transactional
-    public List<OngoingMatch> save(List<OngoingMatch> match, CurrentUser user) {
-        var auth = permissionService.authorize(Action.ONGOING_MATCH_CREATE, user, null);
-        if (auth.isAllowed()) {
-            throw new AccessDeniedException();
-        }
-
-        try {
-            return ongoingMatchRepository.saveAllAndFlush(match, auth);
-        } catch (ConstraintViolationException e) {
-            if (e.getConstraintName().endsWith("_key")) {
-                throw new UserAlreadyInMatchException("One or both users are already in a match.");
-            }
-
-            throw e;
-        }
-    }
-
-    public OngoingMatchDto findOngoingMatch(UUID userId, CurrentUser user) {
-        var map = new HashMap<String, Object>();
-        map.put("userId", userId);
-
-        var auth = permissionService.authorize(Action.ONGOING_MATCH_QUERY, user, map);
-        var match = ongoingMatchRepository.findOne(auth).orElseThrow(() -> new EntityNotFoundException());
-        return matchMapper.toDto(match);
     }
 
     public List<MatchStatsDto> findMatchStats(UUID userId, CurrentUser user) {
@@ -214,7 +178,6 @@ public class MatchService {
                 matchDetailRepository.save(detail);
             }
 
-            ongoingMatchRepository.deleteByMatchId(m.matchId());
         } catch (JacksonException ex) {
             // should never happen
         }

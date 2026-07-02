@@ -61,18 +61,6 @@ create table
         foreign key (player_id) references player (id)
     );
 
-create table
-    if not exists ongoing_match (
-        id uuid not null,
-        match_id bigint not null,
-        player_id uuid not null,
-        target varchar(255) not null,
-        created_at timestamp with time zone not null,
-        updated_at timestamp with time zone,
-        primary key (id),
-        unique (player_id)
-    );
-
 create table 
     if not exists privacy_setting (
         id uuid not null,

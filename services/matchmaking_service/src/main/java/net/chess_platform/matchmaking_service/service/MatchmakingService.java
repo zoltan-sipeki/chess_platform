@@ -18,14 +18,18 @@ import net.chess_platform.common.domain_events.broker.queue.MatchFoundEvent;
 import net.chess_platform.common.domain_events.broker.queue.User;
 import net.chess_platform.common.domain_events.broker.relay.RelayDisconnectEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
+import net.chess_platform.common.security.CurrentUser;
+import net.chess_platform.matchmaking_service.exception.EntityNotFoundException;
 import net.chess_platform.matchmaking_service.exception.MatchmakingException;
 import net.chess_platform.matchmaking_service.exception.ServiceUnavailableException;
+import net.chess_platform.matchmaking_service.integration.ChatServiceProxy;
 import net.chess_platform.matchmaking_service.mmqueue.MMQueue;
 import net.chess_platform.matchmaking_service.mmqueue.Match;
 import net.chess_platform.matchmaking_service.model.MatchRouting;
 import net.chess_platform.matchmaking_service.model.MatchRoutingFactory;
 import net.chess_platform.matchmaking_service.repository.MatchRoutingRepository;
 import net.chess_platform.matchmaking_service.repository.PlayerRepository;
+import net.chess_platform.matchmaking_service.service.PermissionService.Action;
 
 @Service
 public class MatchmakingService {
@@ -44,11 +48,14 @@ public class MatchmakingService {
 
     private final PlayerRepository playerRepository;
 
+    private final PermissionService permissionService;
+
     public MatchmakingService(@Qualifier("unrankedQueue") MMQueue unrankedQueue,
             @Qualifier("rankedQueue") MMQueue rankedQueue,
             MatchRoutingFactory machRoutingFactory,
             EurekaClient discoveryClient, DomainEventService eventService,
-            PlayerRepository playerRepository, MatchRoutingRepository matchRoutingRepository) {
+            PlayerRepository playerRepository, MatchRoutingRepository matchRoutingRepository,
+            PermissionService permissionService, ChatServiceProxy chatServiceProxy) {
         this.unrankedQueue = unrankedQueue;
         this.rankedQueue = rankedQueue;
         this.matchRoutingFactory = machRoutingFactory;
@@ -56,6 +63,7 @@ public class MatchmakingService {
         this.eventService = eventService;
         this.playerRepository = playerRepository;
         this.matchRoutingRepository = matchRoutingRepository;
+        this.permissionService = permissionService;
     }
 
     public void enqueuePlayer(UUID userId, Match.Type queueType) {
@@ -232,6 +240,15 @@ public class MatchmakingService {
     @Transactional
     public void cleanUpStaleRoutingData() {
         matchRoutingRepository.cleanUpStaleData();
+    }
+
+    @Transactional
+    public void updateMatchRouting(long matchId, MatchRouting.Update update, CurrentUser user) {
+        var auth = permissionService.authorize(Action.MATCH_ROUTING_UPDATE, user, null);
+        long modifiedCount = matchRoutingRepository.update(matchId, update, auth);
+        if (modifiedCount == 0) {
+            throw new EntityNotFoundException();
+        }
     }
 
     private void expandMmrRanges(MMQueue queue) {

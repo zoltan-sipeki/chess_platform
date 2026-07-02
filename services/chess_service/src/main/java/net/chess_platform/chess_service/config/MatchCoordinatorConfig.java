@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import net.chess_platform.chess_service.coordinator.EventQueue;
 import net.chess_platform.chess_service.coordinator.Mapper;
 import net.chess_platform.chess_service.coordinator.MatchCoordinatorThread;
-import net.chess_platform.chess_service.integration.MatchServiceProxy;
+import net.chess_platform.chess_service.integration.MatchmakingServiceProxy;
 import net.chess_platform.chess_service.ws.PlayerConnections;
 import net.chess_platform.common.domain_events.service.DomainEventService;
 
@@ -22,11 +22,10 @@ public class MatchCoordinatorConfig {
 
     @Bean
     public List<MatchCoordinatorThread> coordinatorThreads(PlayerConnections connections, Mapper mapper,
-            DomainEventService eventService,
-            MatchServiceProxy matchService) {
+            DomainEventService eventService, MatchmakingServiceProxy matchmakingService) {
         var threads = new ArrayList<MatchCoordinatorThread>();
         for (int i = 0; i < Runtime.getRuntime().availableProcessors(); ++i) {
-            var service = new MatchCoordinatorThread(eventQueue(), connections, matchService, mapper,
+            var service = new MatchCoordinatorThread(eventQueue(), connections, matchmakingService, mapper,
                     eventService);
             threads.add(service);
             service.start();
