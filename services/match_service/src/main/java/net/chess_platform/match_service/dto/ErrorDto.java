@@ -1,10 +1,10 @@
 package net.chess_platform.match_service.dto;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 public record ErrorDto(
         int status,
-        OffsetDateTime timestamp,
+        Instant timestamp,
         String error,
         String path) {
 

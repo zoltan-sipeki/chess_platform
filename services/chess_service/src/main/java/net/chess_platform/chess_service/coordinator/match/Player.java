@@ -12,7 +12,7 @@ public class Player {
 
     private Integer newMmr;
 
-    private Float score;
+    private float score;
 
     private Color color;
 

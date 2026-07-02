@@ -2,6 +2,7 @@ package net.chess_platform.match_service.mapper;
 
 import java.util.List;
 
+import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import net.chess_platform.match_service.dto.MatchHistoryDto;

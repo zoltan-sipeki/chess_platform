@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ import net.chess_platform.match_service.dto.MatchHistoryListDto;
 import net.chess_platform.match_service.dto.MatchHistorySearchParams;
 import net.chess_platform.match_service.dto.MatchStatsDto;
 import net.chess_platform.match_service.exception.EntityNotFoundException;
-import net.chess_platform.match_service.exception.MatchAlreadyExistsException;
 import net.chess_platform.match_service.mapper.MatchMapper;
 import net.chess_platform.match_service.mapper.MatchStatMapper;
 import net.chess_platform.match_service.mapper.PlayerMapper;
@@ -117,19 +115,14 @@ public class MatchService {
             var matchType = Match.Type.valueOf(m.matchType());
 
             var match = new Match();
-            match.setId(m.matchUuid());
-            match.setDuration(m.endedAt().toEpochSecond() - m.startedAt().toEpochSecond());
+            match.setDuration(m.endedAt().toEpochMilli() - m.startedAt().toEpochMilli());
             match.setEndedAt(m.endedAt());
             match.setStartedAt(m.startedAt());
 
             var replay = objectMapper.writeValueAsString(m.replay());
             match.setReplay(replay);
             match.setType(matchType);
-            try {
-                matchRepository.save(match);
-            } catch (ConstraintViolationException ex) {
-                throw new MatchAlreadyExistsException();
-            }
+            matchRepository.save(match);
 
             for (var player : m.players()) {
 
@@ -138,7 +131,7 @@ public class MatchService {
                 playerRepository.update(update);
 
                 var stat = matchStatRepository.findByPlayerIdAndMatchType(player.id(), matchType).orElse(null);
-                var outcome = MatchResult.Outcome.valueOf(player.score());
+                var outcome = toOutcome(player.score());
                 var playerRef = em.getReference(Player.class, player.id());
 
                 if (stat == null) {
@@ -166,7 +159,7 @@ public class MatchService {
 
                 var detail = new MatchResult();
                 detail.setColor(Color.valueOf(player.color()));
-                detail.setOutcome(Outcome.valueOf(player.score()));
+                detail.setOutcome(outcome);
                 detail.setMmrBefore(player.mmrBefore());
                 detail.setMmrAfter(player.mmrAfter());
                 if (player.mmrAfter() != null && player.mmrBefore() != null) {
@@ -180,6 +173,16 @@ public class MatchService {
 
         } catch (JacksonException ex) {
             // should never happen
+        }
+    }
+
+    private Outcome toOutcome(float score) {
+        if (score > 0) {
+            return Outcome.WIN;
+        } else if (score < 0) {
+            return Outcome.LOSS;
+        } else {
+            return Outcome.DRAW;
         }
     }
 

@@ -1,45 +1,20 @@
 package net.chess_platform.match_service.model;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
-
-import org.springframework.data.domain.Persistable;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PostPersist;
-import jakarta.persistence.PostRemove;
-import jakarta.persistence.PostUpdate;
-import jakarta.persistence.Transient;
 
 @Entity
-public class Match extends AuditedEntity implements Persistable<UUID> {
-
-    @Transient
-    private boolean isNew = true;
-
-    @PostLoad
-    @PostPersist
-    @PostUpdate
-    public void setNotNew() {
-        isNew = false;
-    }
-
-    @PostRemove
-    public void setNew() {
-        isNew = true;
-    }
-
-    @Override
-    public boolean isNew() {
-        return isNew;
-    }
+public class Match extends AuditedEntity {
 
     public enum Type {
         RANKED,
@@ -48,11 +23,12 @@ public class Match extends AuditedEntity implements Persistable<UUID> {
     }
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private OffsetDateTime startedAt;
+    private Instant startedAt;
 
-    private OffsetDateTime endedAt;
+    private Instant endedAt;
 
     private long duration;
 
@@ -64,11 +40,11 @@ public class Match extends AuditedEntity implements Persistable<UUID> {
     @OneToMany(mappedBy = "match", fetch = FetchType.LAZY)
     private Set<MatchResult> matchDetails;
 
-    public OffsetDateTime getEndedAt() {
+    public Instant getEndedAt() {
         return endedAt;
     }
 
-    public void setEndedAt(OffsetDateTime endedAt) {
+    public void setEndedAt(Instant endedAt) {
         this.endedAt = endedAt;
     }
 
@@ -88,11 +64,11 @@ public class Match extends AuditedEntity implements Persistable<UUID> {
         this.id = id;
     }
 
-    public OffsetDateTime getStartedAt() {
+    public Instant getStartedAt() {
         return startedAt;
     }
 
-    public void setStartedAt(OffsetDateTime startedAd) {
+    public void setStartedAt(Instant startedAd) {
         this.startedAt = startedAd;
     }
 
@@ -143,9 +119,5 @@ public class Match extends AuditedEntity implements Persistable<UUID> {
         } else if (!id.equals(other.id))
             return false;
         return true;
-    }
-
-    public void setNew(boolean isNew) {
-        this.isNew = isNew;
     }
 }

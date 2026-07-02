@@ -6,7 +6,7 @@ public class ServerMessage {
         ERROR,
         MATCH_TIMEOUT,
         MOVE_RESULT,
-        GAME_STATE,
+        MATCH_SNAPSHOT,
         PLAYER_DISCONNECTED,
         PLAYER_RECONNECTED,
         CONNECTED

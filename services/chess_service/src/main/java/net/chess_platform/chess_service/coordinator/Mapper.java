@@ -11,7 +11,7 @@ import net.chess_platform.chess_service.chess.move.PromotionMove;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece;
 import net.chess_platform.chess_service.chess.piece.Pawn;
 import net.chess_platform.chess_service.chess.pojo.MoveResult;
-import net.chess_platform.chess_service.coordinator.dto.GameStateDto;
+import net.chess_platform.chess_service.coordinator.dto.MatchSnapshot;
 import net.chess_platform.chess_service.coordinator.dto.MoveDto;
 import net.chess_platform.chess_service.coordinator.dto.MoveProcessingResultDto;
 import net.chess_platform.chess_service.coordinator.dto.MoveResultDto;
@@ -22,6 +22,7 @@ import net.chess_platform.chess_service.coordinator.dto.PositionDto;
 import net.chess_platform.chess_service.coordinator.match.Match;
 import net.chess_platform.chess_service.coordinator.match.MoveProcessingResult;
 import net.chess_platform.chess_service.coordinator.match.Player;
+import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent;
 
 @Component
 public class Mapper {
@@ -40,33 +41,14 @@ public class Mapper {
                 move.isCheck(), move.getTimestamp(), promotee);
     }
 
-    // public MatchResultDto.MoveDto toMatchResult(IMove move) {
-    // var from = toMatchResult(move.getFrom());
-    // var to = toMatchResult(move.getTo());
-
-    // var movedPiece = move.getMovedPiece();
-    // var movedPieceDto = new
-    // MatchResultDto.PieceDto(movedPiece.getColor().toString(),
-    // toPieceType(movedPiece).toString());
-    // String promotee = null;
-    // if (move instanceof PromotionMove m) {
-    // promotee = toPieceType(m.getPromotee()).toString();
-    // }
-    // return new MatchResultDto.MoveDto(from, to, movedPieceDto,
-    // toMoveType(move).toString(),
-    // move.getAlgebraicNotation(),
-    // move.isCheck(), move.getTimestamp(), promotee);
-    // }
-
-    public GameStateDto toGameStateDto(Match match) {
+    public MatchSnapshot toGameStateDto(Match match) {
         var moves = new ArrayList<MoveDto>();
-        var chessboard = match.getChessboard();
-        for (var move : chessboard.getMoves()) {
+        for (var move : match.getMoves()) {
             moves.add(toDto(move));
         }
 
         var board = new ArrayList<PieceDto>();
-        for (var piece : chessboard.getBoard()) {
+        for (var piece : match.getBoard()) {
             if (piece == null) {
                 board.add(null);
             } else {
@@ -74,42 +56,14 @@ public class Mapper {
             }
         }
 
-        return new GameStateDto(match.getNextTurn(), chessboard.getActiveColor().name(),
-                chessboard.isPromotionInProgress(), moves, board);
+        return new MatchSnapshot(match.getNextTurn(), match.getActiveColor().name(),
+                match.isPromotionInProgress(), moves, board);
     }
 
     public PieceDto toDto(AbstractPiece piece) {
         return new PieceDto(piece.getColor().toString(), piece.getType().name(), piece.getMoveCount(),
                 piece.getRow(), piece.getCol(), piece instanceof Pawn p ? p.getDirection() : null);
     }
-
-    // public MatchResultDto toMatchResult(Match match) {
-    // var players = new ArrayList<MatchResultDto.PlayerDto>();
-    // for (var player : match.getPlayers()) {
-    // players.add(toMatchResult(player, match.getType()));
-    // }
-
-    // var chessboard = match.getChessboard();
-    // var replay = new ArrayList<MatchResultDto.MoveDto>();
-    // for (var move : chessboard.getMoves()) {
-    // replay.add(toMatchResult(move));
-    // }
-
-    // return new MatchResultDto(match.getId(), match.getType().toString(),
-    // match.getStartedAt(), match.getEndedAt(),
-    // players, replay);
-    // }
-
-    // public MatchResultDto.PlayerDto toMatchResult(Player player, Match.Type
-    // matchType) {
-    // Integer mmrBefore = matchType == Match.Type.PRIVATE ? null : player.getMmr();
-    // Integer mmrAfter = matchType == Match.Type.PRIVATE ? null :
-    // player.getNewMmr();
-
-    // return new MatchResultDto.PlayerDto(player.getId(),
-    // player.getColor().toString(), mmrBefore, mmrAfter,
-    // toScore(player.getScore()).toString());
-    // }
 
     public PlayerDto toDto(Player player) {
         var mmrBefore = player.getMmr();
@@ -131,10 +85,6 @@ public class Mapper {
         return new PositionDto(pos.row(), pos.col());
     }
 
-    // public MatchResultDto.PositionDto toMatchResult(Position pos) {
-    // return new MatchResultDto.PositionDto(pos.row(), pos.col());
-    // }
-
     public MoveResultDto toDto(MoveResult result) {
         var activeColor = result.getActiveColor();
         var move = result.getMove();
@@ -150,5 +100,48 @@ public class Mapper {
     public MoveProcessingResultDto toDto(MoveProcessingResult result) {
         return new MoveProcessingResultDto(result.getNextTurn(), toDto(result.getMoveResult()),
                 toDtoList(result.getScoreboard()));
+    }
+
+    public MatchEndedEvent.Payload toEventPayload(Match match) {
+        var players = new ArrayList<MatchEndedEvent.Payload.Player>();
+        for (var player : match.getPlayers()) {
+            players.add(toEventPayload(player, match.getType()));
+        }
+
+        var replay = new ArrayList<MatchEndedEvent.Payload.Move>();
+        for (var move : match.getMoves()) {
+            replay.add(toEventPayload(move));
+        }
+
+        return new MatchEndedEvent.Payload(match.getId(), match.getType().toString(),
+                match.getStartedAt(), match.getEndedAt(),
+                players, replay);
+    }
+
+    public MatchEndedEvent.Payload.Player toEventPayload(Player player, Match.Type matchType) {
+        return new MatchEndedEvent.Payload.Player(player.getId(), player.getColor().name(), player.getMmr(),
+                player.getNewMmr(),
+                player.getScore());
+    }
+
+    public MatchEndedEvent.Payload.Move toEventPayload(IMove move) {
+        var from = toEventPayload(move.getFrom());
+        var to = toEventPayload(move.getTo());
+
+        var movedPiece = move.getMovedPiece();
+        var movedPieceDto = new MatchEndedEvent.Payload.Piece(movedPiece.getColor().name(),
+                movedPiece.getType().name());
+        String promotee = null;
+        if (move instanceof PromotionMove m) {
+            promotee = m.getPromotee().getType().name();
+        }
+        return new MatchEndedEvent.Payload.Move(from, to, movedPieceDto,
+                move.getType().name(),
+                move.getAlgebraicNotation(),
+                move.isCheck(), move.getTimestamp(), promotee);
+    }
+
+    public MatchEndedEvent.Payload.Position toEventPayload(Position pos) {
+        return new MatchEndedEvent.Payload.Position(pos.row(), pos.col());
     }
 }

@@ -9,6 +9,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import net.chess_platform.chess_service.chess.Chessboard;
+import net.chess_platform.chess_service.chess.move.IMove;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
 import net.chess_platform.chess_service.chess.pojo.MoveDetails;
 import net.chess_platform.chess_service.chess.pojo.MoveResult;
@@ -263,5 +265,21 @@ public class Match {
 
     private void setEndedAt() {
         endedAt = Instant.now();
+    }
+
+    public List<IMove> getMoves() {
+        return chessboard.getMoves();
+    }
+
+    public AbstractPiece[] getBoard() {
+        return chessboard.getBoard();
+    }
+
+    public boolean isPromotionInProgress() {
+        return chessboard.isPromotionInProgress();
+    }
+
+    public Color getActiveColor() {
+        return chessboard.getActiveColor();
     }
 }

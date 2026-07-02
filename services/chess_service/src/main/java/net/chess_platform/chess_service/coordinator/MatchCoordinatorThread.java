@@ -158,7 +158,7 @@ public class MatchCoordinatorThread extends Thread {
         try {
             matchmakingService.updateMatchRouting(matchId);
             match.start();
-            sendToAllPlayers(match, new ServerMessage(ServerMessage.Type.GAME_STATE, mapper.toGameStateDto(match)));
+            sendToAllPlayers(match, new ServerMessage(ServerMessage.Type.MATCH_SNAPSHOT, mapper.toGameStateDto(match)));
         } catch (RestClientException e) {
             for (var p : players) {
                 var id = p.getId();
@@ -184,7 +184,7 @@ public class MatchCoordinatorThread extends Thread {
         var gameState = mapper.toGameStateDto(match);
 
         connections.sendMessage(userId,
-                new ServerMessage(ServerMessage.Type.GAME_STATE, gameState));
+                new ServerMessage(ServerMessage.Type.MATCH_SNAPSHOT, gameState));
     }
 
     private void process(MoveMessage message, Match match) {
@@ -268,8 +268,8 @@ public class MatchCoordinatorThread extends Thread {
             connections.disconnect(p.getId());
         }
 
-        // var matchResult = mapper.toMatchResult(match);
-        // eventService.publish(new MatchEndedEvent(matchResult));
+        var payload = mapper.toEventPayload(match);
+        eventService.publish(new MatchEndedEvent(payload));
 
         cleanUp(match);
     }

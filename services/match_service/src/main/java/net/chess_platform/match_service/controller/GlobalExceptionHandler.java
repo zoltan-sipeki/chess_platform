@@ -1,6 +1,6 @@
 package net.chess_platform.match_service.controller;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorDto handleException(EntityNotFoundException e, HttpServletRequest request) {
-        return new ErrorDto(HttpStatus.NOT_FOUND.value(), OffsetDateTime.now(),
+        return new ErrorDto(HttpStatus.NOT_FOUND.value(), Instant.now(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(),
                 request.getRequestURI());
     }
@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorDto handleException(UserAlreadyInMatchException e, HttpServletRequest request) {
-        return new ErrorDto(HttpStatus.CONFLICT.value(), OffsetDateTime.now(),
+        return new ErrorDto(HttpStatus.CONFLICT.value(), Instant.now(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(),
                 request.getRequestURI());
     }
