@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 
+import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent;
 import net.chess_platform.common.domain_events.broker.queue.DequeueEvent;
 import net.chess_platform.common.domain_events.broker.queue.EnqueueEvent;
 import net.chess_platform.common.domain_events.broker.queue.MatchFoundEvent;
@@ -229,6 +230,12 @@ public class MatchmakingService {
 
     public void process(RelayDisconnectEvent e) {
         dequeuePlayer(e.getData().userId());
+    }
+
+    @Transactional
+    public void process(MatchEndedEvent e) {
+        var matchId = e.getData().matchId();
+        matchRoutingRepository.delete(matchId);
     }
 
     @Transactional

@@ -38,6 +38,9 @@ public class RabbitConfig {
     @Value("${rabbitmq-messaging.matchmaking-service.reply.exchange}")
     private String MATCHMAKING_REPLY_EXCHANGE;
 
+    @Value("${rabbitmq-messaging.chess-service.events.exchange}")
+    private String CHESS_EVENTS_EXCHANGE;
+
     @Value("${rabbitmq-messaging.routing-key.relay-service}")
     private String RELAY_SERVICE_ROUTING_KEY;
 
@@ -73,6 +76,17 @@ public class RabbitConfig {
     }
 
     @Bean
+    public RabbitTemplate chessEventsRabbitTemplate(RabbitTemplateConfigurer configurer,
+            ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+        var rabbitTemplate = new RabbitTemplate();
+        configurer.configure(rabbitTemplate, connectionFactory);
+        rabbitTemplate.setExchange(CHESS_EVENTS_EXCHANGE);
+        rabbitTemplate.setMessageConverter(messageConverter);
+
+        return rabbitTemplate;
+    }
+
+    @Bean
     public Queue replyQueue() {
         return new AnonymousQueue(new Base64UrlNamingStrategy(APP_NAME));
     }
@@ -98,6 +112,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Exchange chessEventsExchange() {
+        return ExchangeBuilder.directExchange(CHESS_EVENTS_EXCHANGE).durable(true).build();
+    }
+
+    @Bean
     public Binding matchmakingReplyBinding(@Qualifier("replyQueue") Queue replyQueue,
             @Qualifier("matchmakingReplyExchange") Exchange matchmakingReplyExchange) {
         return new Binding(replyQueue.getName(), Binding.DestinationType.QUEUE,
@@ -116,5 +135,12 @@ public class RabbitConfig {
             @Qualifier("relayEventsExchange") Exchange relayEventsExchange) {
         return new Binding(eventQueue.getName(), Binding.DestinationType.QUEUE,
                 relayEventsExchange.getName(), SERVICE_ROUTING_KEY, null);
+    }
+
+    @Bean
+    public Binding chessEventsBinding(@Qualifier("eventQueue") Queue eventQueue,
+            @Qualifier("chessEventsExchange") Exchange chessEventsExchange) {
+        return new Binding(eventQueue.getName(), Binding.DestinationType.QUEUE,
+                chessEventsExchange.getName(), SERVICE_ROUTING_KEY, null);
     }
 }

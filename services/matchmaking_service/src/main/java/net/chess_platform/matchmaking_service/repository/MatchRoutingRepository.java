@@ -28,6 +28,10 @@ public interface MatchRoutingRepository
     @Query("DELETE FROM MatchRouting m WHERE m.expiresAt < CURRENT_TIMESTAMP AND m.matchStatus = 'PENDING'")
     int cleanUpStaleData();
 
+    @Modifying
+    @Query("DELETE FROM MatchRouting m WHERE m.matchId = :matchId")
+    int delete(long matchId);
+
     default long update(long matchId, MatchRouting.Update update, Authorization auth) {
         if (update == null) {
             return 0;

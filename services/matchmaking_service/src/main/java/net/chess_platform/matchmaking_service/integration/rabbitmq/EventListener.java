@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent;
 import net.chess_platform.common.domain_events.broker.relay.RelayDisconnectEvent;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
@@ -45,5 +46,11 @@ public class EventListener {
     @RabbitHandler
     public void process(@Payload RelayDisconnectEvent e) {
         matchmakingService.process(e);
+    }
+
+    @RabbitHandler
+    public void process(@Payload MatchEndedEvent e) {
+        matchmakingService.process(e);
+        eventService.ack(e, SERVICE_NAME);
     }
 }

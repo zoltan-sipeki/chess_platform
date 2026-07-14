@@ -66,6 +66,7 @@ rabbitmq-messaging:
     match-service: match-service
     relay-service: relay-service
     relay-service-fanout: relay-service-fanout
+    matchmaking-service: matchmaking-service
   chess-service:
     events:
       exchange: chess-events-exchange
