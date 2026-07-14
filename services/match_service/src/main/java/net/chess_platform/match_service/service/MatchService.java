@@ -10,9 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent;
@@ -23,7 +20,6 @@ import net.chess_platform.match_service.dto.MatchStatsDto;
 import net.chess_platform.match_service.exception.EntityNotFoundException;
 import net.chess_platform.match_service.mapper.MatchMapper;
 import net.chess_platform.match_service.mapper.MatchStatMapper;
-import net.chess_platform.match_service.mapper.PlayerMapper;
 import net.chess_platform.match_service.model.Match;
 import net.chess_platform.match_service.model.MatchResult;
 import net.chess_platform.match_service.model.MatchResult.Color;
@@ -36,6 +32,8 @@ import net.chess_platform.match_service.repository.MatchRepository;
 import net.chess_platform.match_service.repository.MatchResultRepository;
 import net.chess_platform.match_service.repository.MatchStatRepository;
 import net.chess_platform.match_service.repository.PlayerRepository;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class MatchService {
@@ -54,8 +52,6 @@ public class MatchService {
 
     private final MatchStatMapper matchStatMapper;
 
-    private final PlayerMapper playerMapper;
-
     private final ObjectMapper objectMapper;
 
     @PersistenceContext
@@ -65,7 +61,6 @@ public class MatchService {
             MatchResultRepository matchDetailRepository, MatchStatRepository matchStatRepository,
             PlayerRepository playerRepository,
             PermissionService permissionService, MatchMapper matchMapper, MatchStatMapper matchStatMapper,
-            PlayerMapper playerMapper,
             ObjectMapper objectMapper) {
         this.matchRepository = matchRepository;
         this.matchDetailRepository = matchDetailRepository;
@@ -74,7 +69,6 @@ public class MatchService {
         this.permissionService = permissionService;
         this.matchMapper = matchMapper;
         this.matchStatMapper = matchStatMapper;
-        this.playerMapper = playerMapper;
         this.objectMapper = objectMapper;
     }
 
@@ -119,14 +113,21 @@ public class MatchService {
             match.setEndedAt(m.endedAt());
             match.setStartedAt(m.startedAt());
 
-            var replay = objectMapper.writeValueAsString(m.replay());
+            var replay = objectMapper.writeValueAsString(e.getData());
             match.setReplay(replay);
             match.setType(matchType);
             matchRepository.save(match);
 
             for (var player : m.players()) {
 
-                var update = playerMapper.toUpdate(player);
+                var update = new Player.Update();
+                if (matchType == Match.Type.RANKED) {
+                    update.setRankedMmr(player.mmrAfter());
+                } else if (matchType == Match.Type.UNRANKED) {
+                    update.setUnrankedMmr(player.mmrAfter());
+                }
+
+                update.setLastPlayedAt(match.getStartedAt());
 
                 playerRepository.update(update);
 
@@ -177,13 +178,15 @@ public class MatchService {
     }
 
     private Outcome toOutcome(float score) {
-        if (score > 0) {
+        if (score == 1.0f) {
             return Outcome.WIN;
-        } else if (score < 0) {
+        } else if (score == 0.0f) {
             return Outcome.LOSS;
-        } else {
+        } else if (score == 0.5f) {
             return Outcome.DRAW;
         }
+
+        return null;
     }
 
 }

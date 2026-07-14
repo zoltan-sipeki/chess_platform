@@ -2,7 +2,6 @@ package net.chess_platform.match_service.config;
 
 import org.springframework.context.annotation.Configuration;
 
-import io.netty.channel.unix.DomainSocketReadMode;
 import net.chess_platform.common.domain_events.broker.DomainEvent;
 import net.chess_platform.common.domain_events.service.DomainEventSubscriptionRegistry;
 import net.chess_platform.common.domain_events.service.IDomainEventSubscriptionConfigurer;

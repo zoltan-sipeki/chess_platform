@@ -138,7 +138,7 @@ public class Mapper {
         var checkStatus = move.getCheckStatus();
 
         return new MatchEndedEvent.Payload.Move(from, to,
-                move.getType().name(),
+                move.getType().name(), move.getPiece().name(), move.getColor().name(),
                 checkStatus == null ? null : checkStatus.name(), move.getTimestamp(),
                 pr);
     }

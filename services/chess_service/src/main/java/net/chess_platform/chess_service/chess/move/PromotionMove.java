@@ -1,5 +1,7 @@
 package net.chess_platform.chess_service.chess.move;
 
+import java.time.Instant;
+
 import net.chess_platform.chess_service.chess.Chessboard;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece;
 import net.chess_platform.chess_service.chess.piece.Piece;
@@ -23,36 +25,38 @@ public class PromotionMove implements Move {
 
     @Override
     public void execute(Chessboard board) {
+        move.setTimestamp(Instant.now().toEpochMilli());
         var to = getTo();
         board.setPiece(promotedPieceInstance, to);
     }
-
+    
     @Override
     public Color getColor() {
         return move.getColor();
     }
-
+    
     @Override
     public AbstractPiece.Type getPiece() {
         return move.getPiece();
     }
-
+    
     @Override
     public Position getFrom() {
         return move.getFrom();
     }
-
+    
     @Override
     public Position getTo() {
         return move.getTo();
     }
-
+    
     @Override
     public void undo(Chessboard board) {
         var to = getTo();
         board.setPiece(move.getMovedPieceInstance(), to);
+        move.setTimestamp(0);
     }
-
+    
     @Override
     public CheckStatus getCheckStatus() {
         return move.getCheckStatus();

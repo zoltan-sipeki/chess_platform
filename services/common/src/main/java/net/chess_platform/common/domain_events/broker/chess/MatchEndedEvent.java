@@ -31,6 +31,10 @@ public class MatchEndedEvent extends DomainEvent<Payload> {
 
 				String type,
 
+				String piece,
+
+				String color,
+
 				String checkStatus,
 
 				long timestamp,

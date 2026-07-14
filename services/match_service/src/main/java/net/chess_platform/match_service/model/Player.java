@@ -1,5 +1,6 @@
 package net.chess_platform.match_service.model;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
@@ -30,7 +31,7 @@ public class Player extends AuditedEntity implements Persistable<UUID> {
 
         private int unrankedMmr;
 
-        private OffsetDateTime lastPlayedAt;
+        private Instant lastPlayedAt;
 
         public UUID getId() {
             return id;
@@ -72,11 +73,11 @@ public class Player extends AuditedEntity implements Persistable<UUID> {
             this.unrankedMmr = unrankedMmr;
         }
 
-        public OffsetDateTime getLastPlayedAt() {
+        public Instant getLastPlayedAt() {
             return lastPlayedAt;
         }
 
-        public void setLastPlayedAt(OffsetDateTime lastPlayedAt) {
+        public void setLastPlayedAt(Instant lastPlayedAt) {
             this.lastPlayedAt = lastPlayedAt;
         }
 

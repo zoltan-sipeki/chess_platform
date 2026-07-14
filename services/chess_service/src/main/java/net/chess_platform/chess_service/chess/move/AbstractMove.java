@@ -1,5 +1,7 @@
 package net.chess_platform.chess_service.chess.move;
 
+import java.time.Instant;
+
 import net.chess_platform.chess_service.chess.Chessboard;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece;
 import net.chess_platform.chess_service.chess.piece.Piece;
@@ -41,6 +43,7 @@ public abstract class AbstractMove implements Move {
 
     @Override
     public void execute(Chessboard board) {
+        timestamp = Instant.now().toEpochMilli();
         movedPieceInstance = board.getPiece(from);
         movedPieceInstance.incrementMoveCount();
     }
@@ -49,6 +52,7 @@ public abstract class AbstractMove implements Move {
     public void undo(Chessboard board) {
         movedPieceInstance.decrementMoveCount();
         movedPieceInstance = null;
+        timestamp = 0;
     }
 
     @Override
@@ -99,6 +103,10 @@ public abstract class AbstractMove implements Move {
     public boolean isPromotion() {
         var to = getTo();
         return getPiece() == Piece.Type.PAWN && (to.row() == 7 || to.row() == 0); 
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public Piece getMovedPieceInstance() {
