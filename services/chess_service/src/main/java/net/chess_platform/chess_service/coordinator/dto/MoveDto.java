@@ -2,20 +2,18 @@ package net.chess_platform.chess_service.coordinator.dto;
 
 public record MoveDto(
 
-		MovedPieceDto piece,
-
 		PositionDto from,
 
 		PositionDto to,
 
 		String type,
 
-		String algebraicNotation,
+		String piece,
 
-		boolean isCheck,
+		String color,
 
-		long timestamp,
+		String checkStatus,
 
-		String promotee) {
+		PromotedPieceDto promotedPiece) {
 
 }

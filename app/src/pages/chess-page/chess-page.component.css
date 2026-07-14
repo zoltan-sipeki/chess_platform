@@ -1,0 +1,23 @@
+.board-row:nth-of-type(2n) .board-col:nth-of-type(2n) {
+    background-color: azure;
+}
+
+.board-row:nth-of-type(2n) .board-col:nth-of-type(2n + 1) {
+    background-color: cornflowerblue;
+}
+
+.board-row:nth-of-type(2n + 1) .board-col:nth-of-type(2n) {
+    background-color: cornflowerblue;
+}
+
+.board-row:nth-of-type(2n + 1) .board-col:nth-of-type(2n + 1) {
+    background-color: azure;
+}
+
+.square.enabled:hover {
+    cursor: grab;
+}
+
+.square.enabled:active {
+    cursor: grabbing;
+}

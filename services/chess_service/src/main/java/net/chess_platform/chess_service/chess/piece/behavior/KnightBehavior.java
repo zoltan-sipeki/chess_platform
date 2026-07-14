@@ -4,23 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.move.IMove;
-import net.chess_platform.chess_service.chess.move.MoveUtils;
+import net.chess_platform.chess_service.chess.move.Move;
 import net.chess_platform.chess_service.chess.move.Position;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece;
-import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
 import net.chess_platform.chess_service.chess.piece.Knight;
+import net.chess_platform.chess_service.chess.piece.Piece;
+import net.chess_platform.chess_service.chess.piece.Piece.Color;
 
-public class KnightBehavior implements IPieceBehavior {
+public class KnightBehavior implements PieceBehavior {
     
     @Override
-    public boolean canBeAppliedTo(AbstractPiece piece) {
+    public boolean canBeAppliedTo(Piece piece) {
         return piece instanceof Knight;
     }
 
     @Override
-    public List<IMove> getMoves(Chessboard board, Color color, int row, int col) {
-        var moveList = new ArrayList<IMove>();
+    public List<Move> getMoves(Chessboard board, AbstractPiece.Type piece, Color color, int row, int col) {
+        var moveList = new ArrayList<Move>();
 
         boolean upperSecondRow = row - 2 >= 0;
         boolean upperFirstRow = row - 1 >= 0;
@@ -33,15 +33,15 @@ public class KnightBehavior implements IPieceBehavior {
 
         if (upperSecondRow) {
             if (leftFirstCol) {
-                var move = MoveUtils.createBasicMove(board, new Position(row, col), new Position(row - 2, col - 1),
-                        color);
+                var move = Move.createBasicMove(board, new Position(row, col), new Position(row - 2, col - 1),
+                        piece, color);
                 if (move != null) {
                     moveList.add(move);
                 }
             }
             if (rightFirstCol) {
-                var move = MoveUtils.createBasicMove(board, new Position(row, col), new Position(row - 2, col + 1),
-                        color);
+                var move = Move.createBasicMove(board, new Position(row, col), new Position(row - 2, col + 1),
+                        piece, color);
                 if (move != null) {
                     moveList.add(move);
                 }
@@ -50,15 +50,15 @@ public class KnightBehavior implements IPieceBehavior {
 
         if (upperFirstRow) {
             if (leftSecondCol) {
-                var move = MoveUtils.createBasicMove(board, new Position(row, col), new Position(row - 1, col - 2),
-                        color);
+                var move = Move.createBasicMove(board, new Position(row, col), new Position(row - 1, col - 2),
+                        piece, color);
                 if (move != null) {
                     moveList.add(move);
                 }
             }
             if (rightSecondCol) {
-                var move = MoveUtils.createBasicMove(board, new Position(row, col), new Position(row - 1, col + 2),
-                        color);
+                var move = Move.createBasicMove(board, new Position(row, col), new Position(row - 1, col + 2),
+                        piece, color);
                 if (move != null) {
                     moveList.add(move);
                 }
@@ -67,15 +67,15 @@ public class KnightBehavior implements IPieceBehavior {
 
         if (lowerFirstRow) {
             if (leftSecondCol) {
-                var move = MoveUtils.createBasicMove(board, new Position(row, col), new Position(row + 1, col - 2),
-                        color);
+                var move = Move.createBasicMove(board, new Position(row, col), new Position(row + 1, col - 2),
+                        piece, color);
                 if (move != null) {
                     moveList.add(move);
                 }
             }
             if (rightSecondCol) {
-                var move = MoveUtils.createBasicMove(board, new Position(row, col), new Position(row + 1, col + 2),
-                        color);
+                var move = Move.createBasicMove(board, new Position(row, col), new Position(row + 1, col + 2),
+                        piece, color);
                 if (move != null) {
                     moveList.add(move);
                 }
@@ -84,15 +84,15 @@ public class KnightBehavior implements IPieceBehavior {
 
         if (lowerSecondRow) {
             if (leftFirstCol) {
-                var move = MoveUtils.createBasicMove(board, new Position(row, col), new Position(row + 2, col - 1),
-                        color);
+                var move = Move.createBasicMove(board, new Position(row, col), new Position(row + 2, col - 1),
+                        piece, color);
                 if (move != null) {
                     moveList.add(move);
                 }
             }
             if (rightFirstCol) {
-                var move = MoveUtils.createBasicMove(board, new Position(row, col), new Position(row + 2, col + 1),
-                        color);
+                var move = Move.createBasicMove(board, new Position(row, col), new Position(row + 2, col + 1),
+                        piece, color);
                 if (move != null) {
                     moveList.add(move);
                 }

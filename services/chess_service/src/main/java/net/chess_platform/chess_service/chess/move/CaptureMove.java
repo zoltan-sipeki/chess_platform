@@ -1,43 +1,39 @@
 package net.chess_platform.chess_service.chess.move;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.piece.AbstractPiece;
+import net.chess_platform.chess_service.chess.piece.Piece;
+import net.chess_platform.chess_service.chess.piece.Piece.Color;
 
 public class CaptureMove extends AbstractMove {
 
-    private AbstractPiece capturedPiece;
+    private Piece capturedPieceInstance;
 
-    public CaptureMove(Chessboard board, Position from, Position to) {
-        super(board, from, to, Type.CAPTURE);
-        this.capturedPiece = board.getPiece(to);
-        setAlgebraicNotation(
-                getMovedPiece().toString() + getFrom().toString() + "x" + getTo().toString());
+    public CaptureMove(Piece.Type piece, Color color, Position from, Position to) {
+        super(piece, color, from, to, Type.CAPTURE);
     }
 
     @Override
-    public void execute() {
-        super.execute();
-        var board = getBoard();
+    public void execute(Chessboard board) {
+        super.execute(board);
         var from = getFrom();
         var to = getTo();
 
-        board.setPiece(getMovedPiece(), to);
+        capturedPieceInstance = board.getPiece(to);
+
+        board.setPiece(getMovedPieceInstance(), to);
         board.setPiece(null, from);
     }
 
     @Override
-    public void undo() {
-        var board = getBoard();
+    public void undo(Chessboard board) {
         var from = getFrom();
         var to = getTo();
 
-        board.setPiece(getMovedPiece(), from);
-        board.setPiece(capturedPiece, to);
-        super.undo();
-    }
+        board.setPiece(getMovedPieceInstance(), from);
+        board.setPiece(capturedPieceInstance, to);
 
-    public AbstractPiece getCapturedPiece() {
-        return capturedPiece;
+        capturedPieceInstance = null;
+
+        super.undo(board);
     }
-    
 }

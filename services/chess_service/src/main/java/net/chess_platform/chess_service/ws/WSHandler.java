@@ -2,6 +2,7 @@ package net.chess_platform.chess_service.ws;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.AuthenticationException;
@@ -23,14 +24,21 @@ import net.chess_platform.chess_service.coordinator.MatchCoordinatorThread;
 import net.chess_platform.chess_service.coordinator.MatchmakingTokenVerifier;
 import net.chess_platform.chess_service.coordinator.message.DisconnectMessage;
 import net.chess_platform.chess_service.coordinator.message.IRoutableMessage;
+import net.chess_platform.chess_service.coordinator.message.MoveMessage;
+import net.chess_platform.chess_service.coordinator.message.PromotionMessage;
 import net.chess_platform.chess_service.coordinator.message.ReconnectMessage;
+import net.chess_platform.chess_service.coordinator.message.ResignMessage;
 import net.chess_platform.chess_service.exception.AccessDeniedException;
 import net.chess_platform.chess_service.exception.InvalidMatchmakingTokenException;
 import net.chess_platform.chess_service.exception.InvalidMessageException;
 import net.chess_platform.chess_service.ws.message.client.AuthenticatePayload;
 import net.chess_platform.chess_service.ws.message.client.ClientMessage;
 import net.chess_platform.chess_service.ws.message.client.ClientMessage.Type;
-import net.chess_platform.chess_service.ws.message.client.ConnectPayload;
+import net.chess_platform.chess_service.ws.message.client.JoinMatchPayload;
+import net.chess_platform.chess_service.ws.message.client.MatchPayload;
+import net.chess_platform.chess_service.ws.message.client.MovePayload;
+import net.chess_platform.chess_service.ws.message.client.PromotionPayload;
+import net.chess_platform.chess_service.ws.message.client.ResignPayload;
 import net.chess_platform.chess_service.ws.message.server.ServerMessage;
 
 @Component
@@ -46,16 +54,20 @@ public class WSHandler extends TextWebSocketHandler {
 
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
 
+    private final ConcurrentMap<UUID, Long> routingCache;
+
     public WSHandler(ObjectMapper objectMapper,
             @Qualifier("coordinatorThreads") List<MatchCoordinatorThread> coordinatorThreads,
             MatchmakingTokenVerifier mmTokenVerifier,
             PlayerConnections connections,
-            JwtAuthenticationProvider jwtAuthenticationProvider) {
+            JwtAuthenticationProvider jwtAuthenticationProvider,
+            ConcurrentMap<UUID, Long> routingCache) {
         this.objectMapper = objectMapper;
         this.coordinatorThreads = coordinatorThreads;
         this.mmTokenVerifier = mmTokenVerifier;
         this.connections = connections;
         this.jwtAuthenticationProvider = jwtAuthenticationProvider;
+        this.routingCache = routingCache;
     }
 
     @Override
@@ -65,14 +77,19 @@ public class WSHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        connections.remove(session);
+
         var userId = connections.getAuthenticatedUserId(session);
+        if (userId == null) {
+            return;
+        }
+
         long matchId = getMatchIdByUserId(userId);
         if (matchId > 0) {
             dispatchMessage(new DisconnectMessage(userId, matchId));
         }
 
-        connections.remove(session);
-
+        routingCache.remove(userId);
     }
 
     @Override
@@ -96,38 +113,54 @@ public class WSHandler extends TextWebSocketHandler {
                 throw new InvalidMessageException();
             }
 
-            var m = objectMapper.convertValue(cm.getPayload(), ClientMessage.PAYLOAD_MAPPING.get(mtype));
-            checkNotEmpty(m);
+            var payload = objectMapper.convertValue(cm.getPayload(), ClientMessage.PAYLOAD_MAPPING.get(mtype));
 
-            if (mtype == Type.CONNECT) {
-                handleConnectMessage((ConnectPayload) m, userId);
-            } else {
-                dispatchMessage((IRoutableMessage) m);
+            switch (payload) {
+                case JoinMatchPayload p -> handleJoinMatch(p, userId);
+
+                case MatchPayload p -> {
+                    long matchId = getMatchIdByUserId(userId);
+                    if (matchId == 0) {
+                        connections.disconnect(session.getId(), "Player not in match.");
+                        return;
+                    }
+                    switch (p) {
+                        case MovePayload m -> {
+                            checkNotEmpty(m);
+                            dispatchMessage(new MoveMessage(userId, matchId, m));
+                        }
+                        case PromotionPayload m -> {
+                            checkNotEmpty(m);
+                            dispatchMessage(new PromotionMessage(userId, matchId, m));
+                        }
+                        case ResignPayload m -> {
+                            dispatchMessage(new ResignMessage(userId, matchId));
+                        }
+                        default -> throw new InvalidMessageException();
+                    }
+                }
+
+                default -> throw new InvalidMessageException();
             }
 
         } catch (JsonProcessingException | InvalidMessageException e) {
-            connections.sendMessage(session.getId(),
-                    new ServerMessage(ServerMessage.Type.ERROR, "Invalid message"));
-            connections.disconnect(session.getId());
+            connections.disconnect(session.getId(), "Invalid message");
         } catch (AccessDeniedException e) {
-            connections.sendMessage(session.getId(), new ServerMessage(ServerMessage.Type.ERROR, "Unauthorized"));
-            connections.disconnect(session.getId());
+            connections.disconnect(session.getId(), "Unauthorized");
         } catch (JWTVerificationException | InvalidMatchmakingTokenException e) {
-            connections.sendMessage(session.getId(),
-                    new ServerMessage(ServerMessage.Type.ERROR, "Invalid matchmaking token"));
-            connections.disconnect(session.getId());
+            connections.disconnect(session.getId(), "Invalid matchmaking token");
         }
 
     }
 
-    private void handleConnectMessage(ConnectPayload message, UUID userId) throws InvalidMessageException {
+    private void handleJoinMatch(JoinMatchPayload message, UUID userId) throws InvalidMessageException {
         long matchId = getMatchIdByUserId(userId);
 
         IRoutableMessage m;
         if (matchId > 0) {
             m = new ReconnectMessage(userId, matchId);
         } else {
-            m = mmTokenVerifier.verify(message.token(), userId);
+            m = mmTokenVerifier.verify(message.getToken(), userId);
         }
 
         dispatchMessage(m);
@@ -138,13 +171,7 @@ public class WSHandler extends TextWebSocketHandler {
             return 0;
         }
 
-        for (var coordinator : coordinatorThreads) {
-            long id = coordinator.getMatchIdByUserId(userId);
-            if (id > 0) {
-                return id;
-            }
-        }
-        return 0;
+        return routingCache.getOrDefault(userId, 0L);
     }
 
     private void checkNotEmpty(Object object) {
@@ -180,19 +207,17 @@ public class WSHandler extends TextWebSocketHandler {
     }
 
     private void authenticate(WebSocketSession session, AuthenticatePayload message) {
-        var accessToken = message.accessToken();
+        var accessToken = message.getAccessToken();
         if (accessToken == null || accessToken.isEmpty()) {
             throw new AccessDeniedException();
         }
         try {
             var currentUserId = authenticate(accessToken);
             if (connections.hasConnection(currentUserId)) {
-                connections.sendMessage(session.getId(),
-                        new ServerMessage(ServerMessage.Type.ERROR, "Already connected"));
-                connections.disconnect(session.getId());
+                connections.disconnect(session.getId(), "Already connected");
             } else {
                 connections.setAuthenticatedUserId(session, currentUserId);
-                connections.sendMessage(currentUserId, new ServerMessage(ServerMessage.Type.CONNECTED));
+                connections.sendMessage(currentUserId, new ServerMessage(ServerMessage.Type.AUTHENTICATED));
             }
         } catch (AuthenticationException e) {
             throw new AccessDeniedException();

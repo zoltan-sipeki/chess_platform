@@ -9,7 +9,7 @@ public class ServerMessage {
         MATCH_SNAPSHOT,
         PLAYER_DISCONNECTED,
         PLAYER_RECONNECTED,
-        CONNECTED
+        AUTHENTICATED
     }
 
     private Type type;

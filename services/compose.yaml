@@ -33,6 +33,7 @@ services:
     secrets:
       - postgres-chess-service-password
       - mmtoken-public-key
+      - keycloak-chess-service-client-secret
     environment:
       - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
     ports:

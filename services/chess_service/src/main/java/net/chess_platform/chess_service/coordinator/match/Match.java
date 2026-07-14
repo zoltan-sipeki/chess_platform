@@ -9,9 +9,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.move.IMove;
-import net.chess_platform.chess_service.chess.piece.AbstractPiece;
-import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
+import net.chess_platform.chess_service.chess.move.Move;
+import net.chess_platform.chess_service.chess.piece.Piece;
+import net.chess_platform.chess_service.chess.piece.Piece.Color;
 import net.chess_platform.chess_service.chess.pojo.MoveDetails;
 import net.chess_platform.chess_service.chess.pojo.MoveResult;
 import net.chess_platform.chess_service.chess.pojo.PromotionDetails;
@@ -37,9 +37,9 @@ public class Match {
         DRAW
     }
 
-    private static final long FLAG_FALL_TIMEOUT_MS = 10000;
+    private static final long FLAG_FALL_TIMEOUT_MS = 300_000;
 
-    private static final long PROMOTION_TIMEOUT_MS = 30 * 1000;
+    private static final long PROMOTION_TIMEOUT_MS = 30_000;
 
     private static final Color[] COLORS = Color.values();
 
@@ -128,7 +128,7 @@ public class Match {
 
     public MoveProcessingResult process(PromotionMessage message) {
         var player = findPlayer(message.getPlayerId());
-        var promotionDetails = new PromotionDetails(player.getColor(), message.getPromotee());
+        var promotionDetails = new PromotionDetails(player.getColor(), message.getPromotedPiece());
 
         var moveResult = chessboard.makeMove(promotionDetails);
 
@@ -148,7 +148,9 @@ public class Match {
             setNextTurn(0);
             setEndedAt();
             calculatePlayerScores(moveResult);
-            return new MoveProcessingResult(moveResult, players);
+            return new MoveProcessingResult(moveResult.getActiveColor(), moveResult.getMove(), moveResult.getState(),
+                    moveResult.getWinnerColor(),
+                    players);
         }
 
         if (moveResult.isPromotionInProgress()) {
@@ -157,7 +159,8 @@ public class Match {
             startFlagFallTimer();
         }
 
-        return new MoveProcessingResult(moveResult, nextTurn);
+        return new MoveProcessingResult(moveResult.getActiveColor(), moveResult.getMove(), moveResult.getState(),
+                nextTurn);
     }
 
     private void calculatePlayerScores(MoveResult moveResult) {
@@ -183,6 +186,10 @@ public class Match {
     }
 
     private int getPlayerIndexByColor(Color color) {
+        if (color == null) {
+            return 0;
+        }
+
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).getColor() == color) {
                 return i;
@@ -267,16 +274,16 @@ public class Match {
         endedAt = Instant.now();
     }
 
-    public List<IMove> getMoves() {
+    public List<Move> getMoves() {
         return chessboard.getMoves();
     }
 
-    public AbstractPiece[] getBoard() {
+    public Piece[] getBoard() {
         return chessboard.getBoard();
     }
 
-    public boolean isPromotionInProgress() {
-        return chessboard.isPromotionInProgress();
+    public Chessboard.State getState() {
+        return chessboard.getState();
     }
 
     public Color getActiveColor() {

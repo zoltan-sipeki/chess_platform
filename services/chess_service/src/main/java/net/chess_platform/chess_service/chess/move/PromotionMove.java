@@ -2,29 +2,39 @@ package net.chess_platform.chess_service.chess.move;
 
 import net.chess_platform.chess_service.chess.Chessboard;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece;
+import net.chess_platform.chess_service.chess.piece.Piece;
+import net.chess_platform.chess_service.chess.piece.Piece.Color;
 
-public class PromotionMove implements IMove {
+public class PromotionMove implements Move {
 
-    private IMove move;
+    private AbstractMove move;
 
-    private AbstractPiece promotee;
+    private Piece promotedPieceInstance;
 
-    public PromotionMove(IMove move) {
+    public PromotionMove(AbstractMove move, Piece promotedPieceInstance) {
         this.move = move;
+        this.promotedPieceInstance = promotedPieceInstance;
     }
 
     @Override
-    public boolean validate() {
-        return move.validate();
+    public boolean validate(Chessboard board) {
+        return true;
     }
 
     @Override
-    public void execute() {
-        if (promotee == null) {
-            executeFirstHalf();
-        } else {
-            executeSecondHalf();
-        }
+    public void execute(Chessboard board) {
+        var to = getTo();
+        board.setPiece(promotedPieceInstance, to);
+    }
+
+    @Override
+    public Color getColor() {
+        return move.getColor();
+    }
+
+    @Override
+    public AbstractPiece.Type getPiece() {
+        return move.getPiece();
     }
 
     @Override
@@ -33,86 +43,24 @@ public class PromotionMove implements IMove {
     }
 
     @Override
-    public AbstractPiece getMovedPiece() {
-        return move.getMovedPiece();
-    }
-
-    @Override
     public Position getTo() {
         return move.getTo();
     }
 
     @Override
-    public void undo() {
-        if (promotee == null) {
-            undoFirstHalf();
-        } else {
-            undoSecondHalf();
-        }
-    }
-
-    @Override
-    public Chessboard getBoard() {
-        return move.getBoard();
-    }
-
-    private void executeFirstHalf() {
-        move.execute();
-        getBoard().setPromotionInProgress(true);
-    }
-
-    private void executeSecondHalf() {
+    public void undo(Chessboard board) {
         var to = getTo();
-        var board = getBoard();
-        board.setPiece(promotee, to);
-        board.setPromotionInProgress(false);
-        move.setAlgebraicNotation(move.getAlgebraicNotation() + "=" + promotee.toString());
-    }
-
-    private void undoFirstHalf() {
-        getBoard().setPromotionInProgress(false);
-        move.undo();
-    }
-
-    private void undoSecondHalf() {
-        var to = getTo();
-        var board = getBoard();
-        board.setPromotionInProgress(true);
-        board.setPiece(getMovedPiece(), to);
-    }
-
-    public void setPromotee(AbstractPiece promotee) {
-        this.promotee = promotee;
+        board.setPiece(move.getMovedPieceInstance(), to);
     }
 
     @Override
-    public void setAlgebraicNotation(String algebraicNotation) {
-        move.setAlgebraicNotation(algebraicNotation);
+    public CheckStatus getCheckStatus() {
+        return move.getCheckStatus();
     }
 
     @Override
-    public String getAlgebraicNotation() {
-        return move.getAlgebraicNotation();
-    }
-
-    @Override
-    public void setCheck() {
-        move.setCheck();
-    }
-
-    @Override
-    public void setCheckmate() {
-        move.setCheckmate();
-    }
-
-    @Override
-    public void setTimestamp() {
-        move.setTimestamp();
-    }
-
-    @Override
-    public boolean isCheck() {
-        return move.isCheck();
+    public void setCheckStatus(CheckStatus checkStatus) {
+        move.setCheckStatus(checkStatus);
     }
 
     @Override
@@ -121,12 +69,12 @@ public class PromotionMove implements IMove {
     }
 
     @Override
-    public AbstractPiece getPromotee() {
-        return promotee;
+    public boolean isPromotion() {
+        return true;
     }
 
-    public IMove getMove() {
-        return move;
+    public Piece getPromotedPieceInstance() {
+        return promotedPieceInstance;
     }
 
     @Override

@@ -4,27 +4,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.move.IMove;
+import net.chess_platform.chess_service.chess.move.Move;
 import net.chess_platform.chess_service.chess.piece.behavior.BishopBehavior;
-import net.chess_platform.chess_service.chess.piece.behavior.IPieceBehavior;
+import net.chess_platform.chess_service.chess.piece.behavior.PieceBehavior;
 import net.chess_platform.chess_service.chess.piece.behavior.RookBehavior;
 
 public class Queen extends AbstractPiece {
 
-    private IPieceBehavior rookMoves = new RookBehavior();
+    private PieceBehavior rookMoves = new RookBehavior();
 
-    private IPieceBehavior bishopMoves = new BishopBehavior();
+    private PieceBehavior bishopMoves = new BishopBehavior();
 
-    public Queen(int row, int col, Color color, Chessboard board) {
-        super(row, col, color, board, Type.QUEEN);
+    public Queen(Color color) {
+        super(color, Type.QUEEN);
     }
 
     @Override
-    public List<IMove> getMoves() {
-        var rookMoves_ = rookMoves.getMoves(getBoard(), getColor(), getRow(), getCol());
-        var bishopMoves_ = bishopMoves.getMoves(getBoard(), getColor(), getRow(), getCol());
+    public List<Move> getMoves(Chessboard board, int row, int col) {
+        var rookMoves_ = rookMoves.getMoves(board, getType(), getColor(), row, col);
+        var bishopMoves_ = bishopMoves.getMoves(board, getType(), getColor(), row, col);
 
-        var moveList = new ArrayList<IMove>(rookMoves_);
+        var moveList = new ArrayList<Move>(rookMoves_);
         moveList.addAll(bishopMoves_);
 
         return moveList;

@@ -1,43 +1,41 @@
 package net.chess_platform.chess_service.chess.pojo;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.Chessboard.GameOverReason;
-import net.chess_platform.chess_service.chess.move.IMove;
-import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
+import net.chess_platform.chess_service.chess.Chessboard.State;
+import net.chess_platform.chess_service.chess.move.Move;
+import net.chess_platform.chess_service.chess.piece.Piece.Color;
 
 public class MoveResult {
 
     private Color activeColor;
 
-    private IMove move;
+    private Move move;
 
-    private boolean promotionInProgress;
-
-    private Chessboard.GameOverReason gameOverReason;
+    private Chessboard.State state = State.ACTIVE;
 
     private Color winnerColor;
 
-    public MoveResult(IMove move, Color activeColor) {
+    public MoveResult(Move move, Color activeColor, Chessboard.State state) {
         this.move = move;
         this.activeColor = activeColor;
+        this.state = state;
     }
 
-    public MoveResult(IMove move, Color activeColor, boolean promotionInProgress) {
-        this(move, activeColor);
-        this.promotionInProgress = promotionInProgress;
-    }
-
-    public MoveResult(IMove move, Chessboard.GameOverReason gameOverReason, Color winnerColor) {
-        this(move, null);
-        this.gameOverReason = gameOverReason;
+    public MoveResult(Move move, Chessboard.State state, Color winnerColor) {
+        this.move = move;
+        this.state = state;
         this.winnerColor = winnerColor;
     }
 
     public boolean isGameOver() {
-        return gameOverReason != null;
+        return state != State.ACTIVE && state != State.AWAITING_PROMOTION;
     }
 
-    public IMove getMove() {
+    public boolean isPromotionInProgress() {
+        return state == State.AWAITING_PROMOTION;
+    }
+
+    public Move getMove() {
         return move;
     }
 
@@ -49,20 +47,16 @@ public class MoveResult {
         return winnerColor == null;
     }
 
-    public boolean isPromotionInProgress() {
-        return promotionInProgress;
-    }
-
     public boolean isInvalid() {
-        return move == null;
+        return move == null && winnerColor == null;
     }
 
     public Color getWinnerColor() {
         return winnerColor;
     }
 
-    public GameOverReason getGameOverReason() {
-        return gameOverReason;
+    public State getState() {
+        return state;
     }
 
 }

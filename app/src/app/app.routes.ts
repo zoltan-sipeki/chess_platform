@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from '../components/login/login.component';
 import { UserProfilePage } from '../components/user-profile-page/user-profile-page.component';
 import { UserSearchPage } from '../components/user-search-page/user-search-page.component';
+import { ChessPage } from '../pages/chess-page/chess-page.component';
 import { Dashboard } from '../pages/dashboard/dashboard.component';
 import { FriendsPage } from '../pages/friends-page/friends-page.component';
 import { Homepage } from '../pages/homepage/homepage.component';
@@ -18,6 +19,10 @@ export const routes: Routes = [
     {
         path: "",
         component: Homepage
+    },
+    {
+        path: "t/:target",
+        component: ChessPage
     },
     {
         path: "dashboard",

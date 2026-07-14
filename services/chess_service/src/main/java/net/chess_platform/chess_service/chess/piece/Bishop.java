@@ -3,22 +3,22 @@ package net.chess_platform.chess_service.chess.piece;
 import java.util.List;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.move.IMove;
+import net.chess_platform.chess_service.chess.move.Move;
 import net.chess_platform.chess_service.chess.piece.behavior.BishopBehavior;
-import net.chess_platform.chess_service.chess.piece.behavior.IPieceBehavior;
+import net.chess_platform.chess_service.chess.piece.behavior.PieceBehavior;
 
 public class Bishop extends AbstractPiece {
 
-    private final IPieceBehavior bishopMoves = new BishopBehavior();
+    private final PieceBehavior bishopMoves = new BishopBehavior();
 
-    public Bishop(int row, int col, Color color, Chessboard board) {
-        super(row, col, color, board, Type.BISHOP);
+    public Bishop(Color color) {
+        super(color, Type.BISHOP);
 
     }
 
     @Override
-    public List<IMove> getMoves() {
-        return bishopMoves.getMoves(getBoard(), getColor(), getRow(), getCol());
+    public List<Move> getMoves(Chessboard board, int row, int col) {
+        return bishopMoves.getMoves(board, getType(), getColor(), row, col);
     }
 
     @Override

@@ -14,7 +14,6 @@ import net.chess_platform.common.domain_events.broker.message.queue.frontend.Deq
 import net.chess_platform.common.domain_events.broker.message.queue.frontend.EnqueueMessage;
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.matchmaking_api_service.dto.CurrentMatchDto;
-import net.chess_platform.matchmaking_api_service.exception.EntityNotFoundException;
 import net.chess_platform.matchmaking_api_service.exception.MatchmakingException;
 import net.chess_platform.matchmaking_api_service.exception.ServiceUnavailableException;
 import net.chess_platform.matchmaking_api_service.mapper.MatchRoutingMapper;
@@ -39,8 +38,11 @@ public class MatchmakingService {
     }
 
     public CurrentMatchDto findCurrentMatch(CurrentUser user) {
-        var routingData = mmRoutingRepository.findByPlayerId(user.id())
-                .orElseThrow(() -> new EntityNotFoundException());
+        var routingData = mmRoutingRepository.findByPlayerId(user.id()).orElse(null);
+        if (routingData == null) {
+            return null;
+        }
+
         if (routingData.getMatchStatus() == MatchRouting.Status.PENDING) {
             return mapper.toDto(routingData);
         }

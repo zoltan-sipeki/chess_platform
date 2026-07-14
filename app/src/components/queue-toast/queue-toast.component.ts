@@ -65,7 +65,7 @@ export class QueueToastComponent implements OnInit, OnDestroy {
         this.currentMatch = this.matchmakingService.currentMatch;
         this.timeInQueue = this.matchmakingService.timeInQueue;
         this.currentUser = this.userService.currentUser;
-        
+
         document.addEventListener("mousemove", this.drag);
         document.addEventListener("mouseup", this.stopDragging);
     }
@@ -99,5 +99,18 @@ export class QueueToastComponent implements OnInit, OnDestroy {
 
     declineCurrentMatch(): void {
         this.matchmakingService.declineCurrentMatch().subscribe();
+    }
+
+    joinMatch(): void {
+        const currentMatch = this.currentMatch();
+        if (currentMatch == null) {
+            return;
+        }
+
+        if (currentMatch.token != null) {
+            window.localStorage.setItem("matchmakingToken", currentMatch.token);
+        }
+
+        window.open(`${window.location.origin}/t/${currentMatch.target}`, "_blank");
     }
 }

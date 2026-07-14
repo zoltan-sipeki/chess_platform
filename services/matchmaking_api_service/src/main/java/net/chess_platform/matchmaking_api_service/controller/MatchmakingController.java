@@ -1,6 +1,7 @@
 package net.chess_platform.matchmaking_api_service.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,9 +49,13 @@ public class MatchmakingController {
     }
 
     @GetMapping("/current-match")
-    public CurrentMatchDto getActiveMatch(CurrentUser currentUser) {
-        return matchmakingService.findCurrentMatch(currentUser);
-    }  
+    public ResponseEntity<CurrentMatchDto> getActiveMatch(CurrentUser currentUser) {
+        var currentMatch = matchmakingService.findCurrentMatch(currentUser);
+        if (currentMatch == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(currentMatch);
+    }
 
     @DeleteMapping("/current-match")
     public void deletePendingMatch(CurrentUser currentUser) {

@@ -1,7 +1,7 @@
 package net.chess_platform.chess_service.chess.pojo;
 
 import net.chess_platform.chess_service.chess.move.Position;
-import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
+import net.chess_platform.chess_service.chess.piece.Piece.Color;
 
 public record MoveDetails(
         Color color,

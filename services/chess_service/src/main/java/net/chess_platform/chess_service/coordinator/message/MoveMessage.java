@@ -15,11 +15,11 @@ public class MoveMessage implements IRoutableMessage, IMatchMessage {
 
     private Position to;
 
-    public MoveMessage(UUID playerId, MovePayload payload) {
+    public MoveMessage(UUID playerId, long matchId, MovePayload payload) {
         this.userId = playerId;
-        this.matchId = payload.matchId();
-        this.from = payload.from();
-        this.to = payload.to();
+        this.matchId = matchId;
+        this.from = payload.getFrom();
+        this.to = payload.getTo();
     }
 
     @Override

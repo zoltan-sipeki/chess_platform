@@ -1,0 +1,342 @@
+@let columnLabels = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
+@let rowLabels = ["8", "7", "6", "5", "4", "3", "2", "1"];
+
+<div class="mt-5">
+    <div class="container">
+        <div class="row">
+            <!-- LEFT PANEL -->
+            <div class="col-3 d-flex flex-column justify-content-center">
+                <button class="btn btn-outline-danger mb-3" (click)="show(resignModal)"
+                    [disabled]="gameState() == null || gameOver()">Resign</button>
+                @for (player of players(); track player.id) {
+                <div class="card shadow-sm mb-3" [class]="player.color === activeColor() ? 'border border-2 border-primary-subtle' : ''">
+                    <div class="card-body">
+
+                        <div class="d-flex align-items-center mb-3">
+                            <avatar [src]="player.avatar" clazz="rounded-circle border" [width]="56" [height]="56">
+                            </avatar>
+
+                            <div class="ms-3 flex-grow-1">
+                                <div class="fw-semibold">
+                                    {{ player.displayName }}
+                                </div>
+
+                                <small class="text-secondary">
+                                    {{ player.color | titlecase }}
+                                </small>
+                            </div>
+
+                            @if (player.color == activeColor()) {
+                            <span class="badge text-bg-success">
+                                ● To move
+                            </span>
+                            }
+                        </div>
+
+                    </div>
+                </div>
+                }
+            </div>
+
+            <!-- BOARD -->
+            <div class="col-6 d-flex justify-content-center">
+
+                <div style="user-select: none;">
+
+                    <!-- file column labels -->
+                    <div class="d-flex">
+                        <div [style.width.px]="SQUARE_WIDTH" [style.height.px]="SQUARE_HEIGHT"></div>
+
+                        @for (label of columnLabels; track label) {
+                        <div class=" d-flex justify-content-center align-items-center text-secondary border-bottom
+                            border-secondary" [style.width.px]="SQUARE_WIDTH" [style.height.px]="SQUARE_HEIGHT">
+                            {{ label }}
+                        </div>
+                        }
+
+                    </div>
+
+                    <div class="d-flex">
+
+                        <!-- left ranks -->
+                        <div class="d-flex flex-column">
+                            @for (label of rowLabels; track label) {
+                            <div class="d-flex justify-content-center align-items-center text-secondary border-end border-secondary"
+                                [style.width.px]="SQUARE_WIDTH" [style.height.px]="SQUARE_HEIGHT">
+                                {{ label }}
+                            </div>
+                            }
+                        </div>
+
+                        <!-- board -->
+                        <div #board>
+
+                            @for (row of squares; track $index; let i = $index) {
+                            <div class=" d-flex board-row">
+
+                                @for (square of squares[$index]; track $index; let j = $index) {
+                                <div class="d-flex board-col position-relative m-0 p-0" [style.width.px]="SQUARE_WIDTH"
+                                    [style.height.px]="SQUARE_HEIGHT">
+
+                                    <div [style.backgroundColor]="square.highlightColor()">
+
+                                        <img #pieceImg class="square" [class.enabled]="isEnabled(square)"
+                                            [src]="square.pieceImg()" [width]="SQUARE_WIDTH" [height]="SQUARE_HEIGHT"
+                                            [style]="square.pieceStyle()" (mousedown)="startDragging($event, i, j)"
+                                            [draggable]="false">
+
+                                    </div>
+
+                                </div>
+                                }
+
+                            </div>
+                            }
+
+                        </div>
+
+                        <!-- right ranks -->
+                        <div class="d-flex flex-column">
+                            @for (label of rowLabels; track label) {
+                            <div class="d-flex justify-content-center align-items-center text-secondary border-start border-secondary"
+                                [style.width.px]="SQUARE_WIDTH" [style.height.px]="SQUARE_HEIGHT">
+                                {{ label }}
+                            </div>
+                            }
+                        </div>
+
+                    </div>
+
+                    <!-- bottom files -->
+                    <div class="d-flex">
+                        <div [style.width.px]="SQUARE_WIDTH" [style.height.px]="SQUARE_HEIGHT"></div>
+
+                        @for (label of columnLabels; track label) {
+                        <div class=" d-flex justify-content-center align-items-center text-secondary border-top
+                            border-secondary" [style.width.px]="SQUARE_WIDTH" [style.height.px]="SQUARE_HEIGHT">
+                            {{ label }}
+                        </div>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div class="col-3 d-flex flex-column">
+
+                <div class="text-center mb-2">
+                    <div class="text-secondary small">
+                        Time Remaining
+                    </div>
+
+                    <div class="display-6 fw-bold">
+                        {{ countDown() | timeFormat: "ms" }}
+                    </div>
+                </div>
+
+                <!-- Move List -->
+                <div class="card shadow-sm">
+                    <div class="card-header fw-semibold">
+                        Move List
+                    </div>
+                    <div #moveListRef class="card-body p-0" style="max-height:265px; overflow:auto;">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>White</th>
+                                    <th>Black</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (move of moveList(); track move) {
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ move[0] }}</td>
+                                    <td>
+                                        @if (move[1]) {
+                                        {{ move[1] }}
+                                        }
+                                        @else {
+                                        ...
+                                        }
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        @if (gameState() == "AWAITING_PROMOTION") {
+        <div class="row">
+            <div class="col-12 d-flex justify-content-center">
+
+                <div class="card shadow-sm mt-4 w-100" style="max-width: 450px;">
+
+                    <div class="card-body">
+                        @if (myTurn()) {
+                        <div class="text-secondary text-center small mb-3">
+                            Choose the piece your pawn should promote to.
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-3">
+                            @for (piece of promotablePieces; track piece) {
+                            <button class="btn btn-outline-secondary p-2" (click)="promote(piece)">
+                                <img [src]="getImg(myColor()!, piece)" width="48" height="48">
+                            </button>
+                            }
+
+                        </div>
+                        }
+                        @else {
+                        <div class="text-secondary text-center small mb-3">
+                            Waiting for your opponent to choose a piece to promote their pawn to.
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+
+<ng-template #scoreboard>
+    <div class="modal-body p-0">
+
+        <div class="card shadow border-0 m-0">
+
+            <div class="card-header bg-dark text-white text-center py-3">
+                <div class="fs-3 text-warning mb-1">
+                    <i class="bi bi-trophy-fill"></i>
+                </div>
+                <h4 class="mb-1 fw-semibold">
+                    @if (isDraw()) {
+                    Draw
+                    }
+                    @else {
+                    {{ winnerColor() | titlecase }} Wins
+                    }
+                </h4>
+                <div class="small text-secondary">
+                    {{ gameState() | snakeCaseToTitleCase }}
+                </div>
+            </div>
+
+            <div class="card-body py-4">
+                <div class="row align-items-center">
+                    <div class="col-4 text-center">
+
+                        @let player1 = players()[0];
+                        @let player2 = players()[1];
+                        <avatar [src]="player1.avatar" [width]="72" [height]="72" clazz="rounded-circle mb-2"></avatar>
+
+                        <div class="fw-semibold">
+                            {{ player1.color === "WHITE" ? '♔' : '♚' }} {{ player1.displayName }}
+                        </div>
+
+                        <div class="fw-bold mb-1 mt-2">
+                            @if (player1.mmrBefore) {
+                            <span class="fw-bold">{{ player1.mmrBefore }}</span>
+                            <span class="text-secondary mx-1">→</span>
+                            <span class="fw-bold">{{ player1.mmrAfter }}</span>
+                            }
+                        </div>
+
+                        @if (player1.mmrBefore) {
+                        @let change = (player1.mmrAfter ?? 0) - (player1.mmrBefore ?? 0);
+                        <div class="small fw-semibold" [class.text-success]="change >= 0"
+                            [class.text-danger]="change < 0">
+                            {{ change > 0 ? "+" + change : change }}
+                        </div>
+                        }
+
+                    </div>
+                    <div class="col-4 text-center">
+
+                        <div class="small text-secondary mb-1">
+                            Result
+                        </div>
+
+                        <div class="fw-bold mb-2">
+                            {{ player1.score }} - {{ player2.score }}
+                        </div>
+
+                        @if (player1.mmrBefore) {
+                        <div class="small text-secondary mb-1">
+                            MMR
+                        </div>
+                        }
+
+                    </div>
+                    <div class="col-4 text-center">
+                        <avatar [src]="player2.avatar" [width]="72" [height]="72" clazz="rounded-circle mb-2"></avatar>
+
+                        <div class="fw-semibold">
+                            {{ player2.color === "WHITE" ? '♔' : '♚' }} {{ player2.displayName }}
+                        </div>
+
+                        <div class="fw-bold mb-1 mt-2">
+                            @if (player2.mmrBefore) {
+                            <span class="fw-bold">{{ player2.mmrBefore }}</span>
+                            <span class="text-secondary mx-1">→</span>
+                            <span class="fw-bold">{{ player2.mmrAfter }}</span>
+                            }
+                        </div>
+
+                        @if (player2.mmrBefore) {
+                        @let change = (player2.mmrAfter ?? 0) - (player2.mmrBefore);
+                        <div class="small fw-semibold" [class.text-success]="change >= 0"
+                            [class.text-danger]="change < 0">
+                            {{ change > 0 ? "+" + change : change }}
+                        </div>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="card-footer bg-body-tertiary py-3">
+
+                <div class="d-flex justify-content-center gap-2">
+
+                    <button class="btn btn-outline-primary btn-sm px-3">
+                        <i class="bi bi-play-circle me-1"></i>
+                        Watch Replay
+                    </button>
+
+                    <button class="btn btn-danger btn-sm px-3" (click)="closeModal()">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Close
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</ng-template>
+
+<ng-template #resignModal>
+    <div class="modal-header">
+        <h4 class="modal-title">Resign</h4>
+        <button type="button" class="btn-close" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        Are you sure you want to resign?
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="resign()">Resign</button>
+    </div>
+</ng-template>

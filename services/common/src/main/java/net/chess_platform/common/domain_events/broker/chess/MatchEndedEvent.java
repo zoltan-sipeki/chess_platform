@@ -9,70 +9,75 @@ import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent.Payl
 
 public class MatchEndedEvent extends DomainEvent<Payload> {
 
-    public static record Payload(
+	public static record Payload(
 
-            long matchId,
+			long matchId,
 
-            String matchType,
+			String matchType,
 
-            Instant startedAt,
+			Instant startedAt,
 
-            Instant endedAt,
+			Instant endedAt,
 
-            List<Player> players,
+			List<Player> players,
 
-            List<Move> replay) {
+			List<Move> replay) {
 
-        public static record Move(
+		public static record Move(
 
-                Position from,
+				Position from,
 
-                Position to,
+				Position to,
 
-                Piece piece,
+				String type,
 
-                String type,
+				String checkStatus,
 
-                String algebraicNotation,
+				long timestamp,
 
-                boolean isCheck,
+				PromotedPiece promotedPiece) {
+		}
 
-                long timestamp,
+		public static record PromotedPiece(
 
-                String promotee) {
-        }
+				String color,
 
-        public static record Position(
+				String type
 
-                int row,
+		) {
+		}
 
-                int col) {
-        }
+		public static record Position(
 
-        public static record Piece(
+				int row,
 
-                String color,
+				int col) {
+		}
 
-                String type) {
-        }
+		public static record Piece(
 
-        public static record Player(
+				String color,
 
-                UUID id,
+				String type) {
+		}
 
-                String color,
+		public static record Player(
 
-                Integer mmrBefore,
+				UUID id,
 
-                Integer mmrAfter,
+				String color,
 
-                float score) {
-        }
+				Integer mmrBefore,
 
-    }
+				Integer mmrAfter,
 
-    public MatchEndedEvent(Payload data) {
-        super(DomainEvent.Category.CHESS, DomainEvent.Type.MATCH_ENDED, data);
-    }
+				float score) {
+		}
+
+	}
+
+	public MatchEndedEvent(Payload data) {
+		super(DomainEvent.Category.CHESS, DomainEvent.Type.MATCH_ENDED, data);
+	}
 
 }

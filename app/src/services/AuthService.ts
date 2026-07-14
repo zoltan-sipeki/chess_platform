@@ -1,8 +1,8 @@
 import { inject, Injectable } from "@angular/core";
-import Keycloak from 'keycloak-js';
-import { environment } from "../environments/environment";
 import { ActivatedRoute, Router } from "@angular/router";
+import Keycloak from 'keycloak-js';
 import { UserData } from "../api/UserApi";
+import { environment } from "../environments/environment";
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -56,6 +56,10 @@ export class AuthService {
 
     public isAuthenticated(): boolean {
         return this.keycloak.authenticated;
+    }
+
+    getUserId(): string {
+        return this.keycloak.idTokenParsed!["sub"] ?? "";
     }
 
     public getUserData(): UserData {

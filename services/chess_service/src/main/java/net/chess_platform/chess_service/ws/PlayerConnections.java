@@ -16,6 +16,8 @@ import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorato
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import net.chess_platform.chess_service.ws.message.server.ServerMessage;
+
 @Component
 public class PlayerConnections {
 
@@ -101,6 +103,16 @@ public class PlayerConnections {
         }
     }
 
+    public void disconnect(String sessionId, String message) {
+        sendMessage(sessionId, new ServerMessage(ServerMessage.Type.ERROR, message));
+        disconnect(sessionId);
+    }
+
+    public void disconnect(UUID userId, String message) {
+        sendMessage(userId, new ServerMessage(ServerMessage.Type.ERROR, message));
+        disconnect(userId);
+    }
+    
     public void disconnect(String sessionId) {
         try {
             Connection connection;

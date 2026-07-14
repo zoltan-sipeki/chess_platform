@@ -2,18 +2,18 @@ import { DatePipe, PercentPipe } from "@angular/common";
 import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { Subscription } from "rxjs";
+import { MatchStat } from "../../api/MatchApi";
+import { Notification as NotificationRelayEvent } from "../../api/NotificationApi";
+import { RelationshipType } from "../../api/RelationshipApi";
 import { EventService, FriendRequestAcceptedEvent, UnfriendEvent } from "../../services/EventService";
 import { FriendRequestService } from "../../services/FriendRequestService";
 import { FriendService } from "../../services/FriendService";
-import { MatchStat } from "../../api/MatchApi";
-import { Notification as NotificationRelayEvent } from "../../api/NotificationApi";
+import { MatchmakingService } from "../../services/MatchmakingService";
 import { ProfileService, UserProfile } from "../../services/ProfileService";
-import { RelationshipType } from "../../api/RelationshipApi";
 import { RelayService, UnfriendRelayEvent, UserUpdatedRelayEvent } from "../../services/RelayService";
 import { AvatarComponent } from "../avatar/avatar.component";
 import { MatchHistoryTable } from "../match-history-table/match-history-table.component";
 import { User } from "../user/user.component";
-import { MatchmakingService } from "../../services/MatchmakingService";
 
 export interface MatchStatsTotal {
     gamesPlayed: number;

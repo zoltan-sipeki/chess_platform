@@ -1,5 +1,6 @@
 package net.chess_platform.chess_service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,6 +25,7 @@ public class ChessServiceApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+
 	}
 
 }

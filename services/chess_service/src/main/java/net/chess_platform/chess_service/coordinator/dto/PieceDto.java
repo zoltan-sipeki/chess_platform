@@ -6,12 +6,6 @@ public record PieceDto(
 
 		String type,
 
-		int moveCount,
-
-		int row,
-
-		int col,
-
-		Integer direction) {
+		int moveCount) {
 
 }

@@ -3,21 +3,21 @@ package net.chess_platform.chess_service.chess.piece;
 import java.util.List;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.move.IMove;
-import net.chess_platform.chess_service.chess.piece.behavior.IPieceBehavior;
+import net.chess_platform.chess_service.chess.move.Move;
+import net.chess_platform.chess_service.chess.piece.behavior.PieceBehavior;
 import net.chess_platform.chess_service.chess.piece.behavior.RookBehavior;
 
 public class Rook extends AbstractPiece {
 
-    private IPieceBehavior rookMoves = new RookBehavior();
+    private PieceBehavior rookMoves = new RookBehavior();
 
-    public Rook(int row, int col, Color color, Chessboard board) {
-        super(row, col, color, board, Type.ROOK);
+    public Rook(Color color) {
+        super(color, Type.ROOK);
     }
 
     @Override
-    public List<IMove> getMoves() {
-        return rookMoves.getMoves(getBoard(), getColor(), getRow(), getCol());
+    public List<Move> getMoves(Chessboard board, int row, int col) {
+        return rookMoves.getMoves(board, getType(), getColor(), row, col);
     }
 
     @Override

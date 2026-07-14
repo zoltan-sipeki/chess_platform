@@ -3,21 +3,21 @@ package net.chess_platform.chess_service.chess.piece;
 import java.util.List;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.move.IMove;
-import net.chess_platform.chess_service.chess.piece.behavior.IPieceBehavior;
+import net.chess_platform.chess_service.chess.move.Move;
 import net.chess_platform.chess_service.chess.piece.behavior.KnightBehavior;
+import net.chess_platform.chess_service.chess.piece.behavior.PieceBehavior;
 
 public class Knight extends AbstractPiece {
 
-    private final IPieceBehavior knightMoves = new KnightBehavior();
+    private final PieceBehavior knightMoves = new KnightBehavior();
 
-    public Knight(int row, int col, Color color, Chessboard board) {
-        super(row, col, color, board, Type.KNIGHT);
+    public Knight(Color color) {
+        super(color, Type.KNIGHT);
     }
 
     @Override
-    public List<IMove> getMoves() {
-        return knightMoves.getMoves(getBoard(), getColor(), getRow(), getCol());
+    public List<Move> getMoves(Chessboard board, int row, int col) {
+        return knightMoves.getMoves(board, getType(), getColor(), row, col);
     }
 
     @Override

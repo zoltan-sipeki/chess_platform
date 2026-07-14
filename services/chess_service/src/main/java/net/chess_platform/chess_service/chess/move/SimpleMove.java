@@ -1,34 +1,33 @@
 package net.chess_platform.chess_service.chess.move;
 
 import net.chess_platform.chess_service.chess.Chessboard;
+import net.chess_platform.chess_service.chess.piece.AbstractPiece;
+import net.chess_platform.chess_service.chess.piece.Piece.Color;
 
 public class SimpleMove extends AbstractMove {
 
-    public SimpleMove(Chessboard board, Position from, Position to) {
-        super(board, from, to, Type.SIMPLE);
-        setAlgebraicNotation(getMovedPiece().toString() + getFrom().toString() + "-" + getTo().toString());
+    public SimpleMove(AbstractPiece.Type piece, Color color, Position from, Position to) {
+        super(piece, color, from, to, Type.SIMPLE);
     }
 
     @Override
-    public void execute() {
-        super.execute();
-        var board = getBoard();
+    public void execute(Chessboard board) {
+        super.execute(board);
         var from = getFrom();
         var to = getTo();
 
-        board.setPiece(getMovedPiece(), to);
+        board.setPiece(getMovedPieceInstance(), to);
         board.setPiece(null, from);
     }
 
     @Override
-    public void undo() {
-        var board = getBoard();
+    public void undo(Chessboard board) {
         var from = getFrom();
         var to = getTo();
 
-        board.setPiece(getMovedPiece(), from);
+        board.setPiece(getMovedPieceInstance(), from);
         board.setPiece(null, to);
-        super.undo();
+        super.undo(board);
     }
 
 }

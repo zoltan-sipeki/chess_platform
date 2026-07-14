@@ -1,57 +1,54 @@
 package net.chess_platform.chess_service.chess.move;
 
-import java.time.OffsetDateTime;
-
 import net.chess_platform.chess_service.chess.Chessboard;
 import net.chess_platform.chess_service.chess.piece.AbstractPiece;
+import net.chess_platform.chess_service.chess.piece.Piece;
+import net.chess_platform.chess_service.chess.piece.Piece.Color;
 
-public abstract class AbstractMove implements IMove {
-
-    private final Chessboard board;
+public abstract class AbstractMove implements Move {
 
     private final Position from;
 
     private final Position to;
 
-    private final AbstractPiece movedPiece;
+    private final Piece.Type piece;
+
+    private final Color color;
 
     private final Type type;
 
-    private String algebraicNotation;
+    private Piece movedPieceInstance;
 
-    private boolean isCheck;
+    private CheckStatus checkStatus;
 
     private long timestamp;
 
-    public AbstractMove(Chessboard board, Position from, Position to, Type type) {
-        this.board = board;
+    public AbstractMove(Piece.Type piece, Color color, Position from, Position to, Type type) {
+        this.piece = piece;
+        this.color = color;
         this.from = from;
         this.to = to;
         this.type = type;
-        this.movedPiece = board.getPiece(from);
     }
 
     @Override
-    public boolean validate() {
-        execute();
-        boolean isKingInCheck = board.isKingInCheck(movedPiece.getColor());
-        undo();
-        return isKingInCheck;
+    public boolean validate(Chessboard board) {
+        execute(board);
+        boolean isKingInCheck = board.isKingInCheck(movedPieceInstance.getColor());
+        undo(board);
+        return !isKingInCheck;
     }
 
     @Override
-    public void execute() {
-        movedPiece.incrementMoveCount();
+    public void execute(Chessboard board) {
+        movedPieceInstance = board.getPiece(from);
+        movedPieceInstance.incrementMoveCount();
     }
 
     @Override
-    public void undo() {
-        movedPiece.decrementMoveCount();
-    }
-
-    @Override
-    public Chessboard getBoard() {
-        return board;
+    public void undo(Chessboard board) {
+        movedPieceInstance.decrementMoveCount();
+        movedPieceInstance = null;
     }
 
     @Override
@@ -60,45 +57,32 @@ public abstract class AbstractMove implements IMove {
     }
 
     @Override
-    public AbstractPiece getMovedPiece() {
-        return movedPiece;
-    }
-
-    @Override
     public Position getTo() {
         return to;
     }
 
     @Override
-    public String getAlgebraicNotation() {
-        return algebraicNotation;
+    public CheckStatus getCheckStatus() {
+        return checkStatus;
     }
 
     @Override
-    public void setCheck() {
-        isCheck = true;
-        algebraicNotation += "+";
+    public void setCheckStatus(CheckStatus checkStatus) {
+        if (checkStatus == null) {
+            return;
+        }
+
+        this.checkStatus = checkStatus;
     }
 
     @Override
-    public void setCheckmate() {
-        isCheck = true;
-        algebraicNotation += "++";
+    public Color getColor() {
+        return color;
     }
 
     @Override
-    public void setAlgebraicNotation(String algebraicNotation) {
-        this.algebraicNotation = algebraicNotation;
-    }
-
-    @Override
-    public void setTimestamp() {
-        this.timestamp = OffsetDateTime.now().toInstant().toEpochMilli();
-    }
-
-    @Override
-    public boolean isCheck() {
-        return isCheck;
+    public AbstractPiece.Type getPiece() {
+        return piece;
     }
 
     @Override
@@ -107,13 +91,18 @@ public abstract class AbstractMove implements IMove {
     }
 
     @Override
-    public AbstractPiece getPromotee() {
-        return null;
+    public Type getType() {
+        return type;
     }
 
     @Override
-    public Type getType() {
-        return type;
+    public boolean isPromotion() {
+        var to = getTo();
+        return getPiece() == Piece.Type.PAWN && (to.row() == 7 || to.row() == 0); 
+    }
+
+    public Piece getMovedPieceInstance() {
+        return movedPieceInstance;
     }
 
 }

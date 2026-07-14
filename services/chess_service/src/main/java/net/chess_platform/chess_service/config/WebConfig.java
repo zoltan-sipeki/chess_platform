@@ -24,7 +24,7 @@ public class WebConfig {
 
     @Bean
     @LoadBalanced
-    public RestClient.Builder loadBalancedRestClientBuilder(ClientRegistrationRepository clientRegistrationRepository,
+    public RestClient.Builder oauth2RestClientBuilder(ClientRegistrationRepository clientRegistrationRepository,
             OAuth2AuthorizedClientService authorizedClientService) {
 
         var authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
@@ -35,7 +35,6 @@ public class WebConfig {
                 clientRegistrationRepository, authorizedClientService);
 
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
-
         return RestClient.builder()
                 .requestInterceptor((request, body, execution) -> {
                     var attributes = request.getAttributes();

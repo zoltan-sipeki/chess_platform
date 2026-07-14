@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -46,19 +47,17 @@ public class MatchCoordinatorThread extends Thread {
 
     private final Mapper mapper;
 
+    private final ConcurrentMap<UUID, Long> routingCache;
+
     public MatchCoordinatorThread(EventQueue eventQueue, PlayerConnections playerConnections,
             MatchmakingServiceProxy matchmakingService, Mapper mapper,
-            DomainEventService eventService) {
+            DomainEventService eventService, ConcurrentMap<UUID, Long> routingCache) {
         this.eventQueue = eventQueue;
         this.connections = playerConnections;
         this.matchmakingService = matchmakingService;
         this.mapper = mapper;
         this.eventService = eventService;
-    }
-
-    public long getMatchIdByUserId(UUID userId) {
-        var player = players.get(userId);
-        return player == null ? 0 : player.getMatchId();
+        this.routingCache = routingCache;
     }
 
     @Override
@@ -92,8 +91,12 @@ public class MatchCoordinatorThread extends Thread {
             return;
         }
 
-        var match = matches.get(player.getMatchId());
+        var match = matches.get(message.getMatchId());
         if (match == null) {
+            return;
+        }
+
+        if (match.findPlayer(userId) == null) {
             return;
         }
 
@@ -141,13 +144,14 @@ public class MatchCoordinatorThread extends Thread {
             setTimeout(matchId);
         }
 
-        var player = new Player(userId, token.getMmr(), matchId);
+        var player = new Player(userId, token.getMmr());
         var prev = players.put(userId, player);
         if (prev != null) {
             return;
         }
 
         match.addPlayer(player);
+        routingCache.put(userId, matchId);
 
         if (!match.isEveryBodyConnected()) {
             return;
@@ -158,13 +162,11 @@ public class MatchCoordinatorThread extends Thread {
         try {
             matchmakingService.updateMatchRouting(matchId);
             match.start();
-            sendToAllPlayers(match, new ServerMessage(ServerMessage.Type.MATCH_SNAPSHOT, mapper.toGameStateDto(match)));
+            sendToAllPlayers(match, new ServerMessage(ServerMessage.Type.MATCH_SNAPSHOT, mapper.toSnapshot(match)));
         } catch (RestClientException e) {
             for (var p : players) {
                 var id = p.getId();
-                connections.sendMessage(id,
-                        new ServerMessage(ServerMessage.Type.ERROR, "Failed to create match. Closing game."));
-                connections.disconnect(id);
+                connections.disconnect(id, "Failed to create match. Closing game.");
                 e.printStackTrace();
             }
 
@@ -181,7 +183,7 @@ public class MatchCoordinatorThread extends Thread {
                     new ServerMessage(ServerMessage.Type.PLAYER_RECONNECTED, userId));
         }
 
-        var gameState = mapper.toGameStateDto(match);
+        var gameState = mapper.toSnapshot(match);
 
         connections.sendMessage(userId,
                 new ServerMessage(ServerMessage.Type.MATCH_SNAPSHOT, gameState));
@@ -190,20 +192,27 @@ public class MatchCoordinatorThread extends Thread {
     private void process(MoveMessage message, Match match) {
         var moveResult = match.process(message);
 
-        sendMoveResult(match, moveResult);
-
-        if (moveResult.isGameOver()) {
-            handleGameOver(match);
+        if (moveResult.isInvalid()) {
+            connections.sendMessage(message.getPlayerId(),
+                    new ServerMessage(ServerMessage.Type.MOVE_RESULT, mapper.toDto(moveResult)));
+        } else {
+            sendMoveResult(match, moveResult);
+            if (moveResult.isGameOver()) {
+                handleGameOver(match);
+            }
         }
     }
 
     private void process(PromotionMessage message, Match match) {
         var moveResult = match.process(message);
 
-        sendMoveResult(match, moveResult);
-
-        if (moveResult.isGameOver()) {
-            handleGameOver(match);
+        if (moveResult.isInvalid()) {
+            connections.sendMessage(message.getPlayerId(), mapper.toDto(moveResult));
+        } else {
+            sendMoveResult(match, moveResult);
+            if (moveResult.isGameOver()) {
+                handleGameOver(match);
+            }
         }
     }
 
@@ -226,9 +235,7 @@ public class MatchCoordinatorThread extends Thread {
 
         for (var player : players) {
             var userId = player.getId();
-            connections.sendMessage(userId, new ServerMessage(ServerMessage.Type.MATCH_TIMEOUT,
-                    "The opponent took too long to connect. Closing match."));
-            connections.disconnect(userId);
+            connections.disconnect(userId, "The opponent took too long to connect. Closing match.");
         }
 
         cleanUp(match);
@@ -277,6 +284,7 @@ public class MatchCoordinatorThread extends Thread {
     private void cleanUp(Match match) {
         var matchPlayers = match.getPlayers();
         for (var p : matchPlayers) {
+            routingCache.remove(p.getId());
             players.remove(p.getId());
         }
         matches.remove(match.getId());

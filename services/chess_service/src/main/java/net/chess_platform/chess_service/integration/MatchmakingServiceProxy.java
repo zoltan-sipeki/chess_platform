@@ -16,12 +16,12 @@ public class MatchmakingServiceProxy {
     private static record UpdateMatchRoutingDto(MatchStatus matchStatus) {
     }
 
-    public MatchmakingServiceProxy(@Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
+    public MatchmakingServiceProxy(@Qualifier("oauth2RestClientBuilder") RestClient.Builder builder) {
         this.restClient = builder.baseUrl("http://matchmaking-service").build();
     }
 
     public void updateMatchRouting(long matchId) {
-        restClient.put().uri("/api/matchmaking/matches/{matchId}", matchId)
-                .body(new UpdateMatchRoutingDto(MatchStatus.ACTIVE)).retrieve();
+        restClient.patch().uri("/api/matchmaking/matches/{matchId}", matchId)
+                .body(new UpdateMatchRoutingDto(MatchStatus.ACTIVE)).retrieve().toBodilessEntity();
     }
 }

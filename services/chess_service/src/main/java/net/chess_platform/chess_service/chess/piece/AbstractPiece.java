@@ -3,67 +3,24 @@ package net.chess_platform.chess_service.chess.piece;
 import java.util.List;
 
 import net.chess_platform.chess_service.chess.Chessboard;
-import net.chess_platform.chess_service.chess.move.IMove;
+import net.chess_platform.chess_service.chess.move.Move;
 import net.chess_platform.chess_service.chess.move.Position;
 
-public abstract class AbstractPiece {
-
-    public enum Type {
-        PAWN,
-        KNIGHT,
-        BISHOP,
-        ROOK,
-        QUEEN,
-        KING
-    }
-
-    public enum Color {
-        WHITE,
-        BLACK
-    }
+public abstract class AbstractPiece implements Piece {
 
     private int moveCount = 0;
 
-    private int row;
-
-    private int col;
-
     private final Color color;
-
-    private final Chessboard board;
 
     private final Type type;
 
-    public AbstractPiece(int row, int col, Color color, Chessboard board, Type type) {
-        this.row = row;
-        this.col = col;
+    public AbstractPiece(Color color, Type type) {
         this.color = color;
-        this.board = board;
         this.type = type;
-    }
-
-    public int getRow() {
-        return row;
-    }
-
-    public void setRow(int row) {
-        this.row = row;
-    }
-
-    public int getCol() {
-        return col;
-    }
-
-    public void setCol(int col) {
-        this.col = col;
     }
 
     public Color getColor() {
         return color;
-    }
-
-    public Chessboard getBoard() {
-        return board;
     }
 
     public boolean hasMoved() {
@@ -78,17 +35,12 @@ public abstract class AbstractPiece {
         --moveCount;
     }
 
-    public void setPosition(Position pos) {
-        row = pos.row();
-        col = pos.col();
-    }
+    public abstract List<Move> getMoves(Chessboard board, int row, int col);
 
-    public abstract List<IMove> getMoves();
-
-    public IMove getMove(Position pos) {
-        var moves = getMoves();
+    public Move getMove(Position to, Chessboard board, int row, int col) {
+        var moves = getMoves(board, row, col);
         for (var move : moves) {
-            if (move.getTo().equals(pos)) {
+            if (move.getTo().equals(to)) {
                 return move;
             }
         }
@@ -96,8 +48,15 @@ public abstract class AbstractPiece {
         return null;
     }
 
-    public boolean canMove() {
-        return !getMoves().isEmpty();
+    public boolean canMove(Chessboard board, int row, int col) {
+        var moves = getMoves(board, row, col);
+        for (var move : moves) {
+            if (move.validate(board)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public int getMoveCount() {

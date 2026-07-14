@@ -1,6 +1,6 @@
 package net.chess_platform.chess_service.chess;
 
-import net.chess_platform.chess_service.chess.piece.AbstractPiece.Color;
+import net.chess_platform.chess_service.chess.piece.Piece.Color;
 
 public record BoardPosition(
 
