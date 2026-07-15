@@ -1,21 +1,19 @@
 import { TitleCasePipe } from "@angular/common";
-import { afterNextRender, AfterViewInit, Component, effect, ElementRef, inject, Signal, signal, TemplateRef, viewChild, viewChildren } from "@angular/core";
+import { Component, inject, Signal, signal, TemplateRef, viewChild } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { forkJoin } from 'rxjs';
 import { UserApi } from "../../api/UserApi";
-import { getPieceImg, Square } from "../../chess/chess-view";
+import { clearHighlights, getPieceImg, highlightCheck, highlightLegalMoves, showMove, Square, SquareAnimation, unhighlightLegalMoves } from "../../chess/chess-view";
 import { Chessboard } from "../../chess/Chessboard";
-import { CastlingMove } from "../../chess/moves/CastlingMove";
-import { EnPassantMove } from "../../chess/moves/EnPassantMove";
 import { Move } from "../../chess/moves/Move";
 import { PromotionMove } from "../../chess/moves/PromotionMove";
 import { Color } from "../../chess/pieces/AbstractPiece";
 import { Piece, PieceType } from "../../chess/pieces/Piece";
 import { reconstructMove, reconstructPiece } from "../../chess/utils";
 import { AvatarComponent } from "../../components/avatar/avatar.component";
+import { ChessboardComponent, PieceDragEvent, Player } from "../../components/chess-board/chess-board.component";
 import { SnakeCaseToTitleCasePipe } from "../../pipes/SnakeCaseToTitleCase";
-import { TimeFormatPipe } from "../../pipes/TimeFormatPipe";
 import { ChessService, GameState, MatchSnapshot, MoveResult, PlayerData, ScoreboardPlayerData } from "../../services/ChessService";
 import { CountDownService } from "../../services/CountDownService";
 
@@ -26,25 +24,24 @@ interface DraggedPiece {
     y: number
 }
 
-interface Player {
-    id: string;
-    displayName: string;
-    avatar: string;
-    color: Color;
+interface ScoreboardPlayer {
+    id: string,
+    displayName: string,
+    avatar: string,
+    color: Color,
     mmrBefore?: number,
     mmrAfter?: number,
-    score?: number
+    score: number
 }
 
 @Component({
     selector: 'chess-page',
     templateUrl: 'chess-page.component.html',
-    styleUrl: 'chess-page.component.css',
     standalone: true,
-    imports: [TimeFormatPipe, TitleCasePipe, AvatarComponent, SnakeCaseToTitleCasePipe],
+    imports: [TitleCasePipe, AvatarComponent, SnakeCaseToTitleCasePipe, ChessboardComponent],
     providers: [CountDownService]
 })
-export class ChessPage implements AfterViewInit {
+export class ChessPage {
 
     private userApi: UserApi = inject(UserApi);
 
@@ -56,17 +53,11 @@ export class ChessPage implements AfterViewInit {
 
     private modalService: NgbModal = inject(NgbModal);
 
-    private boardElementRef = viewChild("board", { read: ElementRef });
+    private board = viewChild(ChessboardComponent);
 
-    private pieceImgElementRefs = viewChildren("pieceImg", { read: ElementRef });
-
-    private moveListElementRef = viewChild("moveListRef", { read: ElementRef });
-
-    private scoreboardTemplateRef = viewChild("scoreboard", { read: TemplateRef });
+    private scoreboardTemplateRef = viewChild("scoreboardModal", { read: TemplateRef });
 
     private draggedPiece?: DraggedPiece;
-
-    readonly BOARD_SIZE: number = Chessboard.SIZE;
 
     readonly SQUARE_WIDTH: number = Square.WIDTH;
 
@@ -76,11 +67,13 @@ export class ChessPage implements AfterViewInit {
 
     promotablePieces: PieceType[] = ["QUEEN", "ROOK", "BISHOP", "KNIGHT"];
 
-    players = signal<Player[]>([]);
-
     squares: Square[][];
 
-    moveList = signal<string[][]>([]);
+    players = signal<Player[]>([]);
+
+    scoreboard = signal<ScoreboardPlayer[]>([]);
+
+    moves = signal<string[][]>([]);
 
     myColor = signal<Color | undefined>(undefined);
 
@@ -93,13 +86,6 @@ export class ChessPage implements AfterViewInit {
     countDown: Signal<number>;
 
     constructor() {
-
-        effect(() => {
-            if (this.moveList().length == 0) return;
-            
-            const nativeElement = this.moveListElementRef()?.nativeElement;
-            nativeElement.scrollTop = nativeElement.scrollHeight - nativeElement.clientHeight;
-        });
 
         const squares = [];
         for (let i = 0; i < Chessboard.SIZE; i++) {
@@ -120,10 +106,88 @@ export class ChessPage implements AfterViewInit {
         this.chessService.connect(this.route.snapshot.params["target"]);
     }
 
-    ngAfterViewInit(): void {
-        for (let i = 0; i < this.pieceImgElementRefs().length; i++) {
-            this.squares[Math.floor(i / Chessboard.SIZE)][i % Chessboard.SIZE].setPieceImg(this.pieceImgElementRefs()[i]);
+    myTurn(): boolean {
+        return this.activeColor() === this.myColor();
+    }
+
+    isDraw(): boolean {
+        return this.gameState() === "STALEMATE" || this.gameState() === "THREEFOLD_REPETITION" || this.gameState() === "FIFTY_MOVE_RULE" || this.gameState() === "DEAD_POSITION";
+    }
+
+    startDragging({ mouseEvent, i, j }: PieceDragEvent): void {
+        if (this.activeColor() == null || this.activeColor() !== this.myColor()) {
+            return;
         }
+
+        const square = this.squares[i][j];
+        if (square.getColor() !== this.myColor()) {
+            return;
+        }
+
+        this.draggedPiece = { i, j, x: 0, y: 0 };
+        this.draggedPiece.x = mouseEvent.clientX - Square.WIDTH / 2;
+        this.draggedPiece.y = mouseEvent.clientY - Square.HEIGHT / 2;
+
+        this.highlightLegalMoves(i, j);
+
+        this.squares[i][j].moveTo(this.draggedPiece.x, this.draggedPiece.y);
+
+        document.addEventListener("mousemove", this.dragPiece);
+        document.addEventListener("mouseup", this.stopDragging);
+    }
+
+    dragPiece = (e: MouseEvent): void => {
+        if (this.draggedPiece == null) {
+            return;
+        }
+
+        const { i, j } = this.draggedPiece;
+
+        this.draggedPiece.x += e.movementX;
+        this.draggedPiece.y += e.movementY;
+
+        this.squares[i][j].moveTo(this.draggedPiece.x, this.draggedPiece.y);
+    };
+
+    stopDragging = (e: MouseEvent): void => {
+        unhighlightLegalMoves(this.squares);
+
+        const { top, left } = this.board()?.getBoundingClientRect()!;
+
+        const targetRow = Math.floor((e.clientY - top) / Square.HEIGHT);
+        const targetCol = Math.floor((e.clientX - left) / Square.WIDTH);
+
+        const { i, j } = this.draggedPiece!;
+
+        if (targetRow < 0 || targetCol < 0 || targetRow >= Chessboard.SIZE || targetCol >= Chessboard.SIZE) {
+            this.squares[i][j].resetPiecePosition();
+        }
+        else {
+            this.chessService.move({ row: i, col: j }, { row: targetRow, col: targetCol });
+        }
+
+        document.removeEventListener("mousemove", this.dragPiece);
+        document.removeEventListener("mouseup", this.stopDragging);
+    }
+
+    getImg(color: Color, piece: PieceType,): string {
+        return getPieceImg(color, piece);
+    }
+
+    promote(piece: PieceType): void {
+        this.chessService.promote(piece);
+    }
+
+    resign(): void {
+        this.chessService.resign();
+    }
+
+    show(modal: TemplateRef<any>): void {
+        this.modalService.open(modal);
+    }
+
+    closeModal() {
+        this.modalService.dismissAll();
     }
 
     private joinMatch = (): void => {
@@ -184,25 +248,24 @@ export class ChessPage implements AfterViewInit {
         for (const player of this.players()) {
             for (const p of scoreboard) {
                 if (player.id === p.id) {
-                    player.score = p.score;
-                    player.mmrBefore = p.mmrBefore;
-                    player.mmrAfter = p.mmrAfter;
-                    players.push(player);
+                    players.push({
+                        ...player,
+                        score: p.score,
+                        mmrBefore: p.mmrBefore,
+                        mmrAfter: p.mmrAfter
+                    })
                     break;
                 }
             }
         }
 
-        this.players.set(players);
+        this.scoreboard.set(players);
     }
 
     private myMove(move: Move): boolean {
         return move.getColor() === this.myColor();
     }
 
-    myTurn(): boolean {
-        return this.activeColor() === this.myColor();
-    }
 
     private resetDraggedPiece(): void {
         const { i, j } = this.draggedPiece!;
@@ -211,7 +274,7 @@ export class ChessPage implements AfterViewInit {
     }
 
     private updateMoveList(move: Move) {
-        this.moveList.update(list => {
+        this.moves.update(list => {
             if (list.length == 0) {
                 return [[move.toAlgebraicNotation()]];
             }
@@ -234,163 +297,21 @@ export class ChessPage implements AfterViewInit {
         });
     }
 
-    closeModal() {
-        this.modalService.dismissAll();
-    }
 
     private updateBoardView(move: Move, animate: boolean) {
-        this.clearHighlights();
+        clearHighlights(this.squares);
 
         if (animate) {
-            const from = move.getFrom();
-            const to = move.getTo();
-
-            const boardRect = this.boardElementRef()?.nativeElement.getBoundingClientRect();
-
-            const source = {
-                x: boardRect.left + from.col * this.SQUARE_WIDTH,
-                y: boardRect.top + from.row * this.SQUARE_HEIGHT
-            }
-
-            const target = {
-                x: boardRect.left + to.col * this.SQUARE_WIDTH,
-                y: boardRect.top + to.row * this.SQUARE_HEIGHT
-            };
-
-            this.squares[from.row][from.col].translate(target.x - source.x, target.y - source.y, () => {
-                const color = move.getColor();
-                const checkStatus = move.getCheckStatus();
-
-                const sp = this.chessboard!.getPiece(from.row, from.col);
-                const tp = this.chessboard!.getPiece(to.row, to.col);
-
-                const ss = this.squares[from.row][from.col];
-                const ts = this.squares[to.row][to.col];
-
-                if (sp == null) {
-                    ss.clearPiece();
-                } else {
-                    ss.setPiece(sp.getType(), sp.getColor());
-                }
-
-                if (tp == null) {
-                    ts.clearPiece();
-                } else {
-                    ts.setPiece(tp.getType(), tp.getColor());
-                }
-
-                ss.highlightMove();
-                ts.highlightMove();
-
-                if (move instanceof EnPassantMove) {
-                    const cp = (move as EnPassantMove).getCapturedPawnPosition();
-                    this.squares[cp.row][cp.col].clearPiece();
-                }
-
-                if (checkStatus != null) {
-                    const { row, col } = this.chessboard!.findKing(color === "BLACK" ? "WHITE" : "BLACK");
-                    this.squares[row][col].highlightCheck();
-                }
-            });
-
-            if (move instanceof CastlingMove) {
-                const rs = move.getRookPosition();
-                const rt = move.getRookTargetPosition();
-
-                const source = {
-                    x: boardRect.left + rs.col * this.SQUARE_WIDTH,
-                    y: boardRect.top + rs.row * this.SQUARE_HEIGHT
-                }
-
-                const target = {
-                    x: boardRect.left + rt.col * this.SQUARE_WIDTH,
-                    y: boardRect.top + rt.row * this.SQUARE_HEIGHT
-                };
-
-                this.squares[rs.row][rs.col].translate(target.x - source.x, target.y - source.y, () => {
-                    const sp = this.chessboard!.getPiece(rs.row, rs.col);
-                    const tp = this.chessboard!.getPiece(rt.row, rt.col);
-
-                    const ss = this.squares[rs.row][rs.col];
-                    const ts = this.squares[rt.row][rt.col];
-
-                    if (sp == null) {
-                        ss.clearPiece();
-                    } else {
-                        ss.setPiece(sp.getType(), sp.getColor());
-                    }
-
-                    if (tp == null) {
-                        ts.clearPiece();
-                    } else {
-                        ts.setPiece(tp.getType(), tp.getColor());
-                    }
-
-                    ss.highlightMove();
-                    ts.highlightMove();
-                });
-            }
+            const animation = new SquareAnimation(move);
+            animation.execute(this.squares, this.chessboard!, this.board()!.getBoundingClientRect());
         }
         else {
-            const from = move.getFrom();
-            const to = move.getTo();
-
-            const sp = this.chessboard!.getPiece(from.row, from.col);
-            const tp = this.chessboard!.getPiece(to.row, to.col);
-
-            const ss = this.squares[from.row][from.col];
-            const ts = this.squares[to.row][to.col];
-
-            if (sp == null) {
-                ss.clearPiece();
-            } else {
-                ss.setPiece(sp.getType(), sp.getColor());
-            }
-
-            if (tp == null) {
-                ts.clearPiece();
-            } else {
-                ts.setPiece(tp.getType(), tp.getColor());
-            }
-
-            ss.resetPiecePosition();
-            ss.highlightMove();
-            ts.highlightMove();
-
-            if (move instanceof EnPassantMove) {
-                const cp = (move as EnPassantMove).getCapturedPawnPosition();
-                this.squares[cp.row][cp.col].clearPiece();
-            }
-
-            if (move instanceof CastlingMove) {
-                const rs = move.getRookPosition();
-                const rt = move.getRookTargetPosition();
-
-                const sp = this.chessboard!.getPiece(rs.row, rs.col);
-                const tp = this.chessboard!.getPiece(rt.row, rt.col);
-
-                const ss = this.squares[rs.row][rs.col];
-                const ts = this.squares[rt.row][rt.col];
-
-                if (sp == null) {
-                    ss.clearPiece();
-                } else {
-                    ss.setPiece(sp.getType(), sp.getColor());
-                }
-
-                if (tp == null) {
-                    ts.clearPiece();
-                } else {
-                    ts.setPiece(tp.getType(), tp.getColor());
-                }
-
-                ss.highlightMove();
-                ts.highlightMove();
-            }
+            showMove(move, this.squares, this.chessboard!);
+            highlightCheck(move, this.squares, this.chessboard!);
         }
     }
 
-    gameOver(): boolean {
+    private gameOver(): boolean {
         return this.gameState() !== "ACTIVE" && this.gameState() !== "AWAITING_PROMOTION";
     }
 
@@ -405,7 +326,7 @@ export class ChessPage implements AfterViewInit {
             list.push(row);
         }
 
-        this.moveList.set(list);
+        this.moves.set(list);
     }
 
     private initPlayers(playerData: PlayerData[]): void {
@@ -432,10 +353,6 @@ export class ChessPage implements AfterViewInit {
         })
     }
 
-    isDraw(): boolean {
-        return this.gameState() === "STALEMATE" || this.gameState() === "THREEFOLD_REPETITION" || this.gameState() === "FIFTY_MOVE_RULE" || this.gameState() === "DEAD_POSITION";
-    }
-
     private initBoardView(board: Array<Piece | null>): void {
         for (let i = 0; i < Chessboard.SIZE; i++) {
             for (let j = 0; j < Chessboard.SIZE; j++) {
@@ -450,66 +367,6 @@ export class ChessPage implements AfterViewInit {
         }
     }
 
-    startDragging(e: MouseEvent, i: number, j: number): void {
-        if (this.activeColor() == null || this.activeColor() !== this.myColor()) {
-            return;
-        }
-
-        const square = this.squares[i][j];
-        if (square.getColor() !== this.myColor()) {
-            return;
-        }
-
-        this.draggedPiece = { i, j, x: 0, y: 0 };
-        this.draggedPiece.x = e.clientX - Square.WIDTH / 2;
-        this.draggedPiece.y = e.clientY - Square.HEIGHT / 2;
-
-        this.highlightLegalMoves(i, j);
-
-        this.squares[i][j].moveTo(this.draggedPiece.x, this.draggedPiece.y);
-
-        document.addEventListener("mousemove", this.dragPiece);
-        document.addEventListener("mouseup", this.stopDragging);
-    }
-
-    dragPiece = (e: MouseEvent): void => {
-        if (this.draggedPiece == null) {
-            return;
-        }
-
-        const { i, j } = this.draggedPiece;
-
-        this.draggedPiece.x += e.movementX;
-        this.draggedPiece.y += e.movementY;
-
-        this.squares[i][j].moveTo(this.draggedPiece.x, this.draggedPiece.y);
-    };
-
-    stopDragging = (e: MouseEvent): void => {
-        this.unhighlithLegalMoves();
-
-        const { top, left } = this.boardElementRef()?.nativeElement.getBoundingClientRect();
-
-        const targetRow = Math.floor((e.clientY - top) / Square.HEIGHT);
-        const targetCol = Math.floor((e.clientX - left) / Square.WIDTH);
-
-        const { i, j } = this.draggedPiece!;
-
-        if (targetRow < 0 || targetCol < 0 || targetRow >= this.BOARD_SIZE || targetCol >= this.BOARD_SIZE) {
-            this.squares[i][j].resetPiecePosition();
-        }
-        else {
-            this.chessService.move({ row: i, col: j }, { row: targetRow, col: targetCol });
-        }
-
-        document.removeEventListener("mousemove", this.dragPiece);
-        document.removeEventListener("mouseup", this.stopDragging);
-    }
-
-    isEnabled(square: Square): boolean {
-        return this.activeColor() !== undefined && this.activeColor() === this.myColor() && square.getColor() === this.myColor() && this.gameState() == "ACTIVE";
-    }
-
     private highlightLegalMoves(row: number, col: number): void {
         const piece = this.chessboard!.getPiece(row, col);
         if (piece == null) {
@@ -517,41 +374,6 @@ export class ChessPage implements AfterViewInit {
         }
 
         const moves = piece.getLegalMoves(this.chessboard!, row, col);
-        for (const move of moves) {
-            const { row, col } = move;
-            this.squares[row][col].highlightLegalMove();
-        }
-    }
-
-    private unhighlithLegalMoves(): void {
-        for (const row of this.squares) {
-            for (const square of row) {
-                square.unhighlightLegalMove();
-            }
-        }
-    }
-
-    private clearHighlights(): void {
-        for (const row of this.squares) {
-            for (const square of row) {
-                square.clearHighlight();
-            }
-        }
-    }
-
-    getImg(color: Color, piece: PieceType,): string {
-        return getPieceImg(color, piece);
-    }
-
-    promote(piece: PieceType): void {
-        this.chessService.promote(piece);
-    }
-
-    resign(): void {
-        this.chessService.resign();
-    }
-
-    show(modal: TemplateRef<any>): void {
-        this.modalService.open(modal);
+        highlightLegalMoves(moves, this.squares!);
     }
 }

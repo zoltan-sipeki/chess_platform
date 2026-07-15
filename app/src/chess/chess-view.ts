@@ -1,6 +1,8 @@
 import { ElementRef, Signal, signal, WritableSignal } from "@angular/core";
 import { Chessboard } from "./Chessboard";
-import { Position } from './moves/Move';
+import { CastlingMove } from "./moves/CastlingMove";
+import { EnPassantMove } from "./moves/EnPassantMove";
+import { Move, Position } from './moves/Move';
 import { Color } from "./pieces/AbstractPiece";
 import { PieceType } from "./pieces/Piece";
 
@@ -163,9 +165,29 @@ export class Square {
         this._pieceStyle.set(null);
     }
 
+    unhighlightMove(): void {
+        if (!this._highlightColors.move.active) {
+            return;
+        }
+
+        this._highlightColors.move.active = false;
+        this.activeColorCount--;
+        this.highlight();
+    }
+
     highlightMove(): void {
         this._highlightColors.move.active = true;
         this.activeColorCount++;
+        this.highlight();
+    }
+
+    unhighlightCheck(): void {
+        if (!this._highlightColors.check.active) {
+            return;
+        }
+
+        this._highlightColors.check.active = false;
+        this.activeColorCount--;
         this.highlight();
     }
 
@@ -216,6 +238,215 @@ export class Square {
         }
 
         this._highlightColor.set(`rgba(${constrain(finalColor[0], 255)}, ${constrain(finalColor[1], 255)}, ${constrain(finalColor[2], 255)}, 0.5)`);
+    }
+}
+
+export class SquareAnimation {
+
+    private move: Move;
+
+    constructor(move: Move) {
+        this.move = move;
+    }
+
+    execute(squares: Square[][], board: Chessboard, boardPosition: DOMRect) {
+        const from = this.move.getFrom();
+        const to = this.move.getTo();
+
+        const { left, top } = boardPosition;
+
+        const source = {
+            x: left + from.col * Square.WIDTH,
+            y: top + from.row * Square.HEIGHT
+        }
+
+        const target = {
+            x: left + to.col * Square.WIDTH,
+            y: top + to.row * Square.HEIGHT
+        };
+
+        squares[from.row][from.col].translate(target.x - source.x, target.y - source.y, () => {
+            swapSquares(from, to, squares, board);
+            highlightMove(this.move, squares, board);
+        });
+
+        if (this.move instanceof CastlingMove) {
+            const from = this.move.getRookPosition();
+            const to = this.move.getRookTargetPosition();
+
+            const { left, top } = boardPosition;
+
+            const source = {
+                x: left + from.col * Square.WIDTH,
+                y: top + from.row * Square.HEIGHT
+            }
+
+            const target = {
+                x: left + to.col * Square.WIDTH,
+                y: top + to.row * Square.HEIGHT
+            };
+
+            squares[from.row][from.col].translate(target.x - source.x, target.y - source.y, () => {
+                swapSquares(from, to, squares, board);
+                highlightMove(this.move, squares, board);
+            });
+        }
+    }
+
+    undo(squares: Square[][], board: Chessboard, boardPosition: DOMRect) {
+        const from = this.move.getTo();
+        const to = this.move.getFrom();
+
+        const { left, top } = boardPosition;
+
+        const source = {
+            x: left + from.col * Square.WIDTH,
+            y: top + from.row * Square.HEIGHT
+        }
+
+        const target = {
+            x: left + to.col * Square.WIDTH,
+            y: top + to.row * Square.HEIGHT
+        };
+
+        squares[from.row][from.col].translate(target.x - source.x, target.y - source.y, () => {
+            swapSquares(from, to, squares, board);
+            unhighlightMove(this.move, squares, board);
+        });
+
+        if (this.move instanceof CastlingMove) {
+            const from = this.move.getRookTargetPosition();
+            const to = this.move.getRookPosition();
+
+            const { left, top } = boardPosition;
+
+            const source = {
+                x: left + from.col * Square.WIDTH,
+                y: top + from.row * Square.HEIGHT
+            }
+
+            const target = {
+                x: left + to.col * Square.WIDTH,
+                y: top + to.row * Square.HEIGHT
+            };
+
+            squares[from.row][from.col].translate(target.x - source.x, target.y - source.y, () => {
+                swapSquares(from, to, squares, board);
+                unhighlightMove(this.move, squares, board);
+            });
+        }
+    }
+
+    highlight(squares: Square[][], board: Chessboard) {
+        highlightMove(this.move, squares, board);
+    }
+
+    unhighlight(squares: Square[][], board: Chessboard) {
+        unhighlightMove(this.move, squares, board);
+    }
+}
+
+export function showMove(move: Move, squares: Square[][], board: Chessboard): void {
+    swapSquares(move.getFrom(), move.getTo(), squares, board);
+
+    if (move instanceof EnPassantMove) {
+        const cp = move.getCapturedPawnPosition();
+        squares[cp.row][cp.col].clearPiece();
+    } else if (move instanceof CastlingMove) {
+        swapSquares(move.getRookPosition(), move.getRookTargetPosition(), squares, board);
+    }
+}
+
+function swapSquares(a: Position, b: Position, squares: Square[][], board: Chessboard): void {
+    const pa = board.getPiece(a.row, a.col);
+    const pb = board.getPiece(b.row, b.col);
+
+    const sa = squares[a.row][a.col];
+    const sb = squares[b.row][b.col];
+
+    if (pa == null) {
+        sa.clearPiece();
+    } else {
+        sa.setPiece(pa.getType(), pa.getColor());
+    }
+
+    if (pb == null) {
+        sb.clearPiece();
+    } else {
+        sb.setPiece(pb.getType(), pb.getColor());
+    }
+
+    sa.resetPiecePosition();
+}
+
+export function highlightMove(move: Move, squares: Square[][], board: Chessboard): void {
+    const a = move.getFrom();
+    const b = move.getTo();
+
+    squares[a.row][a.col].highlightMove();
+    squares[b.row][b.col].highlightMove();
+
+    if (move instanceof CastlingMove) {
+        const a = move.getRookPosition();
+        const b = move.getRookTargetPosition();
+        squares[a.row][a.col].highlightMove();
+        squares[b.row][b.col].highlightMove();
+    }
+
+    highlightCheck(move, squares, board);
+}
+
+export function highlightCheck(move: Move, squares: Square[][], board: Chessboard): void {
+    if (move.getCheckStatus() != null) {
+        const { row, col } = board.findKing(move.getColor() === "BLACK" ? "WHITE" : "BLACK");
+        squares[row][col].highlightCheck();
+    }
+}
+
+export function unhighlightCheck(move: Move, squares: Square[][], board: Chessboard): void {
+    if (move.getCheckStatus() != null) {
+        const { row, col } = board.findKing(move.getColor() === "BLACK" ? "WHITE" : "BLACK");
+        squares[row][col].unhighlightCheck();
+    }
+}
+
+export function unhighlightMove(move: Move, squares: Square[][], board: Chessboard): void {
+    const a = move.getFrom();
+    const b = move.getTo();
+
+    squares[a.row][a.col].unhighlightMove();
+    squares[b.row][b.col].unhighlightMove();
+
+    if (move instanceof CastlingMove) {
+        const a = (move as CastlingMove).getRookPosition();
+        const b = (move as CastlingMove).getRookTargetPosition();
+        squares[a.row][a.col].unhighlightMove();
+        squares[b.row][b.col].unhighlightMove();
+    }
+
+    unhighlightCheck(move, squares, board);
+}
+
+export function clearHighlights(squares: Square[][]) {
+    for (const row of squares) {
+        for (const square of row) {
+            square.clearHighlight();
+        }
+    }
+}
+
+export function highlightLegalMoves(moves: Position[], squares: Square[][]): void {
+    for (const move of moves) {
+        const { row, col } = move;
+        squares[row][col].highlightLegalMove();
+    }
+}
+
+export function unhighlightLegalMoves(squares: Square[][]): void {
+    for (const row of squares) {
+        for (const square of row) {
+            square.unhighlightLegalMove();
+        }
     }
 }
 
