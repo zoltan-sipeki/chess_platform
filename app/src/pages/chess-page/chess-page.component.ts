@@ -4,13 +4,12 @@ import { ActivatedRoute } from "@angular/router";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { forkJoin } from 'rxjs';
 import { UserApi } from "../../api/UserApi";
-import { clearHighlights, getPieceImg, highlightCheck, highlightLegalMoves, showMove, Square, SquareAnimation, unhighlightLegalMoves } from "../../chess/chess-view";
+import { getPieceImg, Square, SquareAnimation, Squares } from "../../chess/chess-view";
 import { Chessboard } from "../../chess/Chessboard";
 import { Move } from "../../chess/moves/Move";
 import { PromotionMove } from "../../chess/moves/PromotionMove";
-import { Color } from "../../chess/pieces/AbstractPiece";
-import { Piece, PieceType } from "../../chess/pieces/Piece";
-import { reconstructMove, reconstructPiece } from "../../chess/utils";
+import { Color, Piece, PieceType } from "../../chess/pieces/Piece";
+import { Moves, Pieces } from "../../chess/utils";
 import { AvatarComponent } from "../../components/avatar/avatar.component";
 import { ChessboardComponent, PieceDragEvent, Player } from "../../components/chess-board/chess-board.component";
 import { SnakeCaseToTitleCasePipe } from "../../pipes/SnakeCaseToTitleCase";
@@ -86,20 +85,8 @@ export class ChessPage {
     countDown: Signal<number>;
 
     constructor() {
-
-        const squares = [];
-        for (let i = 0; i < Chessboard.SIZE; i++) {
-            const row = [];
-            for (let j = 0; j < Chessboard.SIZE; j++) {
-                row.push(new Square());
-            }
-            squares.push(row);
-        }
-
-        this.squares = squares;
-
+        this.squares = Squares.create();
         this.countDown = this.countDownService.countDown;
-
         this.chessService.subscribe("AUTHENTICATED", this.joinMatch);
         this.chessService.subscribe("MATCH_SNAPSHOT", this.initialize);
         this.chessService.subscribe("MOVE_RESULT", this.move);
@@ -150,7 +137,7 @@ export class ChessPage {
     };
 
     stopDragging = (e: MouseEvent): void => {
-        unhighlightLegalMoves(this.squares);
+        Squares.unhighlightLegalMoves(this.squares);
 
         const { top, left } = this.board()?.getBoundingClientRect()!;
 
@@ -200,8 +187,8 @@ export class ChessPage {
     private initialize = (snapshot: MatchSnapshot): void => {
         const { activeColor, moves, board, players, nextTurn, state } = snapshot;
 
-        const moveList = moves.map(m => reconstructMove(m, state));
-        const pieces = board.map(p => p == null ? null : reconstructPiece(p));
+        const moveList = moves.map(m => Moves.reconstruct(m));
+        const pieces = board.map(p => p == null ? null : Pieces.reconstruct(p));
 
         this.chessboard = new Chessboard(moveList, pieces);
 
@@ -228,7 +215,7 @@ export class ChessPage {
             }
         }
         else {
-            const m = reconstructMove(move, state);
+            const m = Moves.reconstruct(move);
             m.execute(this.chessboard!);
             this.chessboard?.add(m);
             this.updateBoardView(m, !this.myMove(m));
@@ -299,15 +286,14 @@ export class ChessPage {
 
 
     private updateBoardView(move: Move, animate: boolean) {
-        clearHighlights(this.squares);
+        Squares.clearHighlights(this.squares);
 
         if (animate) {
-            const animation = new SquareAnimation(move);
-            animation.execute(this.squares, this.chessboard!, this.board()!.getBoundingClientRect());
+            SquareAnimation.execute(move, this.squares, this.chessboard!, this.board()!.getBoundingClientRect());
         }
         else {
-            showMove(move, this.squares, this.chessboard!);
-            highlightCheck(move, this.squares, this.chessboard!);
+            Squares.showMove(move, this.squares, this.chessboard!);
+            Squares.highlightCheck(move, this.squares, this.chessboard!);
         }
     }
 
@@ -374,6 +360,6 @@ export class ChessPage {
         }
 
         const moves = piece.getLegalMoves(this.chessboard!, row, col);
-        highlightLegalMoves(moves, this.squares!);
+        Squares.highlightLegalMoves(moves, this.squares!);
     }
 }

@@ -36,6 +36,7 @@ export interface MoveData {
     type: MoveType,
     piece: PieceType,
     color: Color,
+    timestamp: number,
     checkStatus?: CheckStatus,
     promotedPiece?: PromotedPieceData
 }

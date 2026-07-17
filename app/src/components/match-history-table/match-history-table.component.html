@@ -26,7 +26,7 @@
                 </td>
                 <td class="fw-semibold" [class]="getMmrChangeClass(match.mmrChange)">{{ match.mmrChange
                     }}</td>
-                <td><a [routerLink]="['/dashboard/replays', match.matchId]">replay</a></td>
+                <td><a [href]="'/matches/' + match.matchId + '/replay'" target="_blank">replay</a></td>
             </tr>
             }
         </tbody>

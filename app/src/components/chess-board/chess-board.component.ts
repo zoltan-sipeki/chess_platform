@@ -1,10 +1,10 @@
+import { TitleCasePipe } from "@angular/common";
 import { AfterViewInit, Component, effect, ElementRef, input, output, viewChild, viewChildren } from "@angular/core";
-import { Color } from "../../api/MatchApi";
 import { Square } from "../../chess/chess-view";
 import { Chessboard } from "../../chess/Chessboard";
-import { GameState } from "../../services/ChessService";
+import { Color } from "../../chess/pieces/Piece";
 import { TimeFormatPipe } from "../../pipes/TimeFormatPipe";
-import { TitleCasePipe } from "@angular/common";
+import { GameState } from "../../services/ChessService";
 import { AvatarComponent } from "../avatar/avatar.component";
 
 export interface Player {
@@ -79,7 +79,7 @@ export class ChessboardComponent implements AfterViewInit {
     }
 
     isEnabled(square: Square): boolean {
-        return this.activeColor() !== undefined && this.activeColor() === this.myColor() && square.getColor() === this.myColor() && this.gameState() == "ACTIVE";
+        return !this.replay() && this.activeColor() !== undefined && this.activeColor() === this.myColor() && square.getColor() === this.myColor() && this.gameState() == "ACTIVE";
     }
 
     gameOver(): boolean {

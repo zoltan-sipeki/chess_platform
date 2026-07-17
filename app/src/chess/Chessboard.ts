@@ -1,7 +1,6 @@
 import { CaptureMove } from "./moves/CaptureMove";
 import { Move, Position } from "./moves/Move";
 import { PromotionMove } from "./moves/PromotionMove";
-import { Color } from "./pieces/AbstractPiece";
 import { BishopBehavior } from "./pieces/behavior/BishopBehavior";
 import { KingBasicBehavior } from "./pieces/behavior/KingBasicBehavior";
 import { KnightBehavior } from "./pieces/behavior/KnightBehavior";
@@ -9,7 +8,7 @@ import { PawnCaptureBehavior } from "./pieces/behavior/PawnCaptureBehavior";
 import { PieceBehavior } from "./pieces/behavior/PieceBahavior";
 import { RookBehavior } from "./pieces/behavior/RookBehavior";
 import { King } from "./pieces/King";
-import { Piece } from "./pieces/Piece";
+import { Color, Piece } from "./pieces/Piece";
 
 export class Chessboard {
 

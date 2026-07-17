@@ -10,6 +10,7 @@ import { Leaderboard } from '../pages/leaderboard/leaderboard.component';
 import { MatchHistoryPage } from '../pages/match-history-page/match-history-page.component';
 import { NotificationPage } from '../pages/notification-page/notification-page.component';
 import { SettingsPage } from '../pages/settings-page/settings-page.component';
+import { ReplayPage } from '../pages/replay-page/replay-page.component';
 
 export const routes: Routes = [
     {
@@ -23,6 +24,10 @@ export const routes: Routes = [
     {
         path: "t/:target",
         component: ChessPage
+    },
+    {
+        path: "matches/:id/replay",
+        component: ReplayPage
     },
     {
         path: "dashboard",

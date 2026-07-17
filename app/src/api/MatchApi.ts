@@ -1,8 +1,8 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-
-export type Color = "WHITE" | "BLACK";
+import { MoveData } from "../services/ChessService";
+import { Color } from "../chess/pieces/Piece";
 
 export type Score = "WIN" | "LOSS" | "DRAW";
 
@@ -68,6 +68,23 @@ export interface MatchHistoryQuery {
     outcome?: string
 }
 
+export interface ReplayPlayer {
+    id: string,
+    color: Color,
+    mmrBefore?: number,
+    mmrAfter?: number,
+    score: number
+}
+
+export interface MatchReplay {
+    matchId: number,
+    matchType: MatchType,
+    startedAt: string,
+    endedAt: string,
+    players: ReplayPlayer[],
+    replay: MoveData[]
+}
+
 @Injectable({ providedIn: 'root' })
 export class MatchApi {
 
@@ -87,5 +104,9 @@ export class MatchApi {
 
     fetchPlayerStats(userId: string): Observable<PlayerStats> {
         return this.http.get<PlayerStats>(`/api/players/${userId}/stats`);
+    }
+
+    fetchReplay(matchId: string): Observable<MatchReplay> {
+        return this.http.get<MatchReplay>(`/api/matches/${matchId}/replay`);
     }
 }
