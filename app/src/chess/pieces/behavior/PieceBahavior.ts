@@ -1,7 +1,6 @@
 import { Chessboard } from "../../Chessboard";
 import { Move } from "../../moves/Move";
-import { Color } from "../AbstractPiece";
-import { Piece, PieceType } from "../Piece";
+import { Color, Piece, PieceType } from "../Piece";
 
 export interface PieceBehavior {
 

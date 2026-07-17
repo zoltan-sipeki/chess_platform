@@ -1,6 +1,7 @@
 import { Chessboard } from "../Chessboard";
 import { Position } from "../moves/Move";
-import { Color } from "./AbstractPiece";
+
+export type Color = "WHITE" | "BLACK";
 
 export type PieceType = "PAWN" | "KNIGHT" | "BISHOP" | "ROOK" | "QUEEN" | "KING";
 
@@ -19,5 +20,4 @@ export interface Piece {
     decrementMoveCount(): void;
 
     getName(): string;
-
 }

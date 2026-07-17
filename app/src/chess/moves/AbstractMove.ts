@@ -1,6 +1,5 @@
 import { Chessboard } from "../Chessboard";
-import { Color } from "../pieces/AbstractPiece";
-import { Piece, PieceType } from "../pieces/Piece";
+import { Color, Piece, PieceType } from "../pieces/Piece";
 import { CheckStatus, Move, MoveType, Position } from "./Move";
 
 export abstract class AbstractMove implements Move {
@@ -69,6 +68,7 @@ export abstract class AbstractMove implements Move {
 
     undo(board: Chessboard): void {
         this.movedPiece!.decrementMoveCount();
+        this.movedPiece = undefined;
     }
 
     getFrom(): Position {

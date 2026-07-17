@@ -1,8 +1,8 @@
 import { Chessboard } from "../../Chessboard";
-import { createBasicMove, Move } from "../../moves/Move";
-import { Color } from "../AbstractPiece";
+import { Move } from "../../moves/Move";
+import { Moves } from "../../utils";
 import { King } from "../King";
-import { Piece, PieceType } from "../Piece";
+import { Color, Piece, PieceType } from "../Piece";
 import { PieceBehavior } from "./PieceBahavior";
 
 export class KingBasicBehavior implements PieceBehavior {
@@ -19,7 +19,7 @@ export class KingBasicBehavior implements PieceBehavior {
                 if (i < 0 || i >= Chessboard.SIZE || j < 0 || j >= Chessboard.SIZE || (i == row && j == col)) {
                     continue;
                 }
-                const move = createBasicMove(board, { row, col }, { row: i, col: j }, piece, color);
+                const move = Moves.createBasic(board, { row, col }, { row: i, col: j }, piece, color);
                 if (move != null) {
                     moveList.push(move);
                 }

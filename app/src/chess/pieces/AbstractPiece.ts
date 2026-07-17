@@ -1,8 +1,6 @@
 import { Chessboard } from "../Chessboard";
 import { Move, Position } from "../moves/Move";
-import { Piece, PieceType } from "./Piece";
-
-export type Color = "WHITE" | "BLACK";
+import { Color, Piece, PieceType } from "./Piece";
 
 export abstract class AbstractPiece implements Piece {
 

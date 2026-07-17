@@ -1,11 +1,10 @@
 import { Chessboard } from "../Chessboard";
-import { AbstractMove } from "../moves/AbstractMove";
 import { EnPassantMove } from "../moves/EnPassantMove";
 import { Move } from "../moves/Move";
-import { PromotionMove } from "../moves/PromotionMove";
 import { SimpleMove } from "../moves/SimpleMove";
-import { AbstractPiece, Color } from "./AbstractPiece";
+import { AbstractPiece } from "./AbstractPiece";
 import { PawnCaptureBehavior } from "./behavior/PawnCaptureBehavior";
+import { Color } from "./Piece";
 
 export class Pawn extends AbstractPiece {
 

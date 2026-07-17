@@ -1,8 +1,9 @@
 import { Chessboard } from "../Chessboard";
 import { Move } from "../moves/Move";
-import { AbstractPiece, Color } from "./AbstractPiece";
+import { AbstractPiece } from "./AbstractPiece";
 import { BishopBehavior } from "./behavior/BishopBehavior";
 import { RookBehavior } from "./behavior/RookBehavior";
+import { Color } from "./Piece";
 
 export class Queen extends AbstractPiece {
 

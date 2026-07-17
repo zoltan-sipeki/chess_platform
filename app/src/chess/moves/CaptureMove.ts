@@ -1,7 +1,6 @@
 import { toAlgebraicNotation, toCodePoint } from "../chess-view";
 import { Chessboard } from "../Chessboard";
-import { Color } from "../pieces/AbstractPiece";
-import { Piece, PieceType } from "../pieces/Piece";
+import { Color, Piece, PieceType } from "../pieces/Piece";
 import { AbstractMove } from "./AbstractMove";
 import { CheckStatus, Position } from './Move';
 

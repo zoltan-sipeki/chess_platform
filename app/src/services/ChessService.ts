@@ -1,7 +1,6 @@
 import { Injectable, inject } from "@angular/core";
 import { CheckStatus, MoveType } from "../chess/moves/Move";
-import { Color } from "../chess/pieces/AbstractPiece";
-import { PieceType } from "../chess/pieces/Piece";
+import { Color, PieceType } from "../chess/pieces/Piece";
 import { AuthService } from "./AuthService";
 
 export type ChessEventType = "MATCH_SNAPSHOT" | "MOVE_RESULT" | "AUTHENTICATED";

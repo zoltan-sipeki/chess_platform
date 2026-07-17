@@ -1,10 +1,9 @@
 import { Chessboard } from "../../Chessboard";
 import { CaptureMove } from "../../moves/CaptureMove";
 import { Move } from "../../moves/Move";
-import { Color } from "../AbstractPiece";
 import { King } from "../King";
 import { Pawn } from "../Pawn";
-import { Piece, PieceType } from "../Piece";
+import { Color, Piece, PieceType } from "../Piece";
 import { PieceBehavior } from "./PieceBahavior";
 
 export class PawnCaptureBehavior implements PieceBehavior {

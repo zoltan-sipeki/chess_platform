@@ -1,8 +1,8 @@
 import { Chessboard } from "../../Chessboard";
-import { createBasicMove, Move } from "../../moves/Move";
-import { Color } from "../AbstractPiece";
+import { Move } from "../../moves/Move";
+import { Moves } from "../../utils";
 import { Knight } from "../Knight";
-import { Piece, PieceType } from "../Piece";
+import { Color, Piece, PieceType } from "../Piece";
 import { PieceBehavior } from "./PieceBahavior";
 
 export class KnightBehavior implements PieceBehavior {
@@ -21,13 +21,13 @@ export class KnightBehavior implements PieceBehavior {
 
         if (upperSecondRow) {
             if (leftFirstCol) {
-                const move = createBasicMove(board, { row, col }, { row: row - 2, col: col - 1 }, piece, color);
+                const move = Moves.createBasic(board, { row, col }, { row: row - 2, col: col - 1 }, piece, color);
                 if (move != null) {
                     moveList.push(move);
                 }
             }
             if (rightFirstCol) {
-                const move = createBasicMove(board, { row, col }, { row: row - 2, col: col + 1 }, piece, color);
+                const move = Moves.createBasic(board, { row, col }, { row: row - 2, col: col + 1 }, piece, color);
                 if (move != null) {
                     moveList.push(move);
                 }
@@ -36,13 +36,13 @@ export class KnightBehavior implements PieceBehavior {
 
         if (upperFirstRow) {
             if (leftSecondCol) {
-                const move = createBasicMove(board, { row, col }, { row: row - 1, col: col - 2 }, piece, color);
+                const move = Moves.createBasic(board, { row, col }, { row: row - 1, col: col - 2 }, piece, color);
                 if (move != null) {
                     moveList.push(move);
                 }
             }
             if (rightSecondCol) {
-                const move = createBasicMove(board, { row, col }, { row: row - 1, col: col + 2 }, piece, color);
+                const move = Moves.createBasic(board, { row, col }, { row: row - 1, col: col + 2 }, piece, color);
                 if (move != null) {
                     moveList.push(move);
                 }
@@ -51,13 +51,13 @@ export class KnightBehavior implements PieceBehavior {
 
         if (lowerFirstRow) {
             if (leftSecondCol) {
-                const move = createBasicMove(board, { row, col }, { row: row + 1, col: col - 2 }, piece, color);
+                const move = Moves.createBasic(board, { row, col }, { row: row + 1, col: col - 2 }, piece, color);
                 if (move != null) {
                     moveList.push(move);
                 }
             }
             if (rightSecondCol) {
-                const move = createBasicMove(board, { row, col }, { row: row + 1, col: col + 2 }, piece, color);
+                const move = Moves.createBasic(board, { row, col }, { row: row + 1, col: col + 2 }, piece, color);
                 if (move != null) {
                     moveList.push(move);
                 }
@@ -66,13 +66,13 @@ export class KnightBehavior implements PieceBehavior {
 
         if (lowerSecondRow) {
             if (leftFirstCol) {
-                const move = createBasicMove(board, { row, col }, { row: row + 2, col: col - 1 }, piece, color);
+                const move = Moves.createBasic(board, { row, col }, { row: row + 2, col: col - 1 }, piece, color);
                 if (move != null) {
                     moveList.push(move);
                 }
             }
             if (rightFirstCol) {
-                const move = createBasicMove(board, { row, col }, { row: row + 2, col: col + 1 }, piece, color);
+                const move = Moves.createBasic(board, { row, col }, { row: row + 2, col: col + 1 }, piece, color);
                 if (move != null) {
                     moveList.push(move);
                 }

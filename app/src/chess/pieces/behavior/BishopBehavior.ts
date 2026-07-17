@@ -1,9 +1,9 @@
 import { Chessboard } from "../../Chessboard";
 import { CaptureMove } from "../../moves/CaptureMove";
-import { createBasicMove, Move } from "../../moves/Move";
-import { Color } from "../AbstractPiece";
+import { Move } from "../../moves/Move";
+import { Moves } from "../../utils";
 import { Bishop } from "../Bishop";
-import { Piece, PieceType } from "../Piece";
+import { Color, Piece, PieceType } from "../Piece";
 import { Queen } from "../Queen";
 import { PieceBehavior } from "./PieceBahavior";
 
@@ -17,7 +17,7 @@ export class BishopBehavior implements PieceBehavior {
         const moveList: Move[] = [];
 
         for (let i = row + 1, j = col + 1; i < Chessboard.SIZE && j < Chessboard.SIZE; ++i, ++j) {
-            const move = createBasicMove(board, { row, col }, { row: i, col: j }, piece, color);
+            const move = Moves.createBasic(board, { row, col }, { row: i, col: j }, piece, color);
             if (move != null) {
                 moveList.push(move);
             }
@@ -28,7 +28,7 @@ export class BishopBehavior implements PieceBehavior {
         }
 
         for (let i = row + 1, j = col - 1; i < Chessboard.SIZE && j >= 0; ++i, --j) {
-            const move = createBasicMove(board, { row, col }, { row: i, col: j }, piece, color);
+            const move = Moves.createBasic(board, { row, col }, { row: i, col: j }, piece, color);
             if (move != null) {
                 moveList.push(move);
             }
@@ -39,7 +39,7 @@ export class BishopBehavior implements PieceBehavior {
         }
 
         for (let i = row - 1, j = col - 1; i >= 0 && j >= 0; --i, --j) {
-            const move = createBasicMove(board, { row, col }, { row: i, col: j }, piece, color);
+            const move = Moves.createBasic(board, { row, col }, { row: i, col: j }, piece, color);
             if (move != null) {
                 moveList.push(move);
             }
@@ -50,7 +50,7 @@ export class BishopBehavior implements PieceBehavior {
         }
 
         for (let i = row - 1, j = col + 1; i >= 0 && j < Chessboard.SIZE; --i, ++j) {
-            const move = createBasicMove(board, { row, col }, { row: i, col: j }, piece, color);
+            const move = Moves.createBasic(board, { row, col }, { row: i, col: j }, piece, color);
             if (move != null) {
                 moveList.push(move);
             }
