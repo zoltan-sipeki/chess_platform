@@ -145,9 +145,9 @@
 
                 <div class="d-flex justify-content-center gap-2">
 
-                    <button class="btn btn-outline-primary btn-sm px-3">
+                    <button class="btn btn-outline-primary btn-sm px-3" [disabled]="replayId() === ''" (click)="showReplay()">
                         <i class="bi bi-play-circle me-1"></i>
-                        Watch Replay
+                        {{ replayId() === '' ? 'Preparing Replay...' : 'Watch Replay' }}
                     </button>
 
                     <button class="btn btn-danger btn-sm px-3" (click)="closeModal()">

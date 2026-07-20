@@ -1,6 +1,6 @@
 import { TitleCasePipe } from "@angular/common";
 import { Component, inject, OnDestroy, Signal, signal, TemplateRef, viewChild } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { forkJoin } from 'rxjs';
 import { UserApi } from "../../api/UserApi";
@@ -15,6 +15,7 @@ import { ChessboardComponent, PieceDragEvent, Player } from "../../components/ch
 import { SnakeCaseToTitleCasePipe } from "../../pipes/SnakeCaseToTitleCase";
 import { ChessService, GameState, MatchSnapshot, MoveResult, PlayerData, ScoreboardPlayerData } from "../../services/ChessService";
 import { CountDownService } from "../../services/CountDownService";
+import { RelayService, ReplayReadyRelayEvent } from "../../services/RelayService";
 
 interface DraggedPiece {
     i: number,
@@ -37,7 +38,7 @@ interface ScoreboardPlayer {
     selector: 'chess-page',
     templateUrl: 'chess-page.component.html',
     standalone: true,
-    imports: [TitleCasePipe, AvatarComponent, SnakeCaseToTitleCasePipe, ChessboardComponent],
+    imports: [TitleCasePipe, AvatarComponent, SnakeCaseToTitleCasePipe, ChessboardComponent, RouterLink],
     providers: [CountDownService]
 })
 export class ChessPage implements OnDestroy {
@@ -46,9 +47,13 @@ export class ChessPage implements OnDestroy {
 
     private chessService: ChessService = inject(ChessService);
 
+    private relayService: RelayService = inject(RelayService);
+
     private countDownService: CountDownService = inject(CountDownService);
 
     private route: ActivatedRoute = inject(ActivatedRoute);
+
+    private router: Router = inject(Router);
 
     private modalService: NgbModal = inject(NgbModal);
 
@@ -84,19 +89,27 @@ export class ChessPage implements OnDestroy {
 
     countDown: Signal<number>;
 
+    replayId = signal<string>("");
+
     constructor() {
         this.squares = Squares.create();
         this.countDown = this.countDownService.countDown;
+
+        this.relayService.subscribe("REPLAY_READY", this.onReplayReady);
+
         this.chessService.subscribe("AUTHENTICATED", this.joinMatch);
         this.chessService.subscribe("MATCH_SNAPSHOT", this.initialize);
         this.chessService.subscribe("MOVE_RESULT", this.move);
+
         this.chessService.connect(this.route.snapshot.params["target"]);
     }
-    
+
     ngOnDestroy(): void {
         this.chessService.unsubscribe("AUTHENTICATED", this.joinMatch);
         this.chessService.unsubscribe("MATCH_SNAPSHOT", this.initialize);
         this.chessService.unsubscribe("MOVE_RESULT", this.move);
+
+        this.relayService.unsubscribe("REPLAY_READY", this.onReplayReady);
     }
 
     myTurn(): boolean {
@@ -181,6 +194,15 @@ export class ChessPage implements OnDestroy {
 
     closeModal() {
         this.modalService.dismissAll();
+    }
+
+    showReplay(): void {
+        this.closeModal();
+        this.router.navigate(["/matches", this.replayId(), "replay"]);
+    }
+
+    private onReplayReady = (e: ReplayReadyRelayEvent): void => {
+        this.replayId.set(e.replayId);
     }
 
     private joinMatch = (): void => {

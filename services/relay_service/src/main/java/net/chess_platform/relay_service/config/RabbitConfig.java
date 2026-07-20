@@ -38,6 +38,9 @@ public class RabbitConfig {
     @Value("${rabbitmq-messaging.relay-service.events.exchange}")
     private String RELAY_EVENTS_EXCHANGE;
 
+    @Value("${rabbitmq-messaging.match-service.events.exchange}")
+    private String MATCH_EVENTS_EXCHANGE;
+
     @Value("${rabbitmq-messaging.relay-service.events.fanout-exchange}")
     private String RELAY_FANOUT_EVENTS_EXCHANGE;
 
@@ -110,6 +113,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Exchange matchEventsExchange() {
+        return ExchangeBuilder.directExchange(MATCH_EVENTS_EXCHANGE).durable(true).build();
+    }
+
+    @Bean
     public Queue eventQueue() {
         return QueueBuilder.durable(SERVICE_QUEUE).build();
     }
@@ -166,6 +174,13 @@ public class RabbitConfig {
     public Binding userEventsFanoutBinding(@Qualifier("fanoutExchange") Exchange fanoutExchange,
             @Qualifier("userEventsExchange") Exchange userEventsExchange) {
         return new Binding(fanoutExchange.getName(), Binding.DestinationType.EXCHANGE, userEventsExchange.getName(),
+                SERVICE_FANOUT_ROUTING_KEY, null);
+    }
+
+    @Bean
+    public Binding matchEventsFanoutBinding(@Qualifier("fanoutExchange") Exchange fanoutExchange,
+            @Qualifier("matchEventsExchange") Exchange matchEventsExchange) {
+        return new Binding(fanoutExchange.getName(), Binding.DestinationType.EXCHANGE, matchEventsExchange.getName(),
                 SERVICE_FANOUT_ROUTING_KEY, null);
     }
 }

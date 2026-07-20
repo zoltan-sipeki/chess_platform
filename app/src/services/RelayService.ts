@@ -4,7 +4,7 @@ import { Activity, Presence, UserData } from "../api/UserApi";
 import { AuthService } from "./AuthService";
 import { CurrentMatch } from "../api/MatchmakingApi";
 
-export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED" | "PRESENCE_CHANGED" | "ACTIVITY_CHANGED" | "MATCH_FOUND";
+export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED" | "PRESENCE_CHANGED" | "ACTIVITY_CHANGED" | "MATCH_FOUND" | "REPLAY_READY";
 
 export type NotificationRelayEvent = Notification;
 
@@ -26,13 +26,18 @@ export interface ActivityChangedRelayEvent {
     activity: Activity;
 }
 
+export interface ReplayReadyRelayEvent {
+    replayId: string;
+}
+
 export interface EventMap {
     "UNFRIEND": UnfriendRelayEvent,
     "NOTIFICATION": NotificationRelayEvent,
     "USER_UPDATED": UserUpdatedRelayEvent,
     "PRESENCE_CHANGED": PresenceChangedRelayEvent,
     "ACTIVITY_CHANGED": ActivityChangedRelayEvent,
-    "MATCH_FOUND": MatchFoundRelayEvent
+    "MATCH_FOUND": MatchFoundRelayEvent,
+    "REPLAY_READY": ReplayReadyRelayEvent
 }
 
 @Injectable({

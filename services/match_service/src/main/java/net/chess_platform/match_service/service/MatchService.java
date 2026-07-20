@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import net.chess_platform.common.domain_events.broker.chess.MatchEndedEvent;
+import net.chess_platform.common.domain_events.broker.match.ReplayReadyEvent;
+import net.chess_platform.common.domain_events.service.DomainEventService;
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.match_service.dto.MatchHistoryListDto;
 import net.chess_platform.match_service.dto.MatchHistorySearchParams;
@@ -53,6 +55,8 @@ public class MatchService {
 
     private final ObjectMapper objectMapper;
 
+    private final DomainEventService eventService;
+
     @PersistenceContext
     private EntityManager em;
 
@@ -60,7 +64,7 @@ public class MatchService {
             MatchResultRepository matchDetailRepository, MatchStatRepository matchStatRepository,
             PlayerRepository playerRepository,
             PermissionService permissionService, MatchMapper matchMapper, MatchStatMapper matchStatMapper,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper, DomainEventService eventService) {
         this.matchRepository = matchRepository;
         this.matchDetailRepository = matchDetailRepository;
         this.matchStatRepository = matchStatRepository;
@@ -69,6 +73,7 @@ public class MatchService {
         this.matchMapper = matchMapper;
         this.matchStatMapper = matchStatMapper;
         this.objectMapper = objectMapper;
+        this.eventService = eventService;
     }
 
     public MatchHistoryListDto findMatchHistory(UUID userId, MatchHistorySearchParams searchParams, Pageable pageable,
@@ -172,6 +177,8 @@ public class MatchService {
                 matchDetailRepository.save(detail);
             }
 
+            eventService.publish(new ReplayReadyEvent(m.players().stream().map(p -> p.id()).toList(),
+                    new ReplayReadyEvent.Payload(match.getId())));
         } catch (JacksonException ex) {
             // should never happen
         }

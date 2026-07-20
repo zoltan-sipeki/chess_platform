@@ -36,6 +36,9 @@ public class RabbitConfig {
     @Value("${rabbitmq-messaging.user-service.events.exchange}")
     private String USER_EVENTS_EXCHANGE;
 
+    @Value("${rabbitmq-messaging.match-service.events.exchange}")
+    private String MATCH_EVENTS_EXCHANGE;
+
     @Value("${rabbitmq-messaging.queue.service}")
     private String SERVICE_QUEUE;
 
@@ -67,6 +70,16 @@ public class RabbitConfig {
     }
 
     @Bean
+    public RabbitTemplate matchEventsRabbitTemplate(RabbitTemplateConfigurer configurer,
+            ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+        var template = new RabbitTemplate();
+        configurer.configure(template, connectionFactory);
+        template.setExchange(MATCH_EVENTS_EXCHANGE);
+        template.setMessageConverter(messageConverter);
+        return template;
+    }
+
+    @Bean
     public Exchange chessEventsExchange() {
         return ExchangeBuilder.directExchange(CHESS_EVENTS_EXCHANGE).durable(true).build();
     }
@@ -74,6 +87,11 @@ public class RabbitConfig {
     @Bean
     public Exchange userEventsExchange() {
         return ExchangeBuilder.directExchange(USER_EVENTS_EXCHANGE).durable(true).build();
+    
+    }
+    @Bean
+    public Exchange matchEventsExchange() {
+        return ExchangeBuilder.directExchange(MATCH_EVENTS_EXCHANGE).durable(true).build();
     }
 
     @Bean
@@ -92,6 +110,13 @@ public class RabbitConfig {
     public Binding userEventsBinding(Queue eventQueue,
             @Qualifier("userEventsExchange") Exchange userEventsExchange) {
         return new Binding(eventQueue.getName(), Binding.DestinationType.QUEUE, userEventsExchange.getName(),
+                SERVICE_ROUTING_KEY, null);
+    }
+
+    @Bean
+    public Binding matchEventsBinding(Queue eventQueue,
+            @Qualifier("matchEventsExchange") Exchange matchEventsExchange) {
+        return new Binding(eventQueue.getName(), Binding.DestinationType.QUEUE, matchEventsExchange.getName(),
                 SERVICE_ROUTING_KEY, null);
     }
 }

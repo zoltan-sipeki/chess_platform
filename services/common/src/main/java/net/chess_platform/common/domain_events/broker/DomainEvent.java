@@ -57,6 +57,7 @@ public class DomainEvent<T> {
             Map.entry(RELAY_DISCONNECT, RelayDisconnectEvent.class));
 
     public enum Category {
+        MATCH,
         CHESS,
         USER,
         QUEUE,
@@ -69,7 +70,8 @@ public class DomainEvent<T> {
         MATCH_STARTED,
         MATCH_ENDED,
         MATCH_FOUND,
-        MATCH_CLOSED,
+
+        REPLAY_READY,
 
         USER_CREATED,
         USER_UPDATED,

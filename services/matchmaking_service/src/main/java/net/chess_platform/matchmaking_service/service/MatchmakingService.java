@@ -36,6 +36,8 @@ import net.chess_platform.matchmaking_service.service.PermissionService.Action;
 @Service
 public class MatchmakingService {
 
+    private final ChatServiceProxy chatServiceProxy;
+
     private final MMQueue unrankedQueue;
 
     private final MMQueue rankedQueue;
@@ -66,6 +68,7 @@ public class MatchmakingService {
         this.playerRepository = playerRepository;
         this.matchRoutingRepository = matchRoutingRepository;
         this.permissionService = permissionService;
+        this.chatServiceProxy = chatServiceProxy;
     }
 
     public void enqueuePlayer(UUID userId, Match.Type queueType) {
@@ -237,16 +240,21 @@ public class MatchmakingService {
     public void process(MatchEndedEvent e) {
         var d = e.getData();
         var matchId = d.matchId();
+        var type = Match.Type.valueOf(d.matchType());
 
-        for (var p : d.players()) {
-            var update = new Player.Update();
-            var type = Match.Type.valueOf(d.matchType());
-            if (type == Match.Type.RANKED) {
-                update.setRankedMmr(p.mmrAfter());
-            } else if (type == Match.Type.UNRANKED) {
-                update.setUnrankedMmr(p.mmrAfter());
+
+        if (!type.equals(Match.Type.PRIVATE)) {
+            for (var p : d.players()) {
+                var update = new Player.Update();
+
+                if (type.equals(Match.Type.RANKED)) {
+                    update.setRankedMmr(p.mmrAfter());
+                } else if (type.equals(Match.Type.UNRANKED)) {
+                    update.setUnrankedMmr(p.mmrAfter());
+                }
+
+                playerRepository.update(p.id(), update);
             }
-            playerRepository.update(p.id(), update);
         }
 
         matchRoutingRepository.delete(matchId);

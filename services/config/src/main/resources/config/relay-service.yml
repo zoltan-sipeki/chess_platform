@@ -65,6 +65,10 @@ rabbitmq-messaging:
     chat-service: chat-service
     matchmaking-service: matchmaking-service
     user-service: user-service
+    match-service: match-service
+  match-service:
+    events:
+      exchange: match-events-exchange
   user-service:
     events:
       exchange: user-events-exchange
