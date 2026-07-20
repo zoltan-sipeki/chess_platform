@@ -81,6 +81,11 @@ export class MatchmakingService {
         }));
     }
 
+    clearCurrentMatch(): void {
+        this._currentMatch.set(null);
+        this.stopTimer();
+    }
+
     private startTimer(): void {
         clearInterval(this.interval);
         this.lastTime = Date.now();

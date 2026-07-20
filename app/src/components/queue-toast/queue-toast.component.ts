@@ -2,10 +2,10 @@ import { NgTemplateOutlet, TitleCasePipe } from "@angular/common";
 import { Component, effect, ElementRef, inject, OnDestroy, OnInit, Signal, signal, viewChild } from "@angular/core";
 import { NgbToast, NgbToastHeader } from "@ng-bootstrap/ng-bootstrap";
 import { CurrentMatch, QueueType } from "../../api/MatchmakingApi";
+import { UserData } from "../../api/UserApi";
 import { TimeFormatPipe } from "../../pipes/TimeFormatPipe";
 import { MatchmakingService } from "../../services/MatchmakingService";
 import { UserService } from "../../services/UserService";
-import { UserData } from "../../api/UserApi";
 
 @Component({
     selector: "queue-toast",
@@ -111,6 +111,7 @@ export class QueueToastComponent implements OnInit, OnDestroy {
             window.localStorage.setItem("matchmakingToken", currentMatch.token);
         }
 
+        this.matchmakingService.clearCurrentMatch();
         window.open(`${window.location.origin}/t/${currentMatch.target}`, "_blank");
     }
 }
