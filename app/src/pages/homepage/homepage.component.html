@@ -7,7 +7,14 @@
         </ul>
         <div class="d-flex align-items-center">
             <small class="navbar-text me-2">Already have an account?</small>
-            <a [href]="loginUrl()" class="btn btn-success">Sign in</a>
+            <a [href]="loginUrl()" class="btn btn-success">
+                <div class="d-flex justify-content-evenly">
+                    <span class="me-1">Sign in with</span>
+                    <span class="rounded p-1 d-flex align-items-center" style="background: #e7f1ff;">
+                        <img src="https://www.keycloak.org/resources/images/logo.svg" height="14" alt="Keycloak">
+                    </span>
+                </div>
+            </a>
         </div>
     </div>
 </navbar>
@@ -26,7 +33,12 @@
             <hr />
             <p>Don't have an account?</p>
             <a [href]="registerUrl()" class="btn btn-lg btn-primary">
-                Sign up
+                <div class="d-flex justify-content-evenly">
+                    <span class="me-1">Sign up with</span>
+                    <span class="rounded p-1 d-flex align-items-center" style="background: #e7f1ff;">
+                        <img src="https://www.keycloak.org/resources/images/logo.svg" height="20" alt="Keycloak">
+                    </span>
+                </div>
             </a>
         </div>
         <div class="col-lg position-relative glide-in-from-right">

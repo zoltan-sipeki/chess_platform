@@ -3,11 +3,11 @@
         <li [ngbNavItem]="1">
             <button ngbNavLink>Friends</button>
             <ng-template ngbNavContent>
-                <div class="position-relative">
+                <div class="position-relative m-1">
                     <input type="text" class="form-control" placeholder="Search for friends" [formControl]="userFilter">
                     <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                 </div>
-                <div ngbAccordion>
+                <div ngbAccordion class="m-1">
                     <div ngbAccordionItem [collapsed]="false">
                         <h2 ngbAccordionHeader>
                             <button ngbAccordionButton class="p-2">Online</button>
