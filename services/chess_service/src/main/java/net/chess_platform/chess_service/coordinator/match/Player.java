@@ -16,6 +16,12 @@ public class Player {
 
     private Color color;
 
+    public Player(Player other) {
+        this.id = other.id;
+        this.score = other.score;
+        this.color = other.color;
+    }
+
     public Player(UUID id, Integer mmr) {
         this.id = id;
         this.mmr = mmr;

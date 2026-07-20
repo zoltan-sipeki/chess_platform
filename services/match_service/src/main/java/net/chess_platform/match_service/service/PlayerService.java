@@ -94,7 +94,7 @@ public class PlayerService {
         var u = e.getData();
         var updates = playerMapper.toUpdate(u);
 
-        playerRepository.update(updates);
+        playerRepository.update(u.id(), updates);
     }
 
 }

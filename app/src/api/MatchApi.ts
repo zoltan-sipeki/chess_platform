@@ -51,8 +51,8 @@ export interface MatchHistory {
     startedAt: string,
     duration: number,
     color: Color,
-    score: Score,
-    mmrChange: number
+    outcome: Score,
+    mmrChange?: number
 }
 
 export interface MatchHistoryList {

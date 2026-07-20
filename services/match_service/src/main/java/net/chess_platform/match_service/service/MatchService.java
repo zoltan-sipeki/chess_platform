@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -77,16 +76,17 @@ public class MatchService {
         var auth = permissionService.authorize(Action.MATCH_HISTORY_QUERY, currentUser, Map.of("userId", userId));
 
         Specification<MatchResult> spec = Specification.unrestricted();
-        if (StringUtils.hasText(searchParams.outcome())) {
-            spec = spec.and((root, cq, cb) -> cb.equal(root.get("outcome"), searchParams.outcome().toUpperCase()));
+        if (searchParams.outcome() != null) {
+            spec = spec.and((root, cq, cb) -> cb.equal(root.get("outcome"), searchParams.outcome()));
         }
 
-        if (StringUtils.hasText(searchParams.matchType())) {
+        if (searchParams.matchType() != null) {
             spec = spec.and(
-                    (root, cq, cb) -> cb.equal(root.get("match").get("type"), searchParams.matchType().toUpperCase()));
+                    (root, cq, cb) -> cb.equal(root.get("match").get("type"),
+                            searchParams.matchType()));
         }
 
-        var page = matchDetailRepository.findAll(auth, pageable);
+        var page = matchDetailRepository.findAll(auth, spec, pageable);
 
         return new MatchHistoryListDto(page.getTotalElements(), matchMapper.toMatchHistoryList(page.getContent()));
     }
@@ -129,7 +129,7 @@ public class MatchService {
 
                 update.setLastPlayedAt(match.getStartedAt());
 
-                playerRepository.update(update);
+                playerRepository.update(player.id(), update);
 
                 var stat = matchStatRepository.findByPlayerIdAndMatchType(player.id(), matchType).orElse(null);
                 var outcome = toOutcome(player.score());

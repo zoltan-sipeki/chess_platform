@@ -28,6 +28,7 @@ import net.chess_platform.matchmaking_service.mmqueue.MMQueue;
 import net.chess_platform.matchmaking_service.mmqueue.Match;
 import net.chess_platform.matchmaking_service.model.MatchRouting;
 import net.chess_platform.matchmaking_service.model.MatchRoutingFactory;
+import net.chess_platform.matchmaking_service.model.Player;
 import net.chess_platform.matchmaking_service.repository.MatchRoutingRepository;
 import net.chess_platform.matchmaking_service.repository.PlayerRepository;
 import net.chess_platform.matchmaking_service.service.PermissionService.Action;
@@ -234,7 +235,20 @@ public class MatchmakingService {
 
     @Transactional
     public void process(MatchEndedEvent e) {
-        var matchId = e.getData().matchId();
+        var d = e.getData();
+        var matchId = d.matchId();
+
+        for (var p : d.players()) {
+            var update = new Player.Update();
+            var type = Match.Type.valueOf(d.matchType());
+            if (type == Match.Type.RANKED) {
+                update.setRankedMmr(p.mmrAfter());
+            } else if (type == Match.Type.UNRANKED) {
+                update.setUnrankedMmr(p.mmrAfter());
+            }
+            playerRepository.update(p.id(), update);
+        }
+
         matchRoutingRepository.delete(matchId);
     }
 

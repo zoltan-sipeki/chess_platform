@@ -36,7 +36,7 @@ public class PlayerStatsMapperImpl implements PlayerStatsMapper {
             percentile = leaderboard.getPercentile();
         }
         Instant joinedAt = null;
-        OffsetDateTime lastPlayedAt = null;
+        Instant lastPlayedAt = null;
         int mmr = 0;
         if ( player != null ) {
             joinedAt = player.getCreatedAt();

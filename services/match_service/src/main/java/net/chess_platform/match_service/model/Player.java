@@ -1,7 +1,6 @@
 package net.chess_platform.match_service.model;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,8 +20,6 @@ public class Player extends AuditedEntity implements Persistable<UUID> {
 
     public static class Update {
 
-        private UUID id;
-
         private String displayName;
 
         private String avatar;
@@ -32,14 +29,6 @@ public class Player extends AuditedEntity implements Persistable<UUID> {
         private int unrankedMmr;
 
         private Instant lastPlayedAt;
-
-        public UUID getId() {
-            return id;
-        }
-
-        public void setId(UUID id) {
-            this.id = id;
-        }
 
         public String getDisplayName() {
             return displayName;
@@ -97,21 +86,10 @@ public class Player extends AuditedEntity implements Persistable<UUID> {
 
     private int unrankedMmr = 1500;
 
-    private OffsetDateTime lastPlayedAt;
+    private Instant lastPlayedAt;
 
     @OneToMany(mappedBy = "player", fetch = FetchType.LAZY)
     private Set<PrivacySetting> privacySettings;
-
-    public void clear() {
-        id = null;
-        isNew = true;
-        displayName = null;
-        avatar = null;
-        rankedMmr = -1;
-        unrankedMmr = -1;
-        lastPlayedAt = null;
-        privacySettings = null;
-    }
 
     @Override
     public boolean isNew() {
@@ -206,11 +184,11 @@ public class Player extends AuditedEntity implements Persistable<UUID> {
         this.unrankedMmr = unrankedMmr;
     }
 
-    public OffsetDateTime getLastPlayedAt() {
+    public Instant getLastPlayedAt() {
         return lastPlayedAt;
     }
 
-    public void setLastPlayedAt(OffsetDateTime lastPlayedAt) {
+    public void setLastPlayedAt(Instant lastPlayedAt) {
         this.lastPlayedAt = lastPlayedAt;
     }
 

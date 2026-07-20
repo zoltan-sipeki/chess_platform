@@ -146,7 +146,7 @@
                         <tbody>
                             @for (stat of p.matchStats; track stat.matchType) {
                             <tr>
-                                <td>{{ stat.matchType }}</td>
+                                <td>{{ stat.matchType | titlecase }}</td>
                                 <td>{{ stat.gamesPlayed }}</td>
                                 <td>{{ stat.wins }}</td>
                                 <td>{{ stat.draws }}</td>

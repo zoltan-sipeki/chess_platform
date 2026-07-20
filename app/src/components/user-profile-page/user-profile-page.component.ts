@@ -1,4 +1,4 @@
-import { DatePipe, PercentPipe } from "@angular/common";
+import { DatePipe, PercentPipe, TitleCasePipe } from "@angular/common";
 import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { Subscription } from "rxjs";
@@ -26,7 +26,7 @@ export interface MatchStatsTotal {
 @Component({
     selector: "user-profile-page",
     templateUrl: "user-profile-page.component.html",
-    imports: [User, PercentPipe, DatePipe, RouterLink, MatchHistoryTable, AvatarComponent]
+    imports: [User, PercentPipe, DatePipe, RouterLink, MatchHistoryTable, AvatarComponent, TitleCasePipe]
 })
 export class UserProfilePage implements OnInit, OnDestroy {
 

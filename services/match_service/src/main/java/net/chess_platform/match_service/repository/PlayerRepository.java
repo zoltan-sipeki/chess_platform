@@ -22,8 +22,8 @@ public interface PlayerRepository
         return findOne(fragment.getSpecification());
     }
 
-    default long update(Player.Update update) {
-        if (update == null || update.getId() == null) {
+    default long update(UUID id, Player.Update update) {
+        if (update == null || id == null) {
             return 0;
         }
 
@@ -54,6 +54,6 @@ public interface PlayerRepository
             }
         };
 
-        return update(op.where((root, cb) -> cb.equal(root.get("id"), update.getId())));
+        return update(op.where((root, cb) -> cb.equal(root.get("id"), id)));
     }
 }

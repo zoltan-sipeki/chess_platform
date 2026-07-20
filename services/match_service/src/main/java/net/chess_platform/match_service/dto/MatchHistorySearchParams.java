@@ -1,7 +1,10 @@
 package net.chess_platform.match_service.dto;
 
+import net.chess_platform.match_service.model.Match;
+import net.chess_platform.match_service.model.MatchResult;
+
 public record MatchHistorySearchParams(
-        String matchType,
-        String outcome) {
+        Match.Type matchType,
+        MatchResult.Outcome outcome) {
 
 }

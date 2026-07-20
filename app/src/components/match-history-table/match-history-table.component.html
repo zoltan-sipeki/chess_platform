@@ -6,8 +6,8 @@
                 <th>Duration</th>
                 <th>Type</th>
                 <th>Color</th>
-                <th>Result</th>
-                <th>MMR</th>
+                <th>Outcome</th>
+                <th>MMR change</th>
                 <th></th>
             </tr>
         </thead>
@@ -16,16 +16,14 @@
             <tr>
                 <td>{{ match.startedAt | timeAgo }}</td>
                 <td>{{ match.duration | timeFormat : "ms" }}</td>
-                <td>{{ match.matchType }}</td>
+                <td>{{ match.matchType | titlecase }}</td>
                 <td>
-                    <span class="rounded-circle border border-secondary" [class]="getColorClass(match.color)">
-                        <span class="invisible">aaa</span>
-                    </span>
+                    {{ getColorIcon(match.color) }}
                 </td>
-                <td><span class="badge" [class]="getScoreClass(match.score)">{{ match.score }}</span>
+                <td><span class="badge" [class]="getOutcomeClass(match.outcome)">{{ match.outcome }}</span>
                 </td>
-                <td class="fw-semibold" [class]="getMmrChangeClass(match.mmrChange)">{{ match.mmrChange
-                    }}</td>
+                <td class="fw-semibold" [class]="getMmrChangeClass(match.mmrChange)">
+                    {{ match.mmrChange != null ? ( match.mmrChange | sign ) : '' }}</td>
                 <td><a [href]="'/matches/' + match.matchId + '/replay'" target="_blank">replay</a></td>
             </tr>
             }

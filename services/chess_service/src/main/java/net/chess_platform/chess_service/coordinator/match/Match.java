@@ -148,6 +148,9 @@ public class Match {
             setNextTurn(0);
             setEndedAt();
             calculatePlayerScores(moveResult);
+            
+            var players = type == Type.UNRANKED ? clearMmrs(this.players) : this.players;
+            
             return new MoveProcessingResult(moveResult.getActiveColor(), moveResult.getMove(), moveResult.getState(),
                     moveResult.getWinnerColor(),
                     players);
@@ -288,5 +291,13 @@ public class Match {
 
     public Color getActiveColor() {
         return chessboard.getActiveColor();
+    }
+
+    private static List<Player> clearMmrs(List<Player> players) {
+        var res = new ArrayList<Player>();
+        for (var player : players) {
+            res.add(new Player(player));
+        }
+        return res;
     }
 }

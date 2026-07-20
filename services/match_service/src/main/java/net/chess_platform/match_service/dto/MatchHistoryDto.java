@@ -10,5 +10,5 @@ public record MatchHistoryDto(
 		long duration,
 		String color,
 		String outcome,
-		int mmrChange) {
+		Integer mmrChange) {
 }

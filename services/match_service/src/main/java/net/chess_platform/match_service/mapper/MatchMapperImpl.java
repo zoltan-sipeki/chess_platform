@@ -4,11 +4,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import javax.annotation.processing.Generated;
+
+import org.springframework.stereotype.Component;
+
 import net.chess_platform.match_service.dto.MatchHistoryDto;
 import net.chess_platform.match_service.model.Match;
 import net.chess_platform.match_service.model.MatchResult;
-import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
@@ -44,7 +47,7 @@ public class MatchMapperImpl implements MatchMapper {
         long duration = 0L;
         String color = null;
         String outcome = null;
-        int mmrChange = 0;
+        Integer mmrChange = null;
 
         matchId = matchResponseMatchId( matchResponse );
         Match.Type type = matchResponseMatchType( matchResponse );
@@ -59,7 +62,7 @@ public class MatchMapperImpl implements MatchMapper {
         if ( matchResponse.getOutcome() != null ) {
             outcome = matchResponse.getOutcome().name();
         }
-        if ( matchResponse.getMmrChange() != null ) {
+        if ( matchResponse.getMmrChange() != null && type != Match.Type.UNRANKED ) {
             mmrChange = matchResponse.getMmrChange();
         }
 

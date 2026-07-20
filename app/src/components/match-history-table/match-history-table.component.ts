@@ -3,17 +3,19 @@ import { RouterLink } from "@angular/router";
 import { TimeAgoPipe } from "../../pipes/TimeAgoPipe";
 import { TimeFormatPipe } from "../../pipes/TimeFormatPipe";
 import { MatchHistory } from "../../api/MatchApi";
+import { SignedNumberPipe } from "../../pipes/SignedNumberPipe";
+import { TitleCasePipe } from "@angular/common";
 
 @Component({
     selector: 'match-history-table',
     templateUrl: 'match-history-table.component.html',
-    imports: [TimeAgoPipe, TimeFormatPipe, RouterLink]
+    imports: [TimeAgoPipe, TimeFormatPipe, RouterLink, SignedNumberPipe, TitleCasePipe]
 })
 export class MatchHistoryTable {
 
     matches = input<MatchHistory[]>([]);
 
-    getScoreClass(score: string): string {
+    getOutcomeClass(score: string): string {
         switch (score) {
             case "WIN":
                 return "bg-success-subtle text-success";
@@ -26,17 +28,21 @@ export class MatchHistoryTable {
         return "";
     }
 
-    getMmrChangeClass(mmrChange: number): string {
+    getMmrChangeClass(mmrChange?: number): string {
+        if (mmrChange == null) {
+            return "";
+        }
+
         return mmrChange > 0 ? "text-success" : "text-danger";
     }
 
-    getColorClass(color: string): string {
+    getColorIcon(color: string): string {
         if (color === "WHITE") {
-            return "bg-white";
+            return String.fromCodePoint(9812);
         }
 
         if (color === "BLACK") {
-            return "bg-black";
+            return String.fromCodePoint(9818);
         }
 
         return "";

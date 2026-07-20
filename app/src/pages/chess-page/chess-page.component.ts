@@ -1,5 +1,5 @@
 import { TitleCasePipe } from "@angular/common";
-import { Component, inject, Signal, signal, TemplateRef, viewChild } from "@angular/core";
+import { Component, inject, OnDestroy, Signal, signal, TemplateRef, viewChild } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { forkJoin } from 'rxjs';
@@ -40,7 +40,7 @@ interface ScoreboardPlayer {
     imports: [TitleCasePipe, AvatarComponent, SnakeCaseToTitleCasePipe, ChessboardComponent],
     providers: [CountDownService]
 })
-export class ChessPage {
+export class ChessPage implements OnDestroy {
 
     private userApi: UserApi = inject(UserApi);
 
@@ -91,6 +91,12 @@ export class ChessPage {
         this.chessService.subscribe("MATCH_SNAPSHOT", this.initialize);
         this.chessService.subscribe("MOVE_RESULT", this.move);
         this.chessService.connect(this.route.snapshot.params["target"]);
+    }
+    
+    ngOnDestroy(): void {
+        this.chessService.unsubscribe("AUTHENTICATED", this.joinMatch);
+        this.chessService.unsubscribe("MATCH_SNAPSHOT", this.initialize);
+        this.chessService.unsubscribe("MOVE_RESULT", this.move);
     }
 
     myTurn(): boolean {
