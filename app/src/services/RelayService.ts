@@ -51,6 +51,8 @@ export class RelayService {
 
     private listeners = new Map<RelayEventType, Function[]>();
 
+    private latestEvents = new Map<RelayEventType, EventMap[RelayEventType]>();
+
     constructor() {
         this.ws.onmessage = async e => {
             const { type, payload } = e.data;
@@ -63,6 +65,7 @@ export class RelayService {
                 }
                 case "EVENT": {
                     const { type, data } = payload;
+                    this.latestEvents.set(type, data);
                     const listeners = this.listeners.get(type);
                     if (listeners) {
                         for (const listener of listeners) {
@@ -81,6 +84,11 @@ export class RelayService {
             this.listeners.set(eventType, [callback]);
         } else {
             listeners.push(callback);
+        }
+
+        const latestEvent = this.latestEvents.get(eventType) as EventMap[T];
+        if (latestEvent != null) {
+            callback(latestEvent);
         }
     }
 
