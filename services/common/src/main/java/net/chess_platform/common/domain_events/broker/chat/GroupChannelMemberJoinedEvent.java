@@ -1,18 +1,19 @@
 package net.chess_platform.common.domain_events.broker.chat;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import net.chess_platform.common.domain_events.broker.chat.GroupChannelMemberJoinedEvent.GroupChannelMemberJoinedDto;
-import net.chess_platform.common.dto.chat.UserDto;
+import net.chess_platform.common.domain_events.broker.BroadcastEvent;
+import net.chess_platform.common.domain_events.broker.chat.GroupChannelMemberJoinedEvent.Payload;
 
-public class GroupChannelMemberJoinedEvent extends SocialEvent<GroupChannelMemberJoinedDto> {
+public class GroupChannelMemberJoinedEvent extends BroadcastEvent<Payload> {
 
-    public static record GroupChannelMemberJoinedDto(UUID channelId, List<UserDto> joinedMembers) {
+    public static record Payload(UUID channelId, List<UserData> joinedMembers) {
     }
 
-    public GroupChannelMemberJoinedEvent(List<UUID> recipients, UUID channelId, List<UserDto> joinedMembers) {
-        super(recipients, Type.GROUP_CHANNEL_MEMBER_JOINED, new GroupChannelMemberJoinedDto(channelId, joinedMembers));
+    public GroupChannelMemberJoinedEvent(Collection<UUID> recipients, Payload data) {
+        super(recipients, Category.SOCIAL, Type.GROUP_CHANNEL_MEMBER_JOINED, data);
     }
 
 }

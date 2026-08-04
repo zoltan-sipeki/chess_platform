@@ -1,72 +1,115 @@
 package net.chess_platform.chat_service.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import net.chess_platform.chat_service.authorization.ChannelAuthorizationService;
+import net.chess_platform.chat_service.dto.ChannelDto;
 import net.chess_platform.chat_service.exception.AccessDeniedException;
 import net.chess_platform.chat_service.exception.EntityNotFoundException;
 import net.chess_platform.chat_service.mapper.ChannelMapper;
-import net.chess_platform.chat_service.mapper.UserMapper;
 import net.chess_platform.chat_service.model.Channel;
 import net.chess_platform.chat_service.model.ChannelMember;
-import net.chess_platform.chat_service.model.ChannelMember.Role;
-import net.chess_platform.chat_service.permission.PermissionService;
-import net.chess_platform.chat_service.permission.PermissionService.Action;
 import net.chess_platform.chat_service.repository.ChannelMemberRepository;
 import net.chess_platform.chat_service.repository.ChannelRepository;
+import net.chess_platform.chat_service.repository.MessageRepository;
+import net.chess_platform.common.domain_events.broker.chat.ChannelTypingEvent;
 import net.chess_platform.common.domain_events.broker.chat.GroupChannelCreatedEvent;
-import net.chess_platform.common.domain_events.broker.chat.GroupChannelMemberJoinedEvent;
 import net.chess_platform.common.domain_events.broker.chat.GroupChannelMemberLeftEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
-import net.chess_platform.common.dto.chat.ChannelDto;
+import net.chess_platform.common.permission.MongoQueryFragment;
 import net.chess_platform.common.security.CurrentUser;
 
 @Service
 public class ChannelService {
 
-    private ChannelRepository channelRepository;
+    private final ChannelRepository channelRepository;
 
-    private ChannelMemberRepository channelMemberRepository;
+    private final ChannelMemberRepository channelMemberRepository;
 
-    private PermissionService permissionService;
+    private final MessageRepository messageRepository;
 
-    private DomainEventService eventService;
+    private final ChannelAuthorizationService authService;
 
-    private ChannelMapper channelMapper;
+    private final DomainEventService eventService;
 
-    private UserMapper userMapper;
+    private final ChannelMapper channelMapper;
 
     public ChannelService(ChannelRepository channelRepository,
             ChannelMemberRepository channelMemberRepository,
-            PermissionService permisssionService,
-            DomainEventService eventService, ChannelMapper channelMapper, UserMapper userMapper) {
+            MessageRepository messageRepository,
+            ChannelAuthorizationService authService,
+            DomainEventService eventService, ChannelMapper channelMapper) {
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
-        this.permissionService = permisssionService;
+        this.messageRepository = messageRepository;
+        this.authService = authService;
         this.eventService = eventService;
         this.channelMapper = channelMapper;
-        this.userMapper = userMapper;
     }
 
-    public List<ChannelDto> getChannels(CurrentUser user) {
-        var auth = permissionService.authorize(Action.CHANNEL_QUERY, user, null);
-        var channels = channelRepository.findAll(auth);
-        return channelMapper.toDtoList(channels);
+    public void broadcastTyping(UUID channelId, CurrentUser user) {
+        var auth = authService.authorizeBroadcastTyping(user, channelId);
+
+        if (!auth.isAllowed()) {
+            throw new EntityNotFoundException();
+        }
+
+        var channel = channelRepository.findOne(channelId);
+        if (channel == null) {
+            throw new EntityNotFoundException();
+        }
+
+        channel.getMemberIds().removeIf(m -> m.equals(user.id()));
+
+        eventService.publish(
+                new ChannelTypingEvent(channel.getMemberIds(), new ChannelTypingEvent.Payload(user.id(), channelId)));
+    }
+
+    public List<ChannelDto> findChannels(CurrentUser user) {
+        var auth = authService.authorizeChannelRead(user);
+
+        MongoQueryFragment<Channel> fragment = auth.getQueryFragment(Channel.class);
+
+        var channels = channelRepository.findAllWithMembers(fragment.getCriteria());
+
+        if (channels.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        for (var c : channels) {
+            c.getMembers().removeIf(m -> m.getId().equals(user.id()));
+        }
+
+        var unreadCounts = messageRepository.countUnreadMessages(channels.stream().map(Channel::getId).toList(),
+                user.id());
+
+        var result = channelMapper.toDtoList(channels);
+
+        for (var c : result) {
+            c.setUnreadCount(unreadCounts.get(c.getId()));
+        }
+
+        return result;
     }
 
     public ChannelDto createChannel(Channel.Type type, List<UUID> memberIds, CurrentUser user) {
-        var auth = permissionService.authorize(Action.CHANNEL_CREATE, user, null);
+        if (type.equals(Channel.Type.DM) && memberIds.size() > 2) {
+            throw new IllegalArgumentException("DM channels must have exactly 2 members");
+        }
+
+        var auth = authService.authorizeChannelCreate(user);
 
         if (!auth.isAllowed()) {
             throw new AccessDeniedException();
         }
 
         if (type == Channel.Type.DM) {
-            var channel = channelRepository.findDMChannelWithMembers(memberIds.get(0), user.id());
+            var channel = channelRepository.findOneWithMembers(Channel.Type.DM, memberIds);
             if (channel != null) {
                 return channelMapper.toDto(channel);
             }
@@ -75,27 +118,45 @@ public class ChannelService {
         var channel = new Channel();
         channel.setType(type);
 
-        var members = createChannelMembers(type, channel, memberIds, user);
+        var members = new ArrayList<ChannelMember>();
+        for (var memberId : memberIds) {
+            var channelMember = new ChannelMember();
+            channelMember.setChannel(new ChannelMember.EmbeddedChannel(channel.getId(), type));
+            channelMember.setUserId(memberId);
 
-        channel = channelRepository.save(channel, auth);
-        members = channelMemberRepository.saveAll(members, auth);
+            if (type == Channel.Type.GROUP) {
+                if (memberId.equals(user.id())) {
+                    channelMember.addRole(ChannelMember.Role.OWNER);
+                } else {
+                    channelMember.addRole(ChannelMember.Role.MEMBER);
+                }
+            }
 
-        var dto = channelMapper.toDto(channel);
-
-        if (channel.getType() == Channel.Type.GROUP) {
-            var e = new GroupChannelCreatedEvent(memberIds, dto);
-            eventService.publish(e);
+            channel.addMember(memberId);
+            members.add(channelMember);
         }
 
-        return dto;
+        channelRepository.save(channel);
+        channelMemberRepository.saveAll(members);
+
+        channel = channelRepository.findOneWithMembers(channel.getId());
+        channel.getMembers().removeIf(m -> m.getId().equals(user.id()));
+
+        // maybe send group channel created event to the other users.
+
+        return channelMapper.toDto(channel);
     }
 
     public void updateLastReadMessage(UUID channelId, long lastReadMessageId,
             CurrentUser user) {
-        var auth = permissionService.authorize(Action.CHANNEL_UPDATE_LAST_READ_MESSAGE, user,
-                Map.of("channelId", channelId));
+        var auth = authService.authorizeUpdateLastReadMessage(user, channelId);
 
-        long modifiedCount = channelMemberRepository.updateLastReadMessage(channelId, lastReadMessageId, auth);
+        MongoQueryFragment<ChannelMember> fragment = auth.getQueryFragment(ChannelMember.class);
+
+        var update = new ChannelMember.Update();
+        update.setLastReadMessageSeq(lastReadMessageId);
+
+        long modifiedCount = channelMemberRepository.update(update, fragment.getCriteria());
 
         if (modifiedCount == 0) {
             throw new EntityNotFoundException();
@@ -103,149 +164,133 @@ public class ChannelService {
     }
 
     public void clearChannelHistory(UUID channelId, CurrentUser user) {
-        var auth = permissionService.authorize(Action.CHANNEL_CLEAR_HISTORY, user,
-                Map.of("channelId", channelId));
+        if (channelId == null) {
+            throw new IllegalArgumentException();
+        }
 
-        long modifiedCount = channelMemberRepository.clearChannelHistory(channelId, auth);
+        var channel = channelRepository.findOne(channelId);
+
+        if (channel == null) {
+            throw new EntityNotFoundException();
+        }
+
+        var update = new ChannelMember.Update();
+        update.setLastReadableMessageSeq(channel.getNextMessageSeq());
+        update.setLastReadMessageSeq(channel.getNextMessageSeq() - 1);
+
+        var auth = authService.authorizeClearChannelHistory(user, channelId);
+        MongoQueryFragment<ChannelMember> f2 = auth.getQueryFragment(ChannelMember.class);
+
+        long modifiedCount = channelMemberRepository.update(update, f2.getCriteria());
 
         if (modifiedCount == 0) {
             throw new EntityNotFoundException();
         }
     }
 
-    public ChannelDto kickMember(UUID channelId, UUID userId, CurrentUser user) {
-        var auth = permissionService.authorize(Action.CHANNEL_KICK_MEMBER,
-                user,
-                Map.of("channelId", channelId, "userId", userId));
+    public void kickMember(UUID channelId, UUID userId, CurrentUser user) {
+        var auth = authService.authorizeKickMember(user, channelId, userId);
 
-        long modifiedCount = channelMemberRepository.kickMemberFromGroupChannel(auth);
+        var update = new ChannelMember.Update();
+        update.setRemoved(true);
+        update.setRoles(new HashSet<>());
+
+        MongoQueryFragment<ChannelMember> fragment = auth.getQueryFragment(ChannelMember.class);
+
+        long modifiedCount = channelMemberRepository.update(update, fragment.getCriteria());
 
         if (modifiedCount == 0) {
             throw new EntityNotFoundException();
         }
 
-        channelRepository.kickMemberFromGroupChannel(channelId, userId);
+        var channel = channelRepository.findOne(channelId);
 
-        var channel = channelRepository.findChannelById(channelId);
-        var recipients = channel.getMemberIds();
-        recipients.add(userId);
+        channelRepository.removeMember(channelId, userId);
 
-        var event = new GroupChannelMemberLeftEvent(recipients, channelId, userId);
+        var event = new GroupChannelMemberLeftEvent(channel.getMemberIds(),
+                new GroupChannelMemberLeftEvent.Payload(channelId, userId));
+
         eventService.publish(event);
-
-        return channelMapper.toDto(channel);
     }
 
-    public ChannelDto addChannelMembers(UUID channelId, List<UUID> addedMemberIds, CurrentUser user) {
-        var auth = permissionService.authorize(
-                Action.CHANNEL_ADD_MEMBER, user,
-                Map.of("channelId", channelId));
+    public void addChannelMembers(UUID channelId, List<UUID> newMembers, CurrentUser user) {
+        var auth = authService.authorizeAddMember(user, channelId);
 
         if (!auth.isAllowed()) {
             throw new AccessDeniedException();
         }
 
-        var channel = channelRepository.findGroupChannelById(channelId);
+        var channel = channelRepository.findOne(Channel.Type.DM, channelId);
         if (channel == null) {
             throw new EntityNotFoundException();
         }
 
-        var ogMembers = List.copyOf(channel.getMemberIds());
-        var joinedMembers = addMemberToGroupChannel(channel, addedMemberIds);
+        var members = channelMemberRepository.findAll(channelId);
 
-        channel = channelRepository.save(channel, auth);
-        joinedMembers = channelMemberRepository.saveAll(joinedMembers, auth);
+        var cms = new ArrayList<ChannelMember>();
+        for (var id : newMembers) {
+            var cm = members.get(id);
+            if (cm == null) {
+                var ec = new ChannelMember.EmbeddedChannel(channelId, Channel.Type.GROUP);
+                cm = new ChannelMember();
+                cm.setChannel(ec);
+                cm.setUserId(id);
+                cm.addRole(ChannelMember.Role.MEMBER);
+                cms.add(cm);
+            } else if (cm.isRemoved()) {
+                cm.setRemoved(false);
+                cm.addRole(ChannelMember.Role.MEMBER);
+                cms.add(cm);
+            }
 
-        // var joinedEvent = new GroupChannelMemberJoinedEvent(ogMembers, channelId,
-        //         userMapper.toDtoListFromChannelMember(joinedMembers));
-        // eventService.publish(joinedEvent);
+        }
 
-        var dto = channelMapper.toDto(channel);
+        channelMemberRepository.saveAll(cms);
 
-        var createdEvent = new GroupChannelCreatedEvent(addedMemberIds, dto);
-        eventService.publish(createdEvent);
+        channelRepository.addMembers(channelId, newMembers);
 
-        return dto;
+        channel = channelRepository.findOneWithMembers(channel.getId());
+
+        var e = new GroupChannelCreatedEvent(newMembers, channelMapper.toEventPayload(channel));
+
+        eventService.publish(e);
     }
 
     public void leaveChannel(UUID channelId, CurrentUser user) {
-        var auth = permissionService.authorize(Action.CHANNEL_LEAVE, user, Map.of("channelId", channelId));
+        var auth = authService.authorizeLeaveChannel(user, channelId);
 
-        long modifiedCount = channelMemberRepository.leaveGroupChannel(auth);
+        MongoQueryFragment<ChannelMember> fragment = auth.getQueryFragment(ChannelMember.class);
+
+        var update = new ChannelMember.Update();
+        update.setRemoved(true);
+        update.setRoles(new HashSet<>());
+
+        long modifiedCount = channelMemberRepository.update(update, fragment.getCriteria());
 
         if (modifiedCount == 0) {
             throw new EntityNotFoundException();
         }
 
-        var channel = channelRepository.findChannelById(channelId);
-        if (channel.getType() == Channel.Type.GROUP) {
-            var event = new GroupChannelMemberLeftEvent(channel.getMemberIds(), channelId, user.id());
-            eventService.publish(event);
-        }
+        var channel = channelRepository.findOne(channelId);
+
+        channelRepository.removeMember(channelId, user.id());
+
+        var e = new GroupChannelMemberLeftEvent(channel.getMemberIds(),
+                new GroupChannelMemberLeftEvent.Payload(channelId, user.id()));
+
+        eventService.publish(e);
+
     }
 
-    private List<ChannelMember> createChannelMembers(Channel.Type type, Channel channel, List<UUID> memberIds,
-            CurrentUser user) {
-        var members = new ArrayList<ChannelMember>();
-        var embeddedChannel = new ChannelMember.EmbeddedChannel(channel.getId(), type);
+    public void updateName(UUID channelId, String name, CurrentUser currentUser) {
+        var auth = authService.authorizeUpdateChannelName(currentUser, channelId);
 
-        for (var memberId : memberIds) {
-            var member = new ChannelMember();
-            member.setChannel(embeddedChannel);
-            member.setUserId(memberId);
+        MongoQueryFragment<Channel> fragment = auth.getQueryFragment(Channel.class);
 
-            if (type == Channel.Type.GROUP) {
-                member.addRole(ChannelMember.Role.MEMBER);
-            }
+        long modifiedCount = channelRepository.updateName(fragment.getCriteria(), name);
 
-            channel.addMember(memberId);
+        if (modifiedCount == 0) {
+            throw new EntityNotFoundException();
         }
-
-        var member = new ChannelMember();
-        member.setChannel(embeddedChannel);
-        member.setUserId(user.id());
-
-        if (type == Channel.Type.GROUP) {
-            member.addRole(ChannelMember.Role.OWNER);
-        }
-
-        channel.addMember(user.id());
-        members.add(member);
-
-        return members;
     }
-
-    private List<ChannelMember> addMemberToGroupChannel(Channel channel, List<UUID> addedMemberIds) {
-        var embeddedChannel = new ChannelMember.EmbeddedChannel(channel.getId(), Channel.Type.GROUP);
-
-        var addedMembers = new ArrayList<ChannelMember>();
-        var ogMembers = channelMemberRepository.findByChannelId(channel.getId());
-        for (var id : addedMemberIds) {
-            var member = ogMembers.get(id);
-
-            if (member == null) {
-                var m = new ChannelMember();
-                m.setChannel(embeddedChannel);
-                m.setUserId(id);
-                m.addRole(ChannelMember.Role.MEMBER);
-                addedMembers.add(m);
-                channel.addMember(id);
-            } else if (member.isRemoved()) {
-                member.setRemoved(false);
-                member.addRole(Role.MEMBER);
-                addedMembers.add(member);
-                channel.addMember(id);
-            }
-        }
-
-        return addedMembers;
-    }
-
-    public ChannelDto updateName(UUID channelId, String name, CurrentUser currentUser) {
-        var auth = permissionService.authorize(Action.CHANNEL_UPDATE_NAME, currentUser, Map.of("channelId", channelId));
-        var channel = channelRepository.updateName(name, auth);
-
-        return channelMapper.toDto(channel);
-    }
-
 }

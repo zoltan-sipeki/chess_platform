@@ -1,6 +1,6 @@
 package net.chess_platform.chat_service.repository;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,8 +16,6 @@ import org.springframework.stereotype.Repository;
 
 import net.chess_platform.chat_service.model.Notification;
 import net.chess_platform.chat_service.model.NotificationMetadata;
-import net.chess_platform.common.permission.Authorization;
-import net.chess_platform.common.permission.MongoQueryFragment;
 
 @Repository
 public class NotificationRepository {
@@ -28,16 +26,13 @@ public class NotificationRepository {
         this.mongoTemplate = mongoTemplate;
     }
 
-    public List<Notification> findAll(Authorization auth, Long before, long limit) {
-        MongoQueryFragment<Notification> fragment = auth.getQueryFragment(Notification.class);
-
-        var query = fragment.getCriteria();
+    public List<Notification> findAll(Criteria criteria, Long before, long limit) {
         if (before != null) {
-            query = query.and("sequenceNumber").lt(before);
+            criteria = criteria.and("sequenceNumber").lt(before);
         }
 
         var a = Aggregation.newAggregation(
-                Aggregation.match(query),
+                Aggregation.match(criteria),
                 Aggregation.sort(Sort.by(Direction.DESC, "sequenceNumber")),
                 Aggregation.limit(limit));
 
@@ -45,40 +40,25 @@ public class NotificationRepository {
 
     }
 
-    public long countUnread(Authorization auth) {
-        MongoQueryFragment<Notification> f1 = auth.getQueryFragment(Notification.class);
-        MongoQueryFragment<NotificationMetadata> f2 = auth.getQueryFragment(NotificationMetadata.class);
-
-        var metadata = mongoTemplate
-                .findOne(new Query(f2.getCriteria()), NotificationMetadata.class);
-
+    public long countUnread(Criteria criteria, long lastReadSeq) {
         return mongoTemplate.count(
-                new Query(Criteria.where("sequenceNumber").gt(metadata.getLastReadSequenceNumber())
-                        .andOperator(f1.getCriteria())),
+                new Query(Criteria.where("sequenceNumber").gt(lastReadSeq)
+                        .andOperator(criteria)),
                 Notification.class);
     }
 
-    public long getLastReadSequenceNumber(Authorization auth) {
-        MongoQueryFragment<NotificationMetadata> fragment = auth.getQueryFragment(NotificationMetadata.class);
-        return mongoTemplate
-                .findOne(new Query(fragment.getCriteria()), NotificationMetadata.class)
-                .getLastReadSequenceNumber();
-    }
-
-    public long deleteOne(Authorization auth) {
-        MongoQueryFragment<Notification> fragment = auth.getQueryFragment(Notification.class);
+    public long deleteOne(Criteria criteria) {
         return mongoTemplate
                 .remove(Notification.class)
-                .matching(fragment.getCriteria())
+                .matching(criteria)
                 .one()
                 .getDeletedCount();
     }
 
-    public long deleteAll(Authorization auth) {
-        MongoQueryFragment<Notification> fragment = auth.getQueryFragment(Notification.class);
+    public long deleteAll(Criteria criteria) {
         return mongoTemplate
                 .remove(Notification.class)
-                .matching(fragment.getCriteria())
+                .matching(criteria)
                 .all()
                 .getDeletedCount();
     }
@@ -91,36 +71,12 @@ public class NotificationRepository {
                 .getDeletedCount();
     }
 
-    public long getNextSequenceNumber(UUID userId) {
-        var metadata = mongoTemplate.findAndModify(new Query(Criteria.where("receiver").is(userId)),
-                new Update().inc("sequenceNumber", 1),
-                FindAndModifyOptions.options().returnNew(true), NotificationMetadata.class);
-        return metadata.getSequenceNumber();
-    }
 
     public Notification save(Notification notification) {
         if (notification.getCreatedAt() == null) {
-            notification.setCreatedAt(OffsetDateTime.now());
+            notification.setCreatedAt(Instant.now());
         }
         return mongoTemplate.save(notification);
     }
-
-    public NotificationMetadata save(NotificationMetadata notificationMetadata) {
-        return mongoTemplate.save(notificationMetadata);
-    }
-
-    public long updateAll(Notification.Update update, Authorization auth) {
-        MongoQueryFragment<NotificationMetadata> fragment = auth.getQueryFragment(NotificationMetadata.class);
-
-        var u = new Update();
-
-        Long seq = update.getLastReadSequenceNumber();
-        if (seq != null) {
-            u.set("lastReadSequenceNumber", seq);
-            return mongoTemplate.updateFirst(new Query(fragment.getCriteria()), u, NotificationMetadata.class)
-                    .getModifiedCount();
-        }
-
-        return 0;
-    }
+    
 }

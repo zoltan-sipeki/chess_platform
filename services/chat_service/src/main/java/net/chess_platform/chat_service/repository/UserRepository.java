@@ -64,11 +64,11 @@ public class UserRepository {
         return mongoTemplate.query(User.class).matching(Criteria.where("_id").is(userId)).exists();
     }
 
-    public User findById(UUID userId) {
+    public User findOne(UUID userId) {
         return mongoTemplate.findById(userId, User.class);
     }
 
-    public List<User> findByIds(List<UUID> userIds) {
+    public List<User> findAll(List<UUID> userIds) {
         return mongoTemplate.query(User.class).matching(Criteria.where("_id").in((userIds))).all();
     }
 }

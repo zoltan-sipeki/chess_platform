@@ -1,17 +1,22 @@
 package net.chess_platform.chat_service.model;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document
 public class Message extends AuditedEntity {
 
+    @Id
     private UUID id = UUID.randomUUID();
 
     private UUID channelId;
 
-    private long messageId;
+    private long sequenceNumber;
 
     private String content;
 
@@ -19,7 +24,7 @@ public class Message extends AuditedEntity {
 
     private List<User> sender;
 
-    private OffsetDateTime lastEditedAt;
+    private Instant lastEditedAt;
 
     public UUID getId() {
         return id;
@@ -37,12 +42,12 @@ public class Message extends AuditedEntity {
         this.channelId = channelId;
     }
 
-    public long getMessageId() {
-        return messageId;
+    public long getSequenceNumber() {
+        return sequenceNumber;
     }
 
-    public void setMessageId(long messageId) {
-        this.messageId = messageId;
+    public void setSequenceNumber(long messageId) {
+        this.sequenceNumber = messageId;
     }
 
     public String getContent() {
@@ -61,11 +66,11 @@ public class Message extends AuditedEntity {
         this.senderId = senderId;
     }
 
-    public OffsetDateTime getLastEditedAt() {
+    public Instant getLastEditedAt() {
         return lastEditedAt;
     }
 
-    public void setLastEditedAt(OffsetDateTime lastEditedAt) {
+    public void setLastEditedAt(Instant lastEditedAt) {
         this.lastEditedAt = lastEditedAt;
     }
 

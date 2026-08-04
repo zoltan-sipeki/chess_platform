@@ -12,81 +12,73 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import net.chess_platform.chat_service.model.Channel;
-import net.chess_platform.common.permission.Authorization;
-import net.chess_platform.common.permission.MongoQueryFragment;
 
 @Repository
 public class ChannelRepository {
 
     private MongoOperations mongoTemplate;
 
-    private UserRepository userRepository;
-
-    public ChannelRepository(MongoOperations mongoTemplate, UserRepository userRepository) {
+    public ChannelRepository(MongoOperations mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
-        this.userRepository = userRepository;
     }
 
-    public List<Channel> findAll(Authorization auth) {
-        MongoQueryFragment<Channel> fragment =auth.getQueryFragment(Channel.class);
-
+    public List<Channel> findAllWithMembers(Criteria criteria) {
         var a = Aggregation.newAggregation(
-                Aggregation.match(fragment.getCriteria()),
+                Aggregation.match(criteria),
                 Aggregation.lookup("user", "memberIds", "_id", "members"));
+
         return mongoTemplate.aggregate(a, Channel.class, Channel.class).getMappedResults();
     }
 
-    public Channel updateName(String name, Authorization auth) {
-        MongoQueryFragment<Channel> fragment =auth.getQueryFragment(Channel.class);
-
-        var channel = mongoTemplate.findAndModify(
-                new Query(fragment.getCriteria()),
-                new Update().set("name", name), FindAndModifyOptions.options().returnNew(true),
-                Channel.class);
-        return channel;
+    public long updateName(Criteria criteria, String name) {
+        return mongoTemplate.update(Channel.class).matching(criteria).apply(new Update().set("name", name)).all()
+                .getModifiedCount();
     }
 
-    public Channel save(Channel channel, Authorization auth) {
-        if (!auth.canCreate(channel)) {
-            return null;
-        }
-
-        var result = mongoTemplate.save(channel);
-        var members = userRepository.findByIds(result.getMemberIds());
-        result.setMembers(members);
-        return result;
+    public Channel save(Channel channel) {
+        return mongoTemplate.save(channel);
     }
 
-    public List<Channel> findGroupChannelByMemberId(UUID memberId) {
-        return mongoTemplate.query(Channel.class)
-                .matching(Criteria.where("memberIds").is(memberId).and("type").is(Channel.Type.GROUP)).all();
-    }
-
-    public Channel findGroupChannelById(UUID channelId) {
-        return mongoTemplate.query(Channel.class)
-                .matching(Criteria.where("channelId").is(channelId).and("type").is(Channel.Type.GROUP)).oneValue();
-    }
-
-    public Channel findChannelById(UUID channelId) {
-        return mongoTemplate.findById(channelId, Channel.class);
-    }
-
-    public long getNextMessageId(UUID channelId) {
+    public long getNextMessageSeq(UUID channelId) {
         return mongoTemplate
-                .findAndModify(new Query(Criteria.where("_id").is(channelId)), new Update().inc("nextMessageId", 1),
+                .findAndModify(new Query(Criteria.where("_id").is(channelId)), new Update().inc("nextMessageSeq", 1),
                         FindAndModifyOptions.options().returnNew(false), Channel.class)
-                .getNextMessageId();
+                .getNextMessageSeq();
     }
 
-    public Channel findDMChannelWithMembers(UUID memberId1, UUID memberId2) {
+    public List<Channel> findAll(UUID memberId) {
+        return mongoTemplate.find(new Query(Criteria.where("memberIds").is(memberId)), Channel.class);
+    }
+
+    public Channel findOneWithMembers(Channel.Type type, List<UUID> members) {
         var a = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("memberIds").all(memberId1, memberId2)),
+                Aggregation.match(Criteria.where("type").is(type).and("memberIds").all(members)),
                 Aggregation.lookup("user", "memberIds", "_id", "members"));
 
         return mongoTemplate.aggregate(a, Channel.class, Channel.class).getUniqueMappedResult();
     }
 
-    public long kickMemberFromGroupChannel(UUID channelId, UUID userId) {
+    public Channel findOne(UUID id) {
+        return mongoTemplate.findById(id, Channel.class);
+    }
+
+    public Channel findOneWithMembers(UUID id) {
+        var a = Aggregation.newAggregation(
+                Aggregation.match(Criteria.where("_id").is(id)),
+                Aggregation.lookup("user", "memberIds", "_id", "members"));
+
+        return mongoTemplate.aggregate(a, Channel.class, Channel.class).getUniqueMappedResult();
+    }
+
+    public Channel findOne(Channel.Type type, UUID id) {
+        return mongoTemplate.findOne(new Query(Criteria.where("type").is(type).and("_id").is(id)), Channel.class);
+    }
+
+    public Channel findOne(Criteria criteria) {
+        return mongoTemplate.findOne(new Query(criteria), Channel.class);
+    }
+
+    public long removeMember(UUID channelId, UUID userId) {
         return mongoTemplate
                 .update(Channel.class)
                 .matching(Criteria.where("type").is(Channel.Type.GROUP).and("_id").is(channelId).and("memberIds")
@@ -96,11 +88,12 @@ public class ChannelRepository {
                 .getModifiedCount();
     }
 
-    public Channel findGroupChannelWithMembersById(UUID channelId) {
-        var a = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("_id").is(channelId)),
-                Aggregation.lookup("user", "memberIds", "_id", "members"));
-
-        return mongoTemplate.aggregate(a, Channel.class, Channel.class).getUniqueMappedResult();
+    public long addMembers(UUID channelId, List<UUID> userIds) {
+        return mongoTemplate
+                .update(Channel.class)
+                .matching(Criteria.where("type").is(Channel.Type.GROUP).and("_id").is(channelId))
+                .apply(new Update().addToSet("memberIds", userIds))
+                .all()
+                .getModifiedCount();
     }
 }

@@ -1,11 +1,11 @@
 package net.chess_platform.chat_service.dto;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
-public record ErrorResponse(
+public record ErrorDto(
         int status,
         String error,
-        OffsetDateTime timestamp,
+        Instant timestamp,
         String path) {
 
 }

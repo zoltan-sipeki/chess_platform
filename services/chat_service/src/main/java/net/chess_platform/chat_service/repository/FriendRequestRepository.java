@@ -11,8 +11,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import net.chess_platform.chat_service.model.FriendRequest;
-import net.chess_platform.common.permission.Authorization;
-import net.chess_platform.common.permission.MongoQueryFragment;
 
 @Repository
 public class FriendRequestRepository {
@@ -32,35 +30,22 @@ public class FriendRequestRepository {
 				.oneValue();
 	}
 
-	public FriendRequest update(FriendRequest.Update update,
-			Authorization auth) {
-		MongoQueryFragment<FriendRequest> fragment = auth.getQueryFragment(FriendRequest.class);
-
-		var u = new Update();
-		var status = update.getStatus();
-		if (status != null) {
-			u.set("status", status);
-		}
-
+	public FriendRequest updateStatus(
+			Criteria criteria, FriendRequest.Status status) {
 		return mongoTemplate
 				.findAndModify(
-						new Query(fragment.getCriteria()),
-						u,
+						new Query(criteria),
+						new Update().set("status", status),
 						FindAndModifyOptions.options().returnNew(true),
 						FriendRequest.class);
 	}
 
-	public FriendRequest save(FriendRequest friendRequest, Authorization auth) {
-		if (!auth.canCreate(friendRequest)) {
-			return null;
-		}
-
+	public FriendRequest save(FriendRequest friendRequest) {
 		return mongoTemplate.save(friendRequest);
 	}
 
-	public List<FriendRequest> findAll(Authorization auth) {
-		MongoQueryFragment<FriendRequest> fragment = auth.getQueryFragment(FriendRequest.class);
-		return mongoTemplate.query(FriendRequest.class).matching(fragment.getCriteria()).all();
+	public List<FriendRequest> findAll(Criteria criteria) {
+		return mongoTemplate.query(FriendRequest.class).matching(criteria).all();
 	}
 
 }

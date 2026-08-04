@@ -1,7 +1,6 @@
 package net.chess_platform.chat_service.model;
 
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,9 +13,9 @@ public class NotificationMetadata {
 
     private UUID receiver;
 
-    private long sequenceNumber = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE / 2);
+    private long sequenceNumber = 0;
 
-    private long lastReadSequenceNumber = sequenceNumber;
+    private long lastReadSequenceNumber = 0;
 
     public UUID getId() {
         return id;

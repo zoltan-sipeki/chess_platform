@@ -1,6 +1,6 @@
 package net.chess_platform.chat_service.model;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
@@ -9,19 +9,6 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 @Document
 public class Notification {
-
-    public static class Update {
-
-        private Long lastReadSequenceNumber;
-
-        public Long getLastReadSequenceNumber() {
-            return lastReadSequenceNumber;
-        }
-
-        public void setLastReadSequenceNumber(Long lastReadSequenceNumber) {
-            this.lastReadSequenceNumber = lastReadSequenceNumber;
-        }
-    }
 
     public enum Type {
         FRIEND_REQUEST_ACCEPTED,
@@ -40,7 +27,7 @@ public class Notification {
 
     private UUID receiver;
 
-    private OffsetDateTime createdAt;
+    private Instant createdAt;
 
     private UUID friendRequest;
 
@@ -76,11 +63,11 @@ public class Notification {
         this.sender = sender;
     }
 
-    public OffsetDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(OffsetDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 

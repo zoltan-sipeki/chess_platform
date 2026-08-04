@@ -1,19 +1,15 @@
 package net.chess_platform.chat_service.service;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import net.chess_platform.chat_service.authorization.RelationshipAuthorizationService;
 import net.chess_platform.chat_service.dto.RelationshipDto;
 import net.chess_platform.chat_service.dto.RelationshipDto.Relationship;
 import net.chess_platform.chat_service.exception.AccessDeniedException;
-import net.chess_platform.chat_service.model.Friend;
-import net.chess_platform.chat_service.permission.PermissionService;
-import net.chess_platform.chat_service.permission.PermissionService.Action;
 import net.chess_platform.chat_service.repository.ChannelRepository;
 import net.chess_platform.chat_service.repository.FriendRepository;
 import net.chess_platform.common.security.CurrentUser;
@@ -25,50 +21,42 @@ public class RelationshipService {
 
     private final ChannelRepository channelRepository;
 
-    private final PermissionService permissionService;
+    private final RelationshipAuthorizationService authService;
 
     public RelationshipService(FriendRepository friendRepository, ChannelRepository channelRepository,
-            PermissionService permissionService) {
+            RelationshipAuthorizationService authService) {
         this.friendRepository = friendRepository;
         this.channelRepository = channelRepository;
-        this.permissionService = permissionService;
+        this.authService = authService;
     }
 
-    public RelationshipDto getRelationship(List<UUID> userIds, CurrentUser user) {
-        if (userIds.isEmpty() || userIds.size() > 2) {
-            throw new IllegalArgumentException();
-        }
+    public RelationshipDto queryRelationship(UUID userId1, UUID userId2, CurrentUser user) {
+        var auth = authService.authorizeRelationshipQuery(user);
 
-        var auth = permissionService.authorize(Action.RELATIONSHIP_QUERY, user, Map.of("userIds", userIds));
         if (!auth.isAllowed()) {
             throw new AccessDeniedException();
         }
 
-        switch (userIds.size()) {
-            case 1:
-                if (userIds.get(0).equals(user.id())) {
-                    return new RelationshipDto(Relationship.SELF);
-                }
-                break;
-            case 2:
-                if (userIds.get(0).equals(userIds.get(1))) {
-                    return new RelationshipDto(Relationship.SELF);
-                }
-                break;
+        if (userId1.equals(userId2)) {
+            return new RelationshipDto(Relationship.SELF);
         }
 
-        var friends = friendRepository.findAll(auth);
+        var friends = friendRepository.areFriends(userId1, userId2);
 
         return new RelationshipDto(
-                friends == null || friends.isEmpty() ? Relationship.NOT_RELATED : Relationship.FRIENDS);
+                friends ? Relationship.FRIENDS : Relationship.NOT_RELATED);
     }
 
     public Set<UUID> findContacts(UUID userId, CurrentUser user) {
-        var auth = permissionService.authorize(Action.CONTACTS_QUERY_ALL, user, Map.of("userId", userId));
+        var auth = authService.authorizeContactsQuery(user);
 
-        var friends = friendRepository.findAll(auth);
+        if (!auth.isAllowed()) {
+            throw new AccessDeniedException();
+        }
 
-        var channels = channelRepository.findAll(auth);
+        var friends = friendRepository.findAll(userId);
+
+        var channels = channelRepository.findAll(userId);
 
         var contacts = friends.stream().map(f -> f.getFriend().getId()).collect(Collectors.toSet());
 
@@ -80,6 +68,7 @@ public class RelationshipService {
             }
 
         }
+        
         return contacts;
     }
 

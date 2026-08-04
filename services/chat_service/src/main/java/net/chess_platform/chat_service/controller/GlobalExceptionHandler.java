@@ -1,6 +1,6 @@
 package net.chess_platform.chat_service.controller;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
-import net.chess_platform.chat_service.dto.ErrorResponse;
+import net.chess_platform.chat_service.dto.ErrorDto;
 import net.chess_platform.chat_service.exception.AccessDeniedException;
 import net.chess_platform.chat_service.exception.EntityNotFoundException;
 import net.chess_platform.chat_service.exception.InvalidFriendRequestException;
@@ -19,25 +19,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({ InvalidFriendRequestException.class })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleException(Exception e, HttpServletRequest request) {
-        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), getErrorMessage(e, HttpStatus.BAD_REQUEST),
-                OffsetDateTime.now(),
+    public ErrorDto handleException(Exception e, HttpServletRequest request) {
+        return new ErrorDto(HttpStatus.BAD_REQUEST.value(), getErrorMessage(e, HttpStatus.BAD_REQUEST),
+                Instant.now(),
                 request.getRequestURI());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleException(EntityNotFoundException e, HttpServletRequest request) {
-        return new ErrorResponse(HttpStatus.NOT_FOUND.value(), getErrorMessage(e, HttpStatus.NOT_FOUND),
-                OffsetDateTime.now(),
+    public ErrorDto handleException(EntityNotFoundException e, HttpServletRequest request) {
+        return new ErrorDto(HttpStatus.NOT_FOUND.value(), getErrorMessage(e, HttpStatus.NOT_FOUND),
+                Instant.now(),
                 request.getRequestURI());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ErrorResponse handleException(AccessDeniedException e, HttpServletRequest request) {
-        return new ErrorResponse(HttpStatus.FORBIDDEN.value(), getErrorMessage(e, HttpStatus.FORBIDDEN),
-                OffsetDateTime.now(),
+    public ErrorDto handleException(AccessDeniedException e, HttpServletRequest request) {
+        return new ErrorDto(HttpStatus.FORBIDDEN.value(), getErrorMessage(e, HttpStatus.FORBIDDEN),
+                Instant.now(),
                 request.getRequestURI());
     }
 

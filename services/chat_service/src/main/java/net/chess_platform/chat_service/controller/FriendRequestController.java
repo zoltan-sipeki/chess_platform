@@ -12,9 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.chess_platform.chat_service.dto.FriendRequestCreateDto;
+import jakarta.validation.Valid;
+import net.chess_platform.chat_service.dto.CreateFriendRequestDto;
 import net.chess_platform.chat_service.dto.FriendRequestDto;
-import net.chess_platform.chat_service.dto.FriendRequestUpdateDto;
+import net.chess_platform.chat_service.dto.UpdateFriendRequestStatusDto;
 
 import net.chess_platform.chat_service.dto.UserDto;
 import net.chess_platform.chat_service.model.FriendRequest;
@@ -37,7 +38,7 @@ public class FriendRequestController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> create(@RequestBody FriendRequestCreateDto dto, CurrentUser user) {
+    public ResponseEntity<UserDto> create(@RequestBody @Valid CreateFriendRequestDto dto, CurrentUser user) {
         var r = friendService.createRequest(dto.receiverId(), user);
         if (r == null) {
             return ResponseEntity.noContent().build();
@@ -46,13 +47,13 @@ public class FriendRequestController {
         return ResponseEntity.ok(r);
     }
 
-    @PatchMapping("/{friendRequestId}")
-    public ResponseEntity<UserDto> update(@PathVariable UUID friendRequestId, @RequestBody FriendRequestUpdateDto dto,
+    @PatchMapping("/{friendRequestId}/status")
+    public ResponseEntity<UserDto> update(@PathVariable UUID friendRequestId, @RequestBody @Valid UpdateFriendRequestStatusDto dto,
             CurrentUser user) {
         var update = new FriendRequest.Update();
         update.setStatus(dto.status());
 
-        var u = friendService.updateRequest(friendRequestId, update, user);
+        var u = friendService.updateStatus(friendRequestId, dto.status(), user);
         if (u == null) {
             return ResponseEntity.noContent().build();
         }

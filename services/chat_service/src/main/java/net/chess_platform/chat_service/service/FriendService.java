@@ -3,13 +3,13 @@ package net.chess_platform.chat_service.service;
 import static net.chess_platform.chat_service.model.Notification.Type.FRIEND_REQUEST_ACCEPTED;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import net.chess_platform.chat_service.authorization.FriendAuthorizationService;
 import net.chess_platform.chat_service.dto.FriendListDto;
 import net.chess_platform.chat_service.dto.FriendRequestDto;
 import net.chess_platform.chat_service.dto.UserDto;
@@ -23,16 +23,16 @@ import net.chess_platform.chat_service.model.Friend;
 import net.chess_platform.chat_service.model.FriendRequest;
 import net.chess_platform.chat_service.model.FriendRequest.Status;
 import net.chess_platform.chat_service.model.Notification;
-import net.chess_platform.chat_service.permission.PermissionService;
-import net.chess_platform.chat_service.permission.PermissionService.Action;
 import net.chess_platform.chat_service.repository.ChannelMemberRepository;
 import net.chess_platform.chat_service.repository.FriendRepository;
 import net.chess_platform.chat_service.repository.FriendRequestRepository;
+import net.chess_platform.chat_service.repository.NotificationMetadataRepository;
 import net.chess_platform.chat_service.repository.NotificationRepository;
 import net.chess_platform.chat_service.repository.UserRepository;
 import net.chess_platform.common.domain_events.broker.chat.NotificationEvent;
 import net.chess_platform.common.domain_events.broker.chat.UnfriendEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
+import net.chess_platform.common.permission.MongoQueryFragment;
 import net.chess_platform.common.security.CurrentUser;
 
 @Service
@@ -42,11 +42,13 @@ public class FriendService {
 
     private final NotificationRepository notificationRepository;
 
+    private final NotificationMetadataRepository notificationMetadataRepository;
+
     private final FriendRepository friendRepository;
 
     private final UserRepository userRepository;
 
-    private final PermissionService permissionService;
+    private final FriendAuthorizationService authService;
 
     private final DomainEventService eventService;
 
@@ -58,16 +60,18 @@ public class FriendService {
 
     public FriendService(
             FriendRequestRepository friendRequestRepository, NotificationRepository notificationRepository,
+            NotificationMetadataRepository notificationMetadataRepository,
             FriendRepository friendRepository,
             ChannelMemberRepository channelMemberRepository,
             UserRepository userRepository,
-            PermissionService permissionService, DomainEventService eventService,
+            FriendAuthorizationService authService, DomainEventService eventService,
             NotificationMapper notificationMapper, UserMapper userMapper, FriendRequestMapper friendRequestMapper) {
         this.friendRequestRepository = friendRequestRepository;
         this.notificationRepository = notificationRepository;
+        this.notificationMetadataRepository = notificationMetadataRepository;
         this.friendRepository = friendRepository;
         this.userRepository = userRepository;
-        this.permissionService = permissionService;
+        this.authService = authService;
         this.eventService = eventService;
         this.notificationMapper = notificationMapper;
         this.userMapper = userMapper;
@@ -75,7 +79,8 @@ public class FriendService {
     }
 
     public UserDto createRequest(UUID receiverId, CurrentUser user) {
-        var auth = permissionService.authorize(Action.FRIEND_REQUEST_CREATE, user, null);
+        var auth = authService.authorizeFriendRequestCreate(user);
+
         if (!auth.isAllowed()) {
             throw new AccessDeniedException();
         }
@@ -101,18 +106,16 @@ public class FriendService {
                 return null;
             }
 
-            var update = new FriendRequest.Update();
-            update.setStatus(Status.ACCEPTED);
-            return updateRequest(r.getId(), update, user);
+            return updateStatus(r.getId(), Status.ACCEPTED, user);
         }
 
         var friendRequest = new FriendRequest();
-        var sender = userRepository.findById(senderId);
+        var sender = userRepository.findOne(senderId);
 
         friendRequest.setSender(sender);
         friendRequest.setReceiver(receiverId);
 
-        friendRequest = friendRequestRepository.save(friendRequest, auth);
+        friendRequest = friendRequestRepository.save(friendRequest);
         if (friendRequest == null) {
             throw new AccessDeniedException();
         }
@@ -122,7 +125,7 @@ public class FriendService {
         notification.setSender(sender);
         notification.setReceiver(receiverId);
         notification.setFriendRequest(friendRequest.getId());
-        notification.setSequenceNumber(notificationRepository.getNextSequenceNumber(receiverId));
+        notification.setSequenceNumber(notificationMetadataRepository.getNextSequenceNumber(receiverId));
 
         notificationRepository.save(notification);
 
@@ -132,17 +135,16 @@ public class FriendService {
         return null;
     }
 
-    public UserDto updateRequest(UUID friendRequestId, FriendRequest.Update update, CurrentUser user) {
-        var status = update.getStatus();
+    public UserDto updateStatus(UUID friendRequestId, FriendRequest.Status status, CurrentUser user) {
         if (status == Status.PENDING) {
             throw new InvalidFriendRequestException("Status can be changed only to REJECTED or ACCEPTED");
         }
 
-        var auth = permissionService.authorize(Action.FRIEND_REQUEST_UPDATE, user,
-                Map.of("friendRequestId", friendRequestId));
+        var auth = authService.authorizeFriendRequestUpdate(user, friendRequestId);
 
-        var request = friendRequestRepository.update(update,
-                auth);
+        MongoQueryFragment<FriendRequest> fragment = auth.getQueryFragment(FriendRequest.class);
+
+        var request = friendRequestRepository.updateStatus(fragment.getCriteria(), status);
 
         if (request == null) {
             throw new EntityNotFoundException();
@@ -159,11 +161,11 @@ public class FriendService {
         var notification = new Notification();
         notification.setType(FRIEND_REQUEST_ACCEPTED);
 
-        var sender = userRepository.findById(currentUserId);
+        var sender = userRepository.findOne(currentUserId);
 
         notification.setSender(sender);
         notification.setReceiver(receiver.getId());
-        notification.setSequenceNumber(notificationRepository.getNextSequenceNumber(receiver.getId()));
+        notification.setSequenceNumber(notificationMetadataRepository.getNextSequenceNumber(receiver.getId()));
 
         notificationRepository.save(notification);
         notificationRepository.deleteByFriendRequestId(friendRequestId);
@@ -179,8 +181,12 @@ public class FriendService {
     }
 
     public List<FriendRequestDto> findAllRequests(CurrentUser user) {
-        var auth = permissionService.authorize(Action.FRIEND_REQUEST_QUERY, user, null);
-        var result = friendRequestRepository.findAll(auth);
+        var auth = authService.authorizeFriendRequestRead(user);
+
+        MongoQueryFragment<FriendRequest> fragment = auth.getQueryFragment(FriendRequest.class);
+
+        var result = friendRequestRepository.findAll(fragment.getCriteria());
+
         return friendRequestMapper.toDtoList(result);
     }
 
@@ -195,21 +201,26 @@ public class FriendService {
         return new FriendListDto(result.getTotalElements(), userMapper.toDtoListFromFriend(result.getContent()));
     }
 
-    private Page<Friend> findAll(UUID userId, Pageable pageable, CurrentUser user) {
-        var auth = permissionService.authorize(Action.FRIEND_QUERY, user,
-                userId == null ? Map.of() : Map.of("userId", userId));
-        return friendRepository.findAll(auth, pageable);
-    }
-
     public void unfriend(UUID friendId, CurrentUser user) {
-        var auth = permissionService.authorize(Action.UNFRIEND, user, Map.of("userId", friendId));
-        long deletedCount = friendRepository.delete(auth);
+        var auth = authService.authorizeUnfriend(user, friendId);
+
+        MongoQueryFragment<Friend> fragment = auth.getQueryFragment(Friend.class);
+
+        long deletedCount = friendRepository.deleteAll(fragment.getCriteria());
 
         if (deletedCount == 0) {
             throw new EntityNotFoundException();
         }
 
-        var event = new UnfriendEvent(List.of(friendId), user.id());
+        var event = new UnfriendEvent(List.of(friendId), new UnfriendEvent.Payload(user.id()));
         eventService.publish(event);
+    }
+
+    private Page<Friend> findAll(UUID userId, Pageable pageable, CurrentUser user) {
+        var auth = authService.authorizeFriendRead(user, userId);
+
+        MongoQueryFragment<Friend> fragment = auth.getQueryFragment(Friend.class);
+
+        return friendRepository.findAll(fragment.getCriteria(), pageable);
     }
 }

@@ -1,11 +1,12 @@
 package net.chess_platform.common.domain_events.broker.chat;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 
-import net.chess_platform.common.domain_events.broker.chat.GroupChannelRoleChangedEvent.GroupChannelRoleChangedDto;
+import net.chess_platform.common.domain_events.broker.BroadcastEvent;
+import net.chess_platform.common.domain_events.broker.chat.GroupChannelRoleChangedEvent.Payload;
 
-public class GroupChannelRoleChangedEvent extends SocialEvent<GroupChannelRoleChangedDto> {
+public class GroupChannelRoleChangedEvent extends BroadcastEvent<Payload> {
 
     public enum Role {
         OWNER,
@@ -18,10 +19,10 @@ public class GroupChannelRoleChangedEvent extends SocialEvent<GroupChannelRoleCh
         DELETE
     }
 
-    public static record GroupChannelRoleChangedDto(UUID channelId, Role role, Action action) {
+    public static record Payload(UUID channelId, Role role, Action action) {
     }
 
-    public GroupChannelRoleChangedEvent(List<UUID> recipients, UUID channelId, Role role, Action action) {
-        super(recipients, Type.GROUP_CHANNEL_ROLE_CHANGED, new GroupChannelRoleChangedDto(channelId, role, action));
+    public GroupChannelRoleChangedEvent(Collection<UUID> recipients, Payload data) {
+        super(recipients, Category.SOCIAL, Type.GROUP_CHANNEL_ROLE_CHANGED, data);
     }
 }

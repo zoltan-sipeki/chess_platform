@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.chess_platform.chat_service.dto.PrivacyDto;
+import net.chess_platform.chat_service.dto.UpdatePrivacyDto;
 import net.chess_platform.chat_service.service.PrivacyService;
 import net.chess_platform.common.security.CurrentUser;
 
@@ -26,7 +27,7 @@ public class PrivacyController {
     }
 
     @PatchMapping
-    public void updatePrivacy(@RequestBody PrivacyDto dto, CurrentUser currentUser) {
+    public void updatePrivacy(@RequestBody UpdatePrivacyDto dto, CurrentUser currentUser) {
         privacyService.update(dto, currentUser);
     }
 

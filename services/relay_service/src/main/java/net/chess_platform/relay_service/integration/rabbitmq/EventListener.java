@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import net.chess_platform.common.domain_events.broker.ActivityChangedEvent;
 import net.chess_platform.common.domain_events.broker.BroadcastEvent;
-import net.chess_platform.common.domain_events.broker.chat.SocialEvent;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
@@ -41,11 +40,6 @@ public class EventListener {
         this.userService = userService;
         this.eventService = eventService;
         this.chatService = chatService;
-    }
-
-    @RabbitHandler
-    public void process(@Payload SocialEvent<?> e) {
-        broadcastEvent(e);
     }
 
     @RabbitHandler
@@ -83,14 +77,6 @@ public class EventListener {
         var contacts = chatService.getContacts(d.userId());
         for (var recipient : contacts) {
             var payload = new EventPayload(e.getType(), d);
-            connections.sendMessage(recipient,
-                    new ServerMessage(ServerMessage.Type.EVENT, payload));
-        }
-    }
-
-    private void broadcastEvent(SocialEvent<?> e) {
-        for (var recipient : e.getRecipients()) {
-            var payload = new EventPayload(e.getType(), e.getData());
             connections.sendMessage(recipient,
                     new ServerMessage(ServerMessage.Type.EVENT, payload));
         }

@@ -1,26 +1,26 @@
 package net.chess_platform.chat_service.model;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 public class AuditedEntity {
 
-    private OffsetDateTime createdAt;
+    private Instant createdAt;
 
-    private OffsetDateTime updatedAt;
+    private Instant updatedAt;
 
-    public OffsetDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(OffsetDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public OffsetDateTime getUpdatedAt() {
+    public Instant getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(OffsetDateTime updatedAt) {
+    public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
 

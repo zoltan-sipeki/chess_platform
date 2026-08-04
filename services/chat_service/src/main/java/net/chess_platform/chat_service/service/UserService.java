@@ -12,7 +12,7 @@ import net.chess_platform.chat_service.model.Privacy.Restriction.Setting;
 import net.chess_platform.chat_service.model.User;
 import net.chess_platform.chat_service.model.User.Activity;
 import net.chess_platform.chat_service.model.User.Presence;
-import net.chess_platform.chat_service.repository.NotificationRepository;
+import net.chess_platform.chat_service.repository.NotificationMetadataRepository;
 import net.chess_platform.chat_service.repository.PrivacyRepository;
 import net.chess_platform.chat_service.repository.UserRepository;
 import net.chess_platform.common.domain_events.broker.ActivityChangedEvent;
@@ -27,22 +27,23 @@ public class UserService {
     @Value("${spring.application.name}")
     private String SERVICE_NAME;
 
-    private DomainEventService eventService;
+    private final DomainEventService eventService;
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    private PrivacyRepository privacyRepository;
+    private final PrivacyRepository privacyRepository;
 
-    private final NotificationRepository notificationRepository;
+    private final NotificationMetadataRepository notificationMetadataRepository;
 
     private final UserMapper mapper;
 
     public UserService(DomainEventService eventService, UserRepository userRepository,
-            PrivacyRepository privacyRepository, NotificationRepository notificationRepository, UserMapper mapper) {
+            PrivacyRepository privacyRepository,
+            NotificationMetadataRepository notificationMetadataRepository, UserMapper mapper) {
         this.eventService = eventService;
         this.userRepository = userRepository;
         this.privacyRepository = privacyRepository;
-        this.notificationRepository = notificationRepository;
+        this.notificationMetadataRepository = notificationMetadataRepository;
         this.mapper = mapper;
     }
 
@@ -65,7 +66,7 @@ public class UserService {
         var notificationMetadata = new NotificationMetadata();
         notificationMetadata.setReceiver(user.getId());
         
-        notificationRepository.save(notificationMetadata);
+        notificationMetadataRepository.save(notificationMetadata);
 
         eventService.ack(e, SERVICE_NAME);
     }

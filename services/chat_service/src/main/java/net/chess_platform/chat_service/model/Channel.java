@@ -1,11 +1,27 @@
 package net.chess_platform.chat_service.model;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document
 public class Channel extends AuditedEntity {
+
+    public static class Update {
+
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
 
     public enum Type {
         DM,
@@ -18,21 +34,21 @@ public class Channel extends AuditedEntity {
 
     private Type type;
 
-    private long firstMessageId = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE / 2);
+    private long nextMessageSeq = 0;
 
-    private long nextMessageId = firstMessageId;
+    private Set<UUID> memberIds;
 
-    private List<UUID> memberIds;
-
-    private List<User> members;
-
-    private List<ChannelMember.Role> currentUserRoles;
+    private Set<User> members;
 
     public void addMember(UUID userId) {
         if (memberIds == null) {
-            memberIds = new ArrayList<>();
+            memberIds = new HashSet<>();
         }
         memberIds.add(userId);
+    }
+
+    public void addMembers(List<UUID> userIds) {
+        userIds.forEach(this::addMember);
     }
 
     public UUID getId() {
@@ -59,44 +75,28 @@ public class Channel extends AuditedEntity {
         this.type = type;
     }
 
-    public long getFirstMessageId() {
-        return firstMessageId;
+    public long getNextMessageSeq() {
+        return nextMessageSeq;
     }
 
-    public long getNextMessageId() {
-        return nextMessageId;
+    public void setNextMessageSeq(long nextMessageId) {
+        this.nextMessageSeq = nextMessageId;
     }
 
-    public void setNextMessageId(long nextMessageId) {
-        this.nextMessageId = nextMessageId;
-    }
-
-    public void setFirstMessageId(long firstMessageId) {
-        this.firstMessageId = firstMessageId;
-    }
-
-    public List<User> getMembers() {
+    public Set<User> getMembers() {
         return members;
     }
 
-    public void setMembers(List<User> members) {
+    public void setMembers(Set<User> members) {
         this.members = members;
     }
 
-    public List<UUID> getMemberIds() {
+    public Set<UUID> getMemberIds() {
         return memberIds;
     }
 
-    public void setMemberIds(List<UUID> memberIds) {
+    public void setMemberIds(Set<UUID> memberIds) {
         this.memberIds = memberIds;
-    }
-
-    public List<ChannelMember.Role> getCurrentUserRoles() {
-        return currentUserRoles;
-    }
-
-    public void setCurrentUserRoles(List<ChannelMember.Role> roles) {
-        this.currentUserRoles = roles;
     }
 
 }

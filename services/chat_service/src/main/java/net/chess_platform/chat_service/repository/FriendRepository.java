@@ -14,8 +14,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import net.chess_platform.chat_service.model.Friend;
-import net.chess_platform.common.permission.Authorization;
-import net.chess_platform.common.permission.MongoQueryFragment;
 
 @Repository
 public class FriendRepository {
@@ -26,30 +24,31 @@ public class FriendRepository {
         this.mongoTemplate = mongoTemplate;
     }
 
-    public List<Friend> findAll(Authorization auth) {
-        MongoQueryFragment<Friend> fragment = auth.getQueryFragment(Friend.class);
+    public List<Friend> findAll(UUID userId) {
+        return findAll(Criteria.where("user").is(userId));
+    }
+
+    public List<Friend> findAll(Criteria criteria) {
         var a = Aggregation.newAggregation(
-                Aggregation.match(fragment.getCriteria()));
+                Aggregation.match(criteria));
 
         return mongoTemplate.aggregate(a, Friend.class, Friend.class).getMappedResults();
     }
 
-    public Page<Friend> findAll(Authorization auth, Pageable pageable) {
-        MongoQueryFragment<Friend> fragment = auth.getQueryFragment(Friend.class);
+    public Page<Friend> findAll(Criteria criteria, Pageable pageable) {
         var a = Aggregation.newAggregation(
-                Aggregation.match(fragment.getCriteria()),
+                Aggregation.match(criteria),
                 Aggregation.skip(pageable.getOffset()),
                 Aggregation.limit(pageable.getPageSize()));
 
         var result = mongoTemplate.aggregate(a, Friend.class, Friend.class).getMappedResults();
-        var count = mongoTemplate.count(new Query(fragment.getCriteria()), Friend.class);
+        var count = mongoTemplate.count(new Query(criteria), Friend.class);
 
         return new PageImpl<>(result, pageable, count);
     }
 
-    public long delete(Authorization auth) {
-        MongoQueryFragment<Friend> fragment = auth.getQueryFragment(Friend.class);
-        return mongoTemplate.remove(Friend.class).matching(fragment.getCriteria()).all().getDeletedCount();
+    public long deleteAll(Criteria criteria) {
+        return mongoTemplate.remove(Friend.class).matching(criteria).all().getDeletedCount();
     }
 
     public boolean areFriends(UUID userId, UUID friendId) {

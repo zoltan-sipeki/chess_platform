@@ -1,6 +1,7 @@
 package net.chess_platform.common.domain_events.broker;
 
 import static net.chess_platform.common.domain_events.broker.DomainEvent.Type.ACTIVITY_CHANGED;
+import static net.chess_platform.common.domain_events.broker.DomainEvent.Type.CHANNEL_TYPING;
 import static net.chess_platform.common.domain_events.broker.DomainEvent.Type.GROUP_CHANNEL_CREATED;
 import static net.chess_platform.common.domain_events.broker.DomainEvent.Type.GROUP_CHANNEL_MEMBER_JOINED;
 import static net.chess_platform.common.domain_events.broker.DomainEvent.Type.GROUP_CHANNEL_MEMBER_LEFT;
@@ -20,6 +21,7 @@ import static net.chess_platform.common.domain_events.broker.DomainEvent.Type.US
 import java.util.Map;
 import java.util.UUID;
 
+import net.chess_platform.common.domain_events.broker.chat.ChannelTypingEvent;
 import net.chess_platform.common.domain_events.broker.chat.GroupChannelCreatedEvent;
 import net.chess_platform.common.domain_events.broker.chat.GroupChannelMemberJoinedEvent;
 import net.chess_platform.common.domain_events.broker.chat.GroupChannelMemberLeftEvent;
@@ -38,7 +40,7 @@ import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
 
 public class DomainEvent<T> {
 
-    public static Map<Type, Class<? extends DomainEvent>> EVENT_TYPES = Map.ofEntries(
+    public static Map<Type, Class<? extends DomainEvent<?>>> EVENT_TYPES = Map.ofEntries(
             Map.entry(MATCH_STARTED, MatchStartedEvent.class),
             Map.entry(MATCH_ENDED, MatchEndedEvent.class),
             Map.entry(MATCH_FOUND, MatchFoundEvent.class),
@@ -50,6 +52,7 @@ public class DomainEvent<T> {
             Map.entry(GROUP_CHANNEL_MEMBER_JOINED, GroupChannelMemberJoinedEvent.class),
             Map.entry(GROUP_CHANNEL_MEMBER_LEFT, GroupChannelMemberLeftEvent.class),
             Map.entry(GROUP_CHANNEL_ROLE_CHANGED, GroupChannelRoleChangedEvent.class),
+            Map.entry(CHANNEL_TYPING, ChannelTypingEvent.class),
             Map.entry(NOTIFICATION, NotificationEvent.class),
             Map.entry(UNFRIEND, UnfriendEvent.class),
             Map.entry(PRESENCE_CHANGED, PresenceChangedEvent.class),
@@ -85,6 +88,7 @@ public class DomainEvent<T> {
         GROUP_CHANNEL_MEMBER_JOINED,
         GROUP_CHANNEL_MEMBER_LEFT,
         GROUP_CHANNEL_ROLE_CHANGED,
+        CHANNEL_TYPING,
 
         NOTIFICATION,
 

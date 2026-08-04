@@ -1,112 +1,117 @@
 package net.chess_platform.chat_service.repository;
 
-import static org.springframework.data.mongodb.core.query.Criteria.where;
-
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.bson.Document;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import net.chess_platform.chat_service.model.ChannelMember;
 import net.chess_platform.chat_service.model.Message;
-import net.chess_platform.common.permission.Authorization;
-import net.chess_platform.common.permission.MongoQueryFragment;
 
 @Repository
 public class MessageRepository {
 
-    private MongoOperations mongoTemplate;
+	private static record UnreadCounts(UUID channelId, int unreadCount) {
+	}
 
-    private UserRepository userRepository;
+	private final MongoOperations mongoTemplate;
 
-    private ChannelMemberRepository channelMemberRepository;
+	public MessageRepository(MongoOperations mongoTemplate) {
+		this.mongoTemplate = mongoTemplate;
+	}
 
-    private ChannelRepository channelRepository;
+	public Map<UUID, Integer> countUnreadMessages(List<UUID> channelIds, UUID userId) {
+		AggregationOperation match = context -> new Document()
+				.append("$match",
+						new Document().append("userId", userId).append("removed", new Document().append("$ne", true))
+								.append("channel._id",
+										new Document().append("$in", channelIds)));
 
-    public MessageRepository(MongoOperations mongoTemplate, UserRepository userRepository,
-            ChannelRepository channelRepository, ChannelMemberRepository channelMemberRepository) {
-        this.mongoTemplate = mongoTemplate;
-        this.userRepository = userRepository;
-        this.channelMemberRepository = channelMemberRepository;
-        this.channelRepository = channelRepository;
-    }
+		AggregationOperation lookup = context -> new Document()
+				.append("$lookup",
+						new Document()
+								.append("from", "message").append("as", "messages").append(
+										"let",
+										new Document()
+												.append("channelId", "$channel._id")
+												.append("lastReadMessageSeq", "$lastReadMessageSeq"))
+								.append("pipeline", List.of(
+										new Document().append("$match",
+												new Document().append("$expr", new Document().append("$and", List.of(
+														new Document().append("$eq",
+																List.of("$channelId", "$$channelId")),
+														new Document().append("$gt",
+																List.of("$sequenceNumber", "$$lastReadMessageSeq")))))),
+										new Document().append("$count", "unreadCount"))));
 
-    public List<Message> findAll(int limit, Authorization auth) {
-        MongoQueryFragment<Message> fragment = auth.getQueryFragment(Message.class);
+		AggregationOperation project = context -> new Document()
+				.append("$project", new Document().append("channelId", "$channel._id").append("unreadCount",
+						new Document().append("$arrayElemAt", List.of("$messages.unreadCount", 0))));
 
-        var a = Aggregation.newAggregation(
-                Aggregation.match(fragment.getCriteria()),
-                Aggregation.sort(Sort.by(Sort.Direction.ASC, "messageId")),
-                Aggregation.lookup("user", "senderId", "_id", "sender"),
-                Aggregation.limit(limit));
+		Aggregation a = Aggregation.newAggregation(
+				match,
+				lookup,
+				project);
 
-        return mongoTemplate.aggregate(a, Message.class, Message.class).getMappedResults();
-    }
+		var result = mongoTemplate.aggregate(
+				a,
+				ChannelMember.class,
+				UnreadCounts.class).getMappedResults();
 
-    public Message updateContent(String content,
-            Authorization auth) {
-        MongoQueryFragment<Message> fragment = auth.getQueryFragment(Message.class);
+		return result.stream().collect(Collectors.toMap(k -> k.channelId(), v -> v.unreadCount()));
+	}
 
-        var message = mongoTemplate.findAndModify(
-                new Query(fragment.getCriteria()),
-                new Update().set("content", content).set("lastEditedAt", OffsetDateTime.now()),
-                FindAndModifyOptions.options().returnNew(true),
-                Message.class);
+	public List<Message> findAllWithSender(int limit, Criteria criteria) {
+		var a = Aggregation.newAggregation(
+				Aggregation.match(criteria),
+				Aggregation.sort(Sort.by(Sort.Direction.ASC, "messageId")),
+				Aggregation.lookup("user", "senderId", "_id", "sender"),
+				Aggregation.sort(Direction.DESC, "sequenceNumber"),
+				Aggregation.limit(limit),
+				Aggregation.sort(Direction.ASC, "sequenceNumber"));
 
-        if (message == null) {
-            return null;
-        }
+		return mongoTemplate.aggregate(a, Message.class, Message.class).getMappedResults();
+	}
 
-        var sender = userRepository.findById(message.getSenderId());
-        message.setSender(sender);
-        return message;
-    }
+	public Message updateContent(Criteria criteria, String content) {
+		var message = mongoTemplate.findAndModify(
+				new Query(criteria),
+				new Update().set("content", content).set("lastEditedAt", Instant.now()),
+				FindAndModifyOptions.options().returnNew(true),
+				Message.class);
 
-    public Message save(Message message, Authorization auth) {
-        if (!auth.canCreate(message)) {
-            return null;
-        }
+		if (message == null) {
+			return null;
+		}
 
-        long nextMessageId = channelRepository.getNextMessageId(message.getChannelId());
-        message.setMessageId(nextMessageId);
+		return message;
+	}
 
-        var m = mongoTemplate.save(message);
-        channelMemberRepository.updateMessageIdsByChannelIdAndUserId(message.getChannelId(), message.getSenderId(),
-                message.getMessageId());
+	public Message deleteOne(Criteria criteria) {
+		var message = mongoTemplate
+				.findAndRemove(new Query(criteria), Message.class);
 
-        var sender = userRepository.findById(message.getSenderId());
-        m.setSender(sender);
+		if (message == null) {
+			return null;
+		}
 
-        return m;
-    }
+		return message;
+	}
 
-    public Message delete(Authorization auth) {
-        MongoQueryFragment<Message> fragment = auth.getQueryFragment(Message.class);
-
-        var message = mongoTemplate
-                .findAndRemove(new Query(fragment.getCriteria()), Message.class);
-
-        if (message == null) {
-            return null;
-        }
-
-        var sender = userRepository.findById(message.getSenderId());
-        message.setSender(sender);
-        return message;
-    }
-
-    public Message findLastMessageInChannel(UUID channelId) {
-        var a = Aggregation.newAggregation(
-                Aggregation.match(where("channelId").is(channelId)),
-                Aggregation.sort(Sort.by(Sort.Direction.DESC, "messageId")),
-                Aggregation.limit(1));
-
-        return mongoTemplate.aggregate(a, Message.class, Message.class).getUniqueMappedResult();
-    }
+	public Message save(Message message) {
+		return mongoTemplate.save(message);
+	}
 }

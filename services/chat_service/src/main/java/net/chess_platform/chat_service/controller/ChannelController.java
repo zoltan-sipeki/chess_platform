@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,17 +17,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import net.chess_platform.chat_service.dto.CreateChannelRequest;
-import net.chess_platform.chat_service.dto.CreateMessageRequest;
-import net.chess_platform.chat_service.dto.UpdateChannelNameRequest;
-import net.chess_platform.chat_service.dto.UpdateChannelRolesRequest;
-import net.chess_platform.chat_service.dto.UpdateChatMessageRequest;
-import net.chess_platform.chat_service.dto.UpdateLastReadMessageRequest;
+import net.chess_platform.chat_service.dto.ChannelDto;
+import net.chess_platform.chat_service.dto.CreateChannelDto;
+import net.chess_platform.chat_service.dto.CreateMessageDto;
+import net.chess_platform.chat_service.dto.MessageDto;
+import net.chess_platform.chat_service.dto.UpdateChannelNameDto;
+import net.chess_platform.chat_service.dto.UpdateChannelRolesDto;
+import net.chess_platform.chat_service.dto.UpdateUnreadDto;
 import net.chess_platform.chat_service.model.Channel;
 import net.chess_platform.chat_service.service.ChannelService;
 import net.chess_platform.chat_service.service.MessageService;
-import net.chess_platform.common.dto.chat.ChannelDto;
-import net.chess_platform.common.dto.chat.MessageDto;
 import net.chess_platform.common.security.CurrentUser;
 
 @RestController
@@ -45,26 +44,24 @@ public class ChannelController {
 
     @GetMapping
     public List<ChannelDto> getChannels(CurrentUser currentUser) {
-        return channelService.getChannels(currentUser);
+        return channelService.findChannels(currentUser);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ChannelDto createChannel(@RequestBody @Valid CreateChannelRequest request,
+    public ChannelDto createChannel(@RequestBody @Valid CreateChannelDto dto,
             CurrentUser currentUser) {
-        var type = !StringUtils.hasText(request.type()) ? Channel.Type.DM : Channel.Type.valueOf(request.type());
-        return channelService.createChannel(type, request.recipients(), currentUser);
+        var type = dto == null ? Channel.Type.DM : dto.type();
+        var members = dto.members();
+        members.add(currentUser.id());
+
+        return channelService.createChannel(type, members, currentUser);
     }
 
     @PatchMapping("/{channelId}")
-    public ChannelDto updateChannelName(@PathVariable UUID channelId, @RequestBody UpdateChannelNameRequest request,
+    public void updateChannelName(@PathVariable UUID channelId, @RequestBody UpdateChannelNameDto dto,
             CurrentUser currentUser) {
-        return channelService.updateName(channelId, request.name(), currentUser);
-    }
-
-    @DeleteMapping("/{channelId}/me/history")
-    public void clearChannelHistory(@PathVariable UUID channelId, CurrentUser currentUser) {
-        channelService.clearChannelHistory(channelId, currentUser);
+        channelService.updateName(channelId, dto.name(), currentUser);
     }
 
     @GetMapping("/{channelId}/messages")
@@ -75,48 +72,34 @@ public class ChannelController {
     }
 
     @PostMapping("/{channelId}/messages")
-    @ResponseStatus(HttpStatus.CREATED)
-    public MessageDto createMessageInChannel(@PathVariable UUID channelId,
-            @RequestBody CreateMessageRequest dto,
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void createMessage(@PathVariable UUID channelId,
+            @RequestBody @Valid CreateMessageDto dto,
             CurrentUser currentUser) {
-        return messageService.create(channelId, dto.content(), currentUser);
-    }
-
-    @PatchMapping("/{channelId}/messages/{messageId}")
-    @ResponseStatus(HttpStatus.OK)
-    public MessageDto updateMessage(@PathVariable UUID channelId, @PathVariable long messageId,
-            @RequestBody UpdateChatMessageRequest dto, CurrentUser currentUser) {
-        return messageService.updateContent(channelId, messageId, dto.content(),
-                currentUser);
-    }
-
-    @DeleteMapping("/{channelId}/messages/{messageId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteMessage(@PathVariable UUID channelId, @PathVariable long messageId,
-            CurrentUser currentUser) {
-        messageService.delete(channelId, messageId, currentUser);
+        messageService.create(channelId, dto.content(), currentUser);
     }
 
     @PostMapping("/{channelId}/typing")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void broadcastTyping(@PathVariable UUID channelId) {
+    public void broadcastTyping(@PathVariable UUID channelId, CurrentUser user) {
+        channelService.broadcastTyping(channelId, user);
     }
 
     @PatchMapping("/{channelId}/members")
-    public ChannelDto addChannelMembers(@PathVariable UUID channelId, @RequestBody List<UUID> members,
+    public void addChannelMembers(@PathVariable UUID channelId, @RequestBody List<UUID> members,
             CurrentUser currentUser) {
-        return channelService.addChannelMembers(channelId, members, currentUser);
+        channelService.addChannelMembers(channelId, members, currentUser);
     }
 
     @DeleteMapping("/{channelId}/members/{userId}")
-    public ChannelDto kickMember(@PathVariable UUID channelId, @PathVariable UUID userId,
+    public void kickMember(@PathVariable UUID channelId, @PathVariable UUID userId,
             CurrentUser currentUser) {
-        return channelService.kickMember(channelId, userId, currentUser);
+        channelService.kickMember(channelId, userId, currentUser);
     }
 
     @PatchMapping("/{channelId}/members/{userId}/roles")
-    public void updateChannelRolesForMember(@PathVariable UUID channelId, @PathVariable UUID userId,
-            @RequestBody UpdateChannelRolesRequest dto) {
+    public void updateChannelRoles(@PathVariable UUID channelId, @PathVariable UUID userId,
+            @RequestBody @Valid UpdateChannelRolesDto dto) {
 
     }
 
@@ -125,10 +108,15 @@ public class ChannelController {
         channelService.leaveChannel(channelId, currentUser);
     }
 
-    @PatchMapping("/{channelId}/me/unread")
+    @DeleteMapping("/{channelId}/members/me/history")
+    public void clearChannelHistory(@PathVariable UUID channelId, CurrentUser currentUser) {
+        channelService.clearChannelHistory(channelId, currentUser);
+    }
+
+    @PutMapping("/{channelId}/members/me/unread")
     public void updateLastReadMessage(@PathVariable UUID channelId,
-            @RequestBody UpdateLastReadMessageRequest request, CurrentUser currentUser) {
-        channelService.updateLastReadMessage(channelId, request.messageId(), currentUser);
+            @RequestBody UpdateUnreadDto request, CurrentUser currentUser) {
+        channelService.updateLastReadMessage(channelId, request.sequenceNumber(), currentUser);
     }
 
 }

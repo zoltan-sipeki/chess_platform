@@ -1,11 +1,54 @@
 package net.chess_platform.chat_service.model;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 public class ChannelMember extends AuditedEntity {
+
+    public static class Update {
+
+        private Long lastReadMessageSeq;
+
+        private Long lastReadableMessageSeq;
+
+        private Boolean removed;
+
+        private Set<Role> roles;
+
+        public Long getLastReadMessageSeq() {
+            return lastReadMessageSeq;
+        }
+
+        public void setLastReadMessageSeq(Long lastReadMessageId) {
+            this.lastReadMessageSeq = lastReadMessageId;
+        }
+
+        public Long getLastReadableMessageSeq() {
+            return lastReadableMessageSeq;
+        }
+
+        public void setLastReadableMessageSeq(Long lastReadableMessageId) {
+            this.lastReadableMessageSeq = lastReadableMessageId;
+        }
+
+        public Boolean getRemoved() {
+            return removed;
+        }
+
+        public void setRemoved(Boolean removed) {
+            this.removed = removed;
+        }
+
+        public Set<Role> getRoles() {
+            return roles;
+        }
+
+        public void setRoles(Set<Role> roles) {
+            this.roles = roles;
+        }
+
+    }
 
     public enum Role {
         OWNER,
@@ -47,11 +90,9 @@ public class ChannelMember extends AuditedEntity {
 
     private UUID userId;
 
-    private List<User> user;
+    private long lastReadMessageSeq;
 
-    private long lastReadMessageId;
-
-    private long lastReadableMessageId;
+    private long lastReadableMessageSeq;
 
     private Boolean removed;
 
@@ -89,20 +130,20 @@ public class ChannelMember extends AuditedEntity {
         this.userId = userId;
     }
 
-    public long getLastReadMessageId() {
-        return lastReadMessageId;
+    public long getLastReadMessageSeq() {
+        return lastReadMessageSeq;
     }
 
-    public void setLastReadMessageId(long lastReadMessageId) {
-        this.lastReadMessageId = lastReadMessageId;
+    public void setLastReadMessageSeq(long lastReadMessageId) {
+        this.lastReadMessageSeq = lastReadMessageId;
     }
 
-    public long getLastReadableMessageId() {
-        return lastReadableMessageId;
+    public long getLastReadableMessageSeq() {
+        return lastReadableMessageSeq;
     }
 
-    public void setLastReadableMessageId(long lastReadableMessageId) {
-        this.lastReadableMessageId = lastReadableMessageId;
+    public void setLastReadableMessageSeq(long lastReadableMessageId) {
+        this.lastReadableMessageSeq = lastReadableMessageId;
     }
 
     public EmbeddedChannel getChannel() {
@@ -123,14 +164,6 @@ public class ChannelMember extends AuditedEntity {
 
     public Boolean isRemoved() {
         return removed;
-    }
-
-    public List<User> getUser() {
-        return user;
-    }
-
-    public void setUser(List<User> user) {
-        this.user = user;
     }
 
     public Boolean getRemoved() {

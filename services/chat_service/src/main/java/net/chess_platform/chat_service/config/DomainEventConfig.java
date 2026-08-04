@@ -29,6 +29,7 @@ public class DomainEventConfig implements IDomainEventSubscriptionConfigurer {
         registry.registerSubscription(DomainEvent.Type.GROUP_CHANNEL_MEMBER_JOINED, relayService, false);
         registry.registerSubscription(DomainEvent.Type.GROUP_CHANNEL_MEMBER_LEFT, relayService, false);
         registry.registerSubscription(DomainEvent.Type.GROUP_CHANNEL_ROLE_CHANGED, relayService, false);
+        registry.registerSubscription(DomainEvent.Type.CHANNEL_TYPING, relayService, false);
         registry.registerSubscription(DomainEvent.Type.NOTIFICATION, relayService, false);
         registry.registerSubscription(DomainEvent.Type.UNFRIEND, relayService, false);
 
