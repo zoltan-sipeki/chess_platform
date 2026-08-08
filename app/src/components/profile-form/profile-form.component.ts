@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from "@angular/core";
+import { Component, effect, inject, OnDestroy, OnInit } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { EventService } from "../../services/EventService";
 import { UserService } from "../../services/UserService";
@@ -18,8 +18,13 @@ export class ProfileFormComponent implements OnInit, OnDestroy {
 
     displayName = new FormControl<string | undefined>("");
 
+    constructor() {
+        effect(() => {
+            this.displayName.setValue(this.userService.currentUser().displayName);
+        })
+    }
+
     ngOnInit(): void {
-        this.displayName.setValue(this.userService.currentUser().displayName);
     }
 
     ngOnDestroy(): void {
