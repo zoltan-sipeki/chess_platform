@@ -1,9 +1,9 @@
 package net.chess_platform.chat_service.controller;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,17 +23,18 @@ public class RelationshipController {
     }
 
     @GetMapping
-    public RelationshipDto search(@RequestParam UUID userId, @RequestParam UUID userId1, @RequestParam UUID userId2,
+    public RelationshipDto search(@RequestParam Optional<UUID> userId, @RequestParam Optional<UUID> userId1,
+            @RequestParam Optional<UUID> userId2,
             CurrentUser currentUser) {
-        if (userId != null) {
-            return relationShipService.queryRelationship(userId, currentUser.id(), currentUser);
+        if (userId.isPresent()) {
+            return relationShipService.queryRelationship(userId.get(), currentUser.id(), currentUser);
         }
-        
-        if (userId1 == null || userId2 == null) {
+
+        if (userId1.isEmpty() || userId2.isEmpty()) {
             throw new IllegalArgumentException();
         }
 
-        return relationShipService.queryRelationship(userId1, userId2, currentUser); 
-        
+        return relationShipService.queryRelationship(userId1.get(), userId2.get(), currentUser);
+
     }
 }

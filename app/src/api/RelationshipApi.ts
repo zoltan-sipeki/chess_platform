@@ -16,7 +16,7 @@ export class RelationshipApi {
     private http: HttpClient = inject(HttpClient);
 
     fetch(userId: string): Observable<Relationship> {
-        return this.http.post<Relationship>("/api/relationships/search", { ids: [userId] });
+        return this.http.get<Relationship>(`/api/relationships?userId=${userId}`);
     }
 
 }

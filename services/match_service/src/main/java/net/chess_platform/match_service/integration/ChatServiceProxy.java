@@ -1,6 +1,5 @@
 package net.chess_platform.match_service.integration;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,16 +16,14 @@ public class ChatServiceProxy {
         this.restClient = builder.baseUrl("http://chat-service").build();
     }
 
-    private static record RelationshipSearchDto(List<UUID> ids) {
-    }
-
     private static record RelationshipDto(String relationship) {
     }
 
     public boolean areFriends(UUID userId1, UUID userId2) {
-        var response = restClient.post().uri(uri -> uri.path("/api/relationships/search").build())
-                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
-                .body(new RelationshipSearchDto(List.of(userId1, userId2))).retrieve()
+        var response = restClient.get()
+                .uri(uri -> uri.path("/api/relationships").queryParam("userId1", userId1).queryParam("userId2", userId2)
+                        .build())
+                .retrieve()
                 .toEntity(RelationshipDto.class);
 
         return response.getBody().relationship().equals("FRIENDS");
