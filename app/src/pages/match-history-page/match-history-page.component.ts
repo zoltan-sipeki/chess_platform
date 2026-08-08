@@ -29,7 +29,7 @@ export class MatchHistoryPage implements OnInit, OnDestroy {
     form: FormGroup = new FormGroup({
         matchType: new FormControl("", { nonNullable: true }),
         outcome: new FormControl("", { nonNullable: true }),
-        dateSort: new FormControl("", { nonNullable: true })
+        dateSort: new FormControl("match.startedAt,desc", { nonNullable: true })
     });
 
     onSubmit(): void {
