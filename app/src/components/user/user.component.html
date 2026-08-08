@@ -1,6 +1,6 @@
 @switch (profileLink()) {
 @case (true) {
-<a [routerLink]="['/dashboard', 'users', user().id]" class="d-flex align-items-center" [class.flex-column]="vertical()"
+<a [routerLink]="['/users', user().id]" class="d-flex align-items-center" [class.flex-column]="vertical()"
     style="text-decoration: none; color: inherit;">
     <ng-container *ngTemplateOutlet="content"></ng-container>
 </a>

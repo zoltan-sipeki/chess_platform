@@ -116,7 +116,7 @@
                     </div>
                 </div>
                 <div class="card-footer d-flex justify-content-center">
-                    <a [routerLink]="['/dashboard/users', route.snapshot.paramMap.get('id'), 'friends']"
+                    <a [routerLink]="['/users', route.snapshot.paramMap.get('id'), 'friends']"
                         class="text-decoration-none">View all</a>
                 </div>
             </div>
@@ -182,7 +182,7 @@
                 </h5>
                 <match-history-table [matches]="p.matches.matches"></match-history-table>
                 <div class="card-footer d-flex justify-content-center">
-                    <a [routerLink]="['/dashboard/users', route.snapshot.paramMap.get('id'), 'history']"
+                    <a [routerLink]="['/users', route.snapshot.paramMap.get('id'), 'history']"
                         class="text-decoration-none">View all</a>
                 </div>
             </div>

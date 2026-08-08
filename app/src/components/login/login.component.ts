@@ -14,28 +14,22 @@ export class Login implements OnInit {
 
     ngOnInit(): void {
         const redirectPath = sessionStorage.getItem("redirectPath");
+
+        if (redirectPath === null) {
+            return;
+        }
+
+        if (redirectPath === "/") {
+            this.router.navigate(["/"]);
+            return;
+        }
+
         if (this.authService.isAuthenticated()) {
-            if (redirectPath === "/") {
-                this.router.navigate(["/dashboard"]);
-            }
-            else {
-                const queryStartIndex = redirectPath!.indexOf("?");
-                if (queryStartIndex === -1) {
-                    this.router.navigate([redirectPath!]);
-                }
-                else {
-                    const searchParams = new URLSearchParams(redirectPath!.substring(queryStartIndex));
-                    this.router.navigate([redirectPath!.slice(0, queryStartIndex)], { queryParams: [...searchParams.entries()].reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}) });
-                }
-            }
+            const urlTree = this.router.parseUrl(redirectPath!);
+            this.router.navigateByUrl(urlTree);
         }
         else {
-            if (redirectPath === "/") {
-                this.router.navigate(["/"]);
-            }
-            else {
-                this.authService.login();
-            }
+            this.authService.login();
         }
     }
 }   

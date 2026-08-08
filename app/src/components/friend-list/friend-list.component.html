@@ -29,7 +29,7 @@
                                                     }
                                                 </div>
                                                 <div ngbDropdownMenu class="shadow">
-                                                    <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
+                                                    <a [routerLink]="['/users', friend.id]" ngbDropdownItem><i
                                                             class="bi bi-person"></i> View
                                                         profile</a>
                                                     <button ngbDropdownItem (click)="openDm(friend.id)"><i
@@ -76,7 +76,7 @@
                                                     }
                                                 </div>
                                                 <div ngbDropdownMenu class="shadow">
-                                                    <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
+                                                    <a [routerLink]="['/users', friend.id]" ngbDropdownItem><i
                                                             class="bi bi-person"></i> View
                                                         profile</a>
                                                     <button ngbDropdownItem (click)="openDm(friend.id)"><i
@@ -130,7 +130,7 @@
                             <div ngbDropdown class="w-100" display="dynamic" container="body">
                                 <user ngbDropdownToggle [user]="request.sender"></user>
                                 <div ngbDropdownMenu class="shadow">
-                                    <a [routerLink]="['/dashboard/users', request.sender.id]" ngbDropdownItem><i
+                                    <a [routerLink]="['/users', request.sender.id]" ngbDropdownItem><i
                                             class="bi bi-person"></i>
                                         View profile</a>
                                     <div class="dropdown-divider"></div>

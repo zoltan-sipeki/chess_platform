@@ -66,7 +66,7 @@ export class UserSearch implements OnInit, OnDestroy {
     redirect(e: Event): void {
         e.preventDefault();
         if (this.prefix.value != null && this.prefix.value.length > 0) {
-            this.router.navigate(["/dashboard/users"], { queryParams: { startsWith: this.prefix.value } });
+            this.router.navigate(["/users"], { queryParams: { startsWith: this.prefix.value } });
         }
         this.prefix.setValue("");
         this.dropdown()?.close();

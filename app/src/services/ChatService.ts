@@ -155,11 +155,11 @@ export class ChatService {
 
                 this.dms.next(dms);
 
-                this.router.navigate([`/dashboard/channels/${result.id}`]);
+                this.router.navigate([`/channels/${result.id}`]);
             });
         }
         else {
-            this.router.navigate([`/dashboard/channels/${channelId}`]);
+            this.router.navigate([`/channels/${channelId}`]);
         }
 
     }

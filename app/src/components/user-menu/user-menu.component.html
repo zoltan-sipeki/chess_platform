@@ -3,8 +3,8 @@
         <user clazz="navbar-text text-small" [user]="currentUser()"></user>
     </div>
     <div ngbDropdownMenu class="shadow">
-        <a [routerLink]="['/dashboard', 'users', currentUser().id]" ngbDropdownItem>View profile</a>
-        <a routerLink="/dashboard/settings" ngbDropdownItem>Settings</a>
+        <a [routerLink]="['/users', currentUser().id]" ngbDropdownItem>View profile</a>
+        <a routerLink="/settings" ngbDropdownItem>Settings</a>
         <hr class="dropdown-divider">
         @for (presence of presences; track presence.name) {
         <button ngbDropdownItem class="d-flex align-items-center" (click)="updatePreferredPresence(presence.name)">

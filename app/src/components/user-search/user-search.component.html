@@ -14,7 +14,7 @@
         @if (searchResult(); as searchResult) {
         @for (user of searchResult.users; track user.id) {
         <li ngbDropdownItem>
-            <a [routerLink]="['/dashboard/users', user.id]" class="text-decoration-none" style="color: inherit;">
+            <a [routerLink]="['/users', user.id]" class="text-decoration-none" style="color: inherit;">
                 <user [user]="user"></user>
             </a>
         </li>
@@ -24,7 +24,7 @@
         @if (searchResult.total > MAX_USERS) {
         <li class="dropdown-divider"></li>
         <li ngbDropdownItem class="text-center">
-            <a class="d-block" style="text-decoration: none; color: inherit;" routerLink="/dashboard/users"
+            <a class="d-block" style="text-decoration: none; color: inherit;" routerLink="/users"
                 [queryParams]="{ startsWith: prefix.value }">Show more</a>
         </li>
         }
