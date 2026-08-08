@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { forkJoin } from "rxjs";
+import { ChatService } from "./ChatService";
 import { FriendRequestService } from "./FriendRequestService";
 import { FriendService } from "./FriendService";
 import { MatchmakingService } from "./MatchmakingService";
@@ -21,12 +21,14 @@ export class BootstrapService {
 
     private matchmakingService: MatchmakingService = inject(MatchmakingService);
 
+    private chatService: ChatService = inject(ChatService);
+
     run(): void {
-        forkJoin([
-            this.userService.refresh(),
-            this.friendService.refresh(),
-            this.notificationService.refresh(),
-            this.friendRequestService.refresh(),
-            this.matchmakingService.fetchCurrentMatch()]).subscribe();
+        this.userService.refresh().subscribe();
+        this.friendService.refresh().subscribe();
+        this.chatService.fetchChannels().subscribe();
+        this.notificationService.refresh().subscribe();
+        this.friendRequestService.refresh().subscribe();
+        this.matchmakingService.fetchCurrentMatch().subscribe();
     }
 }

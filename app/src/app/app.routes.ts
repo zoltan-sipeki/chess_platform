@@ -11,6 +11,7 @@ import { MatchHistoryPage } from '../pages/match-history-page/match-history-page
 import { NotificationPage } from '../pages/notification-page/notification-page.component';
 import { SettingsPage } from '../pages/settings-page/settings-page.component';
 import { ReplayPage } from '../pages/replay-page/replay-page.component';
+import { ChatWindowComponent } from '../pages/chat-window/chat-window.component';
 
 export const routes: Routes = [
     {
@@ -60,5 +61,10 @@ export const routes: Routes = [
             {
                 path: "notifications",
                 component: NotificationPage
-            }]
+            },
+            {
+                path: "channels/:id",
+                component: ChatWindowComponent
+            }
+        ]
     }];

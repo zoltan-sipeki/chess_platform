@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, OnInit } from "@angular/core";
+import { Component, input } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { Presence, UserData } from "../../api/UserApi";
 import { SnakeCaseToTitleCasePipe } from "../../pipes/SnakeCaseToTitleCase";
@@ -10,7 +10,7 @@ import { SnakeCaseToTitleCasePipe } from "../../pipes/SnakeCaseToTitleCase";
     styleUrl: "user.component.css",
     imports: [RouterLink, CommonModule, SnakeCaseToTitleCasePipe],
 })
-export class User implements OnInit {
+export class User {
 
     user = input.required<UserData>();
 
@@ -26,14 +26,9 @@ export class User implements OnInit {
 
     clazz = input<string>("");
 
-    mask1!: string;
+    mask1: number = Math.random() * Number.MAX_SAFE_INTEGER;
 
-    mask2!: string;
-
-    ngOnInit(): void {
-        this.mask1 = this.user().id + '-1';
-        this.mask2 = this.user().id + '-2';
-    }
+    mask2: number = Math.random() * Number.MAX_SAFE_INTEGER;
 
     getPresenceColor(presence?: Presence): string {
         switch (this.user().presence) {

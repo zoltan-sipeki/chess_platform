@@ -1,0 +1,98 @@
+@if (channel()?.(); as channel) {
+<div class="card shadow-sm border-0 h-100">
+
+    <div class="card-header bg-white py-3 px-3 border-bottom">
+        <user [user]="channel.recipients[0]" [avatarSize]="55" [showActivity]="true">
+        </user>
+    </div>
+
+    <div #chatWindow class="card-body bg-light overflow-auto p-3" style="height: calc(100vh - 290px);">
+
+        @if (messages()?.(); as messages) {
+        @for (group of messages; track $index) {
+        @if ($index === unreadIndex()) {
+        <div class="text-center my-4">
+            <span class="badge text-bg-warning px-3 py-2">
+                Unread messages
+            </span>
+        </div>
+        }
+
+        <div class="mb-4">
+            <div class="d-flex align-items-center mb-2">
+                <avatar class="me-2" [src]="group[0].sender.avatar" [width]="36" [height]="36"
+                    clazz="rounded-circle flex-shrink-0">
+                </avatar>
+
+                <div class="fw-semibold me-2">
+                    {{ group[0].sender.displayName }}
+                </div>
+                <small class="text-muted">
+                    {{ group[0].createdAt | messageTimestamp }}
+                </small>
+            </div>
+
+            <div class="ms-4 bg-white rounded-3 shadow-sm px-3 py-2 mb-2 mw-100">
+
+                @for (message of group; track message.id) {
+
+                <div class="mb-1">
+                    {{ message.content }}
+                </div>
+
+                }
+
+            </div>
+
+        </div>
+
+        }
+        }
+    </div>
+
+    <div class="card-footer bg-white border-top p-3">
+
+        <div class="input-group">
+
+            <div ngbDropdown>
+                <button ngbDropdownToggle class="btn btn-outline-secondary">
+                    <i class="bi bi-emoji-smile"></i>
+                </button>
+                <div ngbDropdownMenu class="p-2">
+                    <div class="d-grid" style="grid-template-columns: repeat(7, 2.4rem); gap: .35rem;">
+
+                        @for (emoji of emojis; track emoji[0]) {
+
+                        <button (click)="insertEmoji(emoji[1])" type="button" class="border border-0 rounded emoji"
+                            style="width:2.4rem;height:2.4rem;font-size:1.35rem;" [attr.title]="emoji[0]">
+
+                            {{ emoji[1] }}
+
+                        </button>
+
+                        }
+
+                    </div>
+                </div>
+            </div>
+            <textarea #textArea class="form-control" rows="1" style="resize:none" placeholder="Type a message..."
+                [formControl]="message" (keydown)="onKeyDown($event)">
+            </textarea>
+
+            <button class="btn btn-primary" (click)="sendMessage()">
+                <i class="bi bi-send-fill"></i>
+            </button>
+
+        </div>
+
+        <div class="small text-muted mt-2 ps-1" style="height: 1rem;">
+            @if (typing(); as typing) {
+            <i class="bi bi-three-dots me-1"></i>
+            {{ typing.displayName }} is typing...
+            }
+        </div>
+
+    </div>
+
+</div>
+}

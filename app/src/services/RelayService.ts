@@ -1,16 +1,19 @@
 import { inject, Injectable } from "@angular/core";
+import { Message } from "../api/ChannelApi";
+import { CurrentMatch } from "../api/MatchmakingApi";
 import { Notification } from "../api/NotificationApi";
 import { Activity, Presence, UserData } from "../api/UserApi";
 import { AuthService } from "./AuthService";
-import { CurrentMatch } from "../api/MatchmakingApi";
 
-export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED" | "PRESENCE_CHANGED" | "ACTIVITY_CHANGED" | "MATCH_FOUND" | "REPLAY_READY";
+export type RelayEventType = "UNFRIEND" | "NOTIFICATION" | "USER_UPDATED" | "PRESENCE_CHANGED" | "ACTIVITY_CHANGED" | "MATCH_FOUND" | "REPLAY_READY" | "MESSAGE_CREATED" | "CHANNEL_TYPING";
 
 export type NotificationRelayEvent = Notification;
 
 export type MatchFoundRelayEvent = CurrentMatch;
 
 export type UserUpdatedRelayEvent = UserData;
+
+export type MessageCreatedRelayEvent = Message;
 
 export interface UnfriendRelayEvent {
     senderId: string;
@@ -30,6 +33,11 @@ export interface ReplayReadyRelayEvent {
     replayId: string;
 }
 
+export interface ChannelTypingRelayEvent {
+    channelId: string;
+    userId: string;
+}
+
 export interface EventMap {
     "UNFRIEND": UnfriendRelayEvent,
     "NOTIFICATION": NotificationRelayEvent,
@@ -37,7 +45,9 @@ export interface EventMap {
     "PRESENCE_CHANGED": PresenceChangedRelayEvent,
     "ACTIVITY_CHANGED": ActivityChangedRelayEvent,
     "MATCH_FOUND": MatchFoundRelayEvent,
-    "REPLAY_READY": ReplayReadyRelayEvent
+    "REPLAY_READY": ReplayReadyRelayEvent,
+    "MESSAGE_CREATED": MessageCreatedRelayEvent,
+    "CHANNEL_TYPING": ChannelTypingRelayEvent
 }
 
 @Injectable({

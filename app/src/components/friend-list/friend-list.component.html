@@ -19,13 +19,21 @@
                                         @for (friend of online(); track friend.id) {
                                         <div class="list-group-item list-group-item-action">
                                             <div container="body" ngbDropdown class="w-100" display="dynamic">
-                                                <user ngbDropdownToggle [user]="friend" role="button"
-                                                    [showActivity]="true"></user>
+                                                <div class="d-flex align-items-center">
+                                                    <user ngbDropdownToggle [user]="friend" role="button"
+                                                        [showActivity]="true"></user>
+                                                    @let uc = dms()?.[friend.id]?.()?.unreadCount ?? 0;
+                                                    @if (uc > 0) {
+                                                    <span class="badge rounded-pill text-bg-danger ms-2">
+                                                        {{ uc }}</span>
+                                                    }
+                                                </div>
                                                 <div ngbDropdownMenu class="shadow">
                                                     <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
                                                             class="bi bi-person"></i> View
                                                         profile</a>
-                                                    <button ngbDropdownItem><i class="bi bi-chat"></i> Message</button>
+                                                    <button ngbDropdownItem (click)="openDm(friend.id)"><i
+                                                            class="bi bi-chat"></i> Message</button>
                                                     <button ngbDropdownItem (click)="invite(friend.id)"><i
                                                             class="bi bi-controller"></i>
                                                         Invite</button>
@@ -58,13 +66,21 @@
                                         @for (friend of offline(); track friend.id) {
                                         <div class="list-group-item list-group-item-action">
                                             <div ngbDropdown class="w-100" display="dynamic">
-                                                <user ngbDropdownToggle [user]="friend" role="button"
-                                                    [showActivity]="true"></user>
+                                                <div class="d-flex align-items-center">
+                                                    <user ngbDropdownToggle [user]="friend" role="button"
+                                                        [showActivity]="true"></user>
+                                                    @let uc = dms()?.[friend.id]?.()?.unreadCount ?? 0;
+                                                    @if (uc > 0) {
+                                                    <span class="badge rounded-pill text-bg-danger ms-2">
+                                                        {{ uc }}</span>
+                                                    }
+                                                </div>
                                                 <div ngbDropdownMenu class="shadow">
                                                     <a [routerLink]="['/dashboard/users', friend.id]" ngbDropdownItem><i
                                                             class="bi bi-person"></i> View
                                                         profile</a>
-                                                    <button ngbDropdownItem><i class="bi bi-chat"></i> Message</button>
+                                                    <button ngbDropdownItem (click)="openDm(friend.id)"><i
+                                                            class="bi bi-chat"></i> Message</button>
                                                     <div class="dropdown-divider"></div>
                                                     <button ngbDropdownItem class="text-danger"
                                                         (click)="unfriend(friend.id)"><i class="bi bi-person-dash"></i>

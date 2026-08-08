@@ -1,9 +1,10 @@
-import { inject, Injectable, signal, WritableSignal } from "@angular/core";
+import { inject, Injectable, Signal, signal, WritableSignal } from "@angular/core";
 import { Observable, tap } from "rxjs";
-import { EventService } from "./EventService";
 import { FriendApi, FriendList } from "../api/FriendApi";
-import { RelayService } from "./RelayService";
 import { UserData } from "../api/UserApi";
+import { EventService } from "./EventService";
+import { RelayService } from "./RelayService";
+import { Channel } from "../api/ChannelApi";
 
 @Injectable({
     providedIn: "root",
@@ -17,6 +18,8 @@ export class FriendService {
     private relayService: RelayService = inject(RelayService);
 
     private friends: UserData[] = [];
+
+    private _dms = signal<{ [id: string]: Signal<Channel | null> }>({});
 
     private _online = signal<UserData[]>([]);
 
@@ -83,7 +86,6 @@ export class FriendService {
             this._offline.set([...this._offline()]);
         });
     }
-
 
     addFriend(friend: UserData): void {
         this.friends.push(friend);

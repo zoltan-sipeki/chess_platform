@@ -1,0 +1,7 @@
+.emoji {
+    background-color: white;
+}
+
+.emoji:hover {
+    background-color: #dbdbdb;
+}
