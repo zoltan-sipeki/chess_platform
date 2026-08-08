@@ -16,7 +16,6 @@ import jakarta.validation.Valid;
 import net.chess_platform.chat_service.dto.CreateFriendRequestDto;
 import net.chess_platform.chat_service.dto.FriendRequestDto;
 import net.chess_platform.chat_service.dto.UpdateFriendRequestStatusDto;
-
 import net.chess_platform.chat_service.dto.UserDto;
 import net.chess_platform.chat_service.model.FriendRequest;
 import net.chess_platform.chat_service.service.FriendService;
@@ -47,7 +46,7 @@ public class FriendRequestController {
         return ResponseEntity.ok(r);
     }
 
-    @PatchMapping("/{friendRequestId}/status")
+    @PatchMapping("/{friendRequestId}")
     public ResponseEntity<UserDto> update(@PathVariable UUID friendRequestId, @RequestBody @Valid UpdateFriendRequestStatusDto dto,
             CurrentUser user) {
         var update = new FriendRequest.Update();
