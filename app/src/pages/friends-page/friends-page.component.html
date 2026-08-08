@@ -40,8 +40,8 @@
 </div>
 <div class="card border-0 shadow-sm mt-4">
     @if (friends$ | async; as friends){
-    @for (friend of friends.friends; track friend.id) {
     <div class="list-group list-group-flush">
+        @for (friend of friends.friends; track friend.id) {
         <div class="list-group-item px-3 py-3">
             <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-3">
@@ -55,15 +55,15 @@
                 </div>
             </div>
         </div>
+        }
+        @empty {
+        <p class="text-muted text-center mt-3">No friends found</p>
+        }
     </div>
     <div class="card-footer bg-white border-top">
         <pagination [(page)]="page" [pageSize]="PAGE_SIZE" [collectionSize]="friends.total"
             (pageChange)="onPageChange($event)"></pagination>
     </div>
-    }
-    @empty {
-    <p class="text-muted text-center mt-3">No friends found</p>
-    }
     }
 
 
