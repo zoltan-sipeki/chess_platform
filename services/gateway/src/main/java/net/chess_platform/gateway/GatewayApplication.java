@@ -52,7 +52,7 @@ public class GatewayApplication {
 
 		var matchRoutes = route(
 				path("/api/matches/**")
-						.or(path("/api/players/**"))
+						.or(path("/api/stats/**"))
 						.or(path("/api/leaderboard/**")),
 				http())
 				.filter(lb("match-service"));

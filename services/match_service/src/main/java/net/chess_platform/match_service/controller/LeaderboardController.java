@@ -13,16 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.match_service.dto.LeaderboardEntryDto;
-import net.chess_platform.match_service.service.LeaderboardService;
+import net.chess_platform.match_service.service.MatchService;
 
 @RestController
 @RequestMapping("/api/leaderboard")
 public class LeaderboardController {
 
-    private final LeaderboardService leaderboardService;
+    private final MatchService matchService;
 
-    public LeaderboardController(LeaderboardService leaderboardService) {
-        this.leaderboardService = leaderboardService;
+    public LeaderboardController(MatchService matchService) {
+        this.matchService = matchService;
     }
 
     @GetMapping
@@ -31,7 +31,7 @@ public class LeaderboardController {
                     @SortDefault(sort = "mmr", direction = Direction.DESC),
                     @SortDefault(sort = "player.displayName", direction = Direction.ASC) }) Pageable pageable,
             CurrentUser currentUser) {
-        return leaderboardService.fetchLeaderboard(pageable, currentUser);
+        return matchService.fetchLeaderboard(pageable, currentUser);
     }
 
 }

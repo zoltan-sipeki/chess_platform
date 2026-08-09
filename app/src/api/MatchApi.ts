@@ -19,25 +19,6 @@ export interface LongestStreak {
     longestStreak: number
 }
 
-export interface PlayerStats {
-    rank: number,
-    mmr: number,
-    percentile: number,
-    longestStreaks: LongestStreak[],
-    joinedAt: string,
-    lastPlayedAt: string
-}
-
-export interface MatchStat {
-    userId: string,
-    matchType: MatchType,
-    gamesPlayed: number,
-    wins: number,
-    losses: number,
-    draws: number,
-    winRatio: number
-}
-
 export interface LeaderboardEntry {
     player: Player,
     rank: number,
@@ -98,14 +79,6 @@ export class MatchApi {
 
     fetchMatchHistory(userId: string, query: MatchHistoryQuery): Observable<MatchHistoryList> {
         return this.http.get<MatchHistoryList>(`${this.BASE_URL}`, { params: { userId, ...query } });
-    }
-
-    fetchMatchStats(userId: string): Observable<MatchStat[]> {
-        return this.http.get<MatchStat[]>(`${this.BASE_URL}/stats`, { params: { userId } });
-    }
-
-    fetchPlayerStats(userId: string): Observable<PlayerStats> {
-        return this.http.get<PlayerStats>(`/api/players/${userId}/stats`);
     }
 
     fetchReplay(matchId: string): Observable<MatchReplay> {

@@ -1,8 +1,9 @@
 import { inject, Injectable } from "@angular/core";
 import { catchError, forkJoin, map, Observable, of } from "rxjs";
 import { FriendApi, FriendList } from "../api/FriendApi";
-import { MatchApi, MatchHistoryList, MatchStat, PlayerStats } from "../api/MatchApi";
+import { MatchApi, MatchHistoryList } from "../api/MatchApi";
 import { RelationshipApi } from "../api/RelationshipApi";
+import { MatchStat, PlayerStats, StatsApi } from "../api/StatsApi";
 import { Relationship, UserApi, UserData } from "../api/UserApi";
 
 export interface UserProfile {
@@ -25,6 +26,8 @@ export class ProfileService {
 
     private friendApi: FriendApi = inject(FriendApi);
 
+    private statsApi: StatsApi = inject(StatsApi);
+
     private relationshipApi: RelationshipApi = inject(RelationshipApi);
 
     fetch(userId: string): Observable<UserProfile> {
@@ -32,9 +35,9 @@ export class ProfileService {
             user: this.userApi.fetch(userId),
             relationship: this.relationshipApi.fetch(userId).pipe(map(r => r.relationship)),
             friends: this.friendApi.fetchAll(userId, { size: 10 }),
-            playerStats: this.matchApi.fetchPlayerStats(userId).pipe(catchError(() => of(undefined))),
+            playerStats: this.statsApi.fetchPlayerStats(userId).pipe(catchError(() => of(undefined))),
             matches: this.matchApi.fetchMatchHistory(userId, { size: 5 }),
-            matchStats: this.matchApi.fetchMatchStats(userId).pipe(catchError(() => of(undefined)))
+            matchStats: this.statsApi.fetchMatchStats(userId).pipe(catchError(() => of(undefined)))
         });
     }
 
