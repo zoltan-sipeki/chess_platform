@@ -13,10 +13,12 @@ export interface Relationship {
 })
 export class RelationshipApi {
 
+    private BASE_URL = "/api/relationships"
+
     private http: HttpClient = inject(HttpClient);
 
     fetch(userId: string): Observable<Relationship> {
-        return this.http.get<Relationship>(`/api/relationships?userId=${userId}`);
+        return this.http.get<Relationship>(`${this.BASE_URL}?userId=${userId}`);
     }
 
 }

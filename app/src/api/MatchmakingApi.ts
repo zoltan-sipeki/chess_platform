@@ -20,26 +20,28 @@ export interface CurrentMatch {
 })
 export class MatchmakingApi {
 
+    private BASE_URL = "/api/matchmaking";
+
     private http: HttpClient = inject(HttpClient);
 
     enqueue(queueType: QueueType): Observable<void> {
-        return this.http.post<void>(`/api/matchmaking/queues/${queueType}/members`, {});
+        return this.http.post<void>(`${this.BASE_URL}/queues/${queueType}/members`, {});
     }
 
     dequeue(): Observable<void> {
-        return this.http.delete<void>(`/api/matchmaking/queues/members/me`);
+        return this.http.delete<void>(`${this.BASE_URL}/queues/members/me`);
     }
 
     invite(id: string): Observable<void> {
-        return this.http.post<void>(`/api/matchmaking/private-match`, { inviteeId: id });
+        return this.http.post<void>(`${this.BASE_URL}/private-match`, { inviteeId: id });
     }
 
     fetchCurrentMatch(): Observable<CurrentMatch> {
-        return this.http.get<CurrentMatch>("/api/matchmaking/current-match");
+        return this.http.get<CurrentMatch>(`${this.BASE_URL}/current-match`);
     }
 
     declineCurrentMatch(): Observable<void> {
-        return this.http.delete<void>("/api/matchmaking/current-match");
+        return this.http.delete<void>(`${this.BASE_URL}/current-match`);
     }
 
 }

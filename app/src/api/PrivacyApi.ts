@@ -16,17 +16,19 @@ export interface PrivacySettings {
 @Injectable({ providedIn: 'root' })
 export class PrivacyApi {
 
+    private BASE_URL = "/api/privacy";
+
     private http: HttpClient = inject(HttpClient);
 
     fetch(): Observable<PrivacySettings> {
-        return this.http.get<PrivacySettings>("/api/privacy");
+        return this.http.get<PrivacySettings>(`${this.BASE_URL}`);
     }
 
     updateChatPrivacy(settings: PrivacySettings): Observable<PrivacySettings> {
-        return this.http.patch<PrivacySettings>("/api/privacy/chat", settings);
+        return this.http.patch<PrivacySettings>(`${this.BASE_URL}}/chat`, settings);
     }
 
     updateMatchPrivacy(settings: PrivacySettings): Observable<PrivacySettings> {
-        return this.http.patch<PrivacySettings>("/api/privacy/match", settings);
+        return this.http.patch<PrivacySettings>(`${this.BASE_URL}/match`, settings);
     }
 }

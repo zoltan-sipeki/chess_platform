@@ -31,10 +31,12 @@ export interface UserSearchQuery {
 @Injectable({ providedIn: 'root' })
 export class UserApi {
 
+    private BASE_URL = "/api/users";
+
     private http: HttpClient = inject(HttpClient);
 
     fetchByDisplayNamePrefix(prefix: string, query: UserSearchQuery): Observable<UserSearchResult> {
-        return this.http.get<UserSearchResult>("/api/users", {
+        return this.http.get<UserSearchResult>(`${this.BASE_URL}`, {
             params: {
                 startsWith: prefix,
                 ...query
@@ -44,18 +46,18 @@ export class UserApi {
     }
 
     fetch(id: string): Observable<UserData> {
-        return this.http.get<UserData>(`/api/users/${id}`);
+        return this.http.get<UserData>(`${this.BASE_URL}/${id}`);
     }
 
     fetchMe(): Observable<UserData> {
-        return this.http.get<UserData>("/api/users/me");
+        return this.http.get<UserData>(`${this.BASE_URL}/me`);
     }
 
     updateDisplayName(displayName: string): Observable<UserData> {
-        return this.http.patch<UserData>("/api/users/me", { displayName });
+        return this.http.patch<UserData>(`${this.BASE_URL}/me`, { displayName });
     }
 
     updatePreferredPresence(presence: Presence): Observable<UserData> {
-        return this.http.put<UserData>("/api/users/me/preferred-presence", { presence });
+        return this.http.put<UserData>(`${this.BASE_URL}/me/preferred-presence`, { presence });
     }
 }

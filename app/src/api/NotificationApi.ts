@@ -35,6 +35,8 @@ export interface NotificationQuery {
 })
 export class NotificationApi {
 
+    private BASE_URL = "/api/notifications";
+
     private http: HttpClient = inject(HttpClient);
 
     fetchAll(query: NotificationQuery): Observable<NotificationList> {
@@ -44,18 +46,18 @@ export class NotificationApi {
                params = params.append(key, value);
             }
         }
-        return this.http.get<NotificationList>("/api/notifications", { params });
+        return this.http.get<NotificationList>(`${this.BASE_URL}`, { params });
     }
 
     delete(id: string): Observable<void> {
-        return this.http.delete<void>(`/api/notifications/${id}`);
+        return this.http.delete<void>(`${this.BASE_URL}/${id}`);
     }
 
     deleteAll(): Observable<void> {
-        return this.http.delete<void>("/api/notifications");
+        return this.http.delete<void>(`${this.BASE_URL}`);
     }
 
     updateAll(update: NotificationUpdate): Observable<void> {
-        return this.http.patch<void>("/api/notifications", update);
+        return this.http.patch<void>(`${this.BASE_URL}`, update);
     }
 }

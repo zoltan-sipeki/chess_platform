@@ -19,17 +19,19 @@ export interface FriendList {
 })
 export class FriendApi {
 
+    private BASE_URL = '/api/users';
+
     private http: HttpClient = inject(HttpClient);
 
     fetchAll(id: string, query: FriendQuery = {}): Observable<FriendList> {
-        return this.http.get<FriendList>(`/api/users/${id}/friends`, { params: { ...query } });
+        return this.http.get<FriendList>(`${this.BASE_URL}/${id}/friends`, { params: { ...query } });
     }
 
     fetchAllMe(query: FriendQuery = {}): Observable<FriendList> {
-        return this.http.get<FriendList>("/api/users/me/friends", { params: { ...query } });
+        return this.http.get<FriendList>( `${this.BASE_URL}/me/friends`, { params: { ...query } });
     }
 
     unfriend(id: string): Observable<void> {
-        return this.http.delete<void>(`/api/users/me/friends/${id}`);
+        return this.http.delete<void>(`${this.BASE_URL}/me/friends/${id}`);
     }
 }

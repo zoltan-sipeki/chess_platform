@@ -1,8 +1,8 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { MoveData } from "../services/ChessService";
 import { Color } from "../chess/pieces/Piece";
+import { MoveData } from "../services/ChessService";
 
 export type Score = "WIN" | "LOSS" | "DRAW";
 
@@ -88,6 +88,8 @@ export interface MatchReplay {
 @Injectable({ providedIn: 'root' })
 export class MatchApi {
 
+    private BASE_URL = "/api/matches";
+
     private http: HttpClient = inject(HttpClient);
 
     fetchLeaderboard(): Observable<LeaderboardEntry[]> {
@@ -95,11 +97,11 @@ export class MatchApi {
     }
 
     fetchMatchHistory(userId: string, query: MatchHistoryQuery): Observable<MatchHistoryList> {
-        return this.http.get<MatchHistoryList>("/api/matches", { params: { userId, ...query } });
+        return this.http.get<MatchHistoryList>(`${this.BASE_URL}`, { params: { userId, ...query } });
     }
 
     fetchMatchStats(userId: string): Observable<MatchStat[]> {
-        return this.http.get<MatchStat[]>("/api/matches/stats", { params: { userId } });
+        return this.http.get<MatchStat[]>(`${this.BASE_URL}/stats`, { params: { userId } });
     }
 
     fetchPlayerStats(userId: string): Observable<PlayerStats> {
@@ -107,6 +109,6 @@ export class MatchApi {
     }
 
     fetchReplay(matchId: string): Observable<MatchReplay> {
-        return this.http.get<MatchReplay>(`/api/matches/${matchId}/replay`);
+        return this.http.get<MatchReplay>(`${this.BASE_URL}/${matchId}/replay`);
     }
 }
