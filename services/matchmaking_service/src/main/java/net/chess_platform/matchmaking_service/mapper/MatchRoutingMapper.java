@@ -12,7 +12,8 @@ public interface MatchRoutingMapper {
 
     @Mapping(target = "status", source = "matchStatus")
     CurrentMatchDto toDto(MatchRouting routingData);
-
+    
+    @Mapping(target = "status", source = "matchStatus")
     @Mapping(target = "token", ignore = true)
     CurrentMatchDto toDtoWithoutToken(MatchRouting routingData);
 

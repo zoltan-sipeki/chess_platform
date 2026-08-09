@@ -11,17 +11,13 @@ import net.chess_platform.matchmaking_service.dto.PlayerDto;
 import net.chess_platform.matchmaking_service.model.MatchRouting;
 import net.chess_platform.matchmaking_service.model.Player;
 
-@Generated(
-    value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-07-01T13:43:22+0200",
-    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.100.v20260624-0231, environment: Java 23 (Oracle Corporation)"
-)
+@Generated(value = "org.mapstruct.ap.MappingProcessor", date = "2026-07-01T13:43:22+0200", comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.100.v20260624-0231, environment: Java 23 (Oracle Corporation)")
 @Component
 public class MatchRoutingMapperImpl implements MatchRoutingMapper {
 
     @Override
     public CurrentMatchDto toDto(MatchRouting routingData) {
-        if ( routingData == null ) {
+        if (routingData == null) {
             return null;
         }
 
@@ -31,44 +27,47 @@ public class MatchRoutingMapperImpl implements MatchRoutingMapper {
         PlayerDto invitee = null;
         String token = null;
 
-        if ( routingData.getMatchStatus() != null ) {
+        if (routingData.getMatchStatus() != null) {
             status = routingData.getMatchStatus().name();
         }
         target = routingData.getTarget();
-        inviter = toDto( routingData.getInviter() );
-        invitee = toDto( routingData.getInvitee() );
+        inviter = toDto(routingData.getInviter());
+        invitee = toDto(routingData.getInvitee());
         token = routingData.getToken();
 
-        CurrentMatchDto currentMatchDto = new CurrentMatchDto( target, inviter, invitee, token, status );
+        CurrentMatchDto currentMatchDto = new CurrentMatchDto(target, inviter, invitee, token, status);
 
         return currentMatchDto;
     }
 
     @Override
     public CurrentMatchDto toDtoWithoutToken(MatchRouting routingData) {
-        if ( routingData == null ) {
+        if (routingData == null) {
             return null;
         }
 
         UUID target = null;
         PlayerDto inviter = null;
         PlayerDto invitee = null;
-
-        target = routingData.getTarget();
-        inviter = toDto( routingData.getInviter() );
-        invitee = toDto( routingData.getInvitee() );
-
         String token = null;
         String status = null;
 
-        CurrentMatchDto currentMatchDto = new CurrentMatchDto( target, inviter, invitee, token, status );
+        target = routingData.getTarget();
+        inviter = toDto(routingData.getInviter());
+        invitee = toDto(routingData.getInvitee());
+        
+        if (routingData.getMatchStatus() != null) {
+            status = routingData.getMatchStatus().name();
+        }
+
+        CurrentMatchDto currentMatchDto = new CurrentMatchDto(target, inviter, invitee, token, status);
 
         return currentMatchDto;
     }
 
     @Override
     public PlayerDto toDto(Player player) {
-        if ( player == null ) {
+        if (player == null) {
             return null;
         }
 
@@ -80,7 +79,7 @@ public class MatchRoutingMapperImpl implements MatchRoutingMapper {
         displayName = player.getDisplayName();
         avatar = player.getAvatar();
 
-        PlayerDto playerDto = new PlayerDto( id, displayName, avatar );
+        PlayerDto playerDto = new PlayerDto(id, displayName, avatar);
 
         return playerDto;
     }
