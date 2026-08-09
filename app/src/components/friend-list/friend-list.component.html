@@ -22,7 +22,7 @@
                                                 <div class="d-flex align-items-center">
                                                     <user ngbDropdownToggle [user]="friend" role="button"
                                                         [showActivity]="true"></user>
-                                                    @let uc = dms()?.[friend.id]?.()?.unreadCount ?? 0;
+                                                    @let uc = dms()[friend.id]?.()?.unreadCount ?? 0;
                                                     @if (uc > 0) {
                                                     <span class="badge rounded-pill text-bg-danger ms-2">
                                                         {{ uc }}</span>
@@ -69,7 +69,7 @@
                                                 <div class="d-flex align-items-center">
                                                     <user ngbDropdownToggle [user]="friend" role="button"
                                                         [showActivity]="true"></user>
-                                                    @let uc = dms()?.[friend.id]?.()?.unreadCount ?? 0;
+                                                    @let uc = dms()[friend.id]?.()?.unreadCount ?? 0;
                                                     @if (uc > 0) {
                                                     <span class="badge rounded-pill text-bg-danger ms-2">
                                                         {{ uc }}</span>

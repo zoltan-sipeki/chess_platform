@@ -1,6 +1,6 @@
-import { inject, Injectable, Signal, signal, WritableSignal } from "@angular/core";
+import { inject, Injectable, signal, WritableSignal } from "@angular/core";
 import { Router } from "@angular/router";
-import { BehaviorSubject, Observable, Subscription, takeWhile, tap } from "rxjs";
+import { map, Observable, tap } from "rxjs";
 import { Channel, ChannelApi, Message } from "../api/ChannelApi";
 import { AuthService } from "./AuthService";
 import { DebounceService } from "./DebounceService";
@@ -20,13 +20,19 @@ export class ChatService {
 
     private router: Router = inject(Router);
 
-    private channels = new BehaviorSubject<{ [id: string]: WritableSignal<Channel> }>({});
+    private _channels = signal<Record<string, WritableSignal<Channel>>>({});
 
-    private messages = new BehaviorSubject<{ [id: string]: WritableSignal<Message[][]> }>({});
+    private _messages = signal<Record<string, WritableSignal<Message[][]>>>({});
 
-    private dms = new BehaviorSubject<{ [id: string]: WritableSignal<Channel> }>({});
+    private _dms = signal<Record<string, WritableSignal<Channel>>>({});
 
     private currentChannelId?: string;
+
+    readonly channels = this._channels.asReadonly();
+
+    readonly messages = this._messages.asReadonly();
+
+    readonly dms = this._dms.asReadonly();
 
     constructor() {
         this.relayService.subscribe("MESSAGE_CREATED", e => {
@@ -38,7 +44,7 @@ export class ChatService {
                 }
             }
 
-            const messages = this.messages.getValue()[e.channelId];
+            const messages = this._messages()[e.channelId];
             if (messages == null) {
                 return;
             }
@@ -51,7 +57,7 @@ export class ChatService {
         });
 
         this.relayService.subscribe("PRESENCE_CHANGED", e => {
-            for (const channel of Object.values(this.channels.getValue())) {
+            for (const channel of Object.values(this._channels())) {
                 if (channel().recipients.find(r => r.id === e.userId) != null) {
                     channel.update(channel => {
                         return {
@@ -64,7 +70,7 @@ export class ChatService {
         });
 
         this.relayService.subscribe("ACTIVITY_CHANGED", e => {
-            for (const channel of Object.values(this.channels.getValue())) {
+            for (const channel of Object.values(this._channels())) {
                 if (channel().recipients.find(r => r.id === e.userId) != null) {
                     channel.update(channel => {
                         return {
@@ -74,28 +80,6 @@ export class ChatService {
                     });
                 }
             }
-        });
-    }
-
-    subscribeChannels(channelId: string, callback: (channel: Signal<Channel>) => void): void {
-        this.channels.pipe(takeWhile(channels => channels[channelId] == null, true)).subscribe(channels => {
-            if (channels[channelId] != null) {
-                callback(channels[channelId]);
-            }
-        })
-    }
-
-    subscribeMessages(channelId: string, callback: (messages: Signal<Message[][]>) => void): void {
-        this.messages.pipe(takeWhile(messages => messages[channelId] == null, true)).subscribe(messages => {
-            if (messages[channelId] != null) {
-                callback(messages[channelId]);
-            }
-        });
-    }
-
-    subscribeDms(callback: (dms: { [id: string]: Signal<Channel> }) => void): Subscription {
-        return this.dms.subscribe(dms => {
-            callback(dms);
         });
     }
 
@@ -113,27 +97,28 @@ export class ChatService {
                 }
             }
 
-            this.channels.next(channels);
-            this.dms.next(dms);
+            this._channels.set(channels);
+            this._dms.set(dms);
 
         }));
     }
 
-    fetchMessages(channelId: string): void {
-        if (this.messages.getValue()[channelId] != null) {
-            return;
+    fetchMessages(channelId: string): Observable<Message[][]> {
+        const messages = this._messages()[channelId];
+        if (messages != null) {
+            return new Observable(observer => observer.next(messages()));
         }
 
-        this.channelApi.fetchMessages(channelId).pipe(tap(result => {
-            const messages = this.messages.getValue();
-            messages[channelId] = signal(this.groupMessages(result));
-            this.messages.next(messages);
-        })).subscribe();
+        return this.channelApi.fetchMessages(channelId).pipe(
+            map(result => this.groupMessages(result)),
+            tap(result => {
+                this._messages.update(messages => ({ ...messages, [channelId]: signal(result) }))
+            }));
     }
 
     openDmChannel(recipientId: string): void {
         let channelId = null;
-        for (const [id, channel] of Object.entries(this.channels.getValue())) {
+        for (const [id, channel] of Object.entries(this._channels())) {
             if (channel().type === "DM") {
                 const recipient = channel().recipients[0].id;
                 if (recipient === recipientId) {
@@ -145,15 +130,10 @@ export class ChatService {
 
         if (channelId == null) {
             this.channelApi.createChannel("DM", [recipientId]).subscribe(result => {
-                const channels = this.channels.getValue();
-                channels[result.id] = signal(result);
+                const s = signal(result);
 
-                this.channels.next(channels);
-
-                const dms = this.dms.getValue();
-                dms[recipientId] = signal(result);
-
-                this.dms.next(dms);
+                this._channels.update(channels => ({ ...channels, [result.id]: s }));
+                this._dms.update(dms => ({ ...dms, [recipientId]: s }));
 
                 this.router.navigate([`/channels/${result.id}`]);
             });
@@ -170,9 +150,9 @@ export class ChatService {
 
 
     markAsRead(channelId: string): void {
-        this.channels.getValue()[channelId]?.update(c => ({ ...c, unreadCount: 0 }));
+        this._channels()[channelId]?.update(c => ({ ...c, unreadCount: 0 }));
 
-        const messages = this.messages.getValue()[channelId];
+        const messages = this._messages()[channelId];
         if (messages == null) {
             return;
         }
@@ -238,7 +218,7 @@ export class ChatService {
     }
 
     private updateUnreadCount(channelId: string): void {
-        const channel = this.channels.getValue()[channelId];
+        const channel = this._channels()[channelId];
         if (channel == null) {
             return;
         }

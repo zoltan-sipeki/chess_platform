@@ -1,8 +1,7 @@
-import { Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal, Signal, viewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from "@ng-bootstrap/ng-bootstrap";
-import { Channel, Message } from '../../api/ChannelApi';
 import { UserData } from '../../api/UserApi';
 import { AvatarComponent } from "../../components/avatar/avatar.component";
 import { User } from "../../components/user/user.component";
@@ -39,11 +38,23 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
 
     emojis = Object.entries(emojis);
 
-    channel = signal<Signal<Channel> | null>(null);
+    channelId = signal<string>("");
 
-    messages = signal<Signal<Message[][]> | null>(null);
+    channel = computed(() => this.chatService.channels()[this.channelId()]?.());
 
-    unreadCount = signal<number>(0);
+    messages = computed(() => this.chatService.messages()[this.channelId()]?.());
+
+    private previousUnreadCount: number = 0;
+
+    unreadCount = computed(() => {
+        if (this.previousUnreadCount > 0) {
+            return this.previousUnreadCount;
+        }
+
+        const count = this.channel()?.unreadCount ?? 0;
+        this.previousUnreadCount = count;
+        return count;
+    });
 
     typing = signal<UserData | null>(null);
 
@@ -53,7 +64,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
         }
 
         let count = 0;
-        const messages = this.messages()?.();
+        const messages = this.messages();
         if (messages == null) {
             return -1;
         }
@@ -75,7 +86,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
 
     constructor() {
         effect(() => {
-            if (this.messages()?.()) {
+            if (this.messages()) {
                 setTimeout(() => this.scrollToBottom());
             }
         });
@@ -89,19 +100,11 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
             }
 
             this.chatService.setCurrentChannelId(channelId);
+            this.channelId.set(channelId);
 
-            this.chatService.fetchMessages(channelId);
-
-            this.chatService.subscribeChannels(channelId, channel => {
-                this.channel.set(channel);
-                this.unreadCount.set(channel().unreadCount);
+            this.chatService.fetchMessages(channelId).subscribe(() => {
+                setTimeout(() => this.chatService.markAsRead(channelId));
             });
-
-            this.chatService.subscribeMessages(channelId, messages => {
-                this.messages.set(messages);
-                this.chatService.markAsRead(channelId);
-            })
-
         });
 
         this.message.valueChanges.subscribe(value => {
@@ -131,7 +134,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
             this.debounceService.cancel();
         }
         else {
-            const channelId = this.channel()?.().id;
+            const channelId = this.channel()?.id;
             if (channelId != null) {
                 this.throttleService.throttle(() => this.chatService.broadcastTyping(channelId), 5000);
             }
@@ -139,7 +142,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     }
 
     sendMessage(): void {
-        const channelId = this.channel()?.().id;
+        const channelId = this.channel()?.id;
         if (channelId && this.message.value) {
             this.chatService.sendMessage(channelId, this.message.value);
             this.message.setValue("");
@@ -155,8 +158,8 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     }
 
     private onChannelTypingRelayEvent = (e: ChannelTypingRelayEvent): void => {
-        if (e.channelId === this.channel()?.().id) {
-            const user = this.channel()?.().recipients.find(r => r.id === e.userId);
+        if (e.channelId === this.channel()?.id) {
+            const user = this.channel()?.recipients.find(r => r.id === e.userId);
             if (user) {
                 this.typing.set(user);
                 this.debounceService.debounce(() => this.typing.set(null), 5000);
@@ -165,7 +168,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     }
 
     private onMessageCreatedRelayEvent = (e: MessageCreatedRelayEvent): void => {
-        if (e.channelId === this.channel()?.().id && e.sender.id === this.typing()?.id) {
+        if (e.channelId === this.channel()?.id && e.sender.id === this.typing()?.id) {
             this.typing.set(null);
         }
     }
@@ -179,7 +182,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
 
     private countMessages(): number {
         let count = 0;
-        const messages = this.messages()?.();
+        const messages = this.messages();
         if (messages == null) {
             return count;
         }

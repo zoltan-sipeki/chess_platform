@@ -1,8 +1,7 @@
-import { Component, effect, inject, OnDestroy, OnInit, signal, Signal } from "@angular/core";
+import { Component, computed, effect, inject, OnDestroy, OnInit, Signal } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 import { NgbAccordionBody, NgbAccordionButton, NgbAccordionCollapse, NgbAccordionDirective, NgbAccordionHeader, NgbAccordionItem, NgbAccordionToggle, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbNav, NgbNavContent, NgbNavItem, NgbNavItemRole, NgbNavLinkBase, NgbNavLinkButton, NgbNavOutlet } from "@ng-bootstrap/ng-bootstrap";
-import { Channel } from "../../api/ChannelApi";
 import { FriendRequest } from "../../api/FriendRequestApi";
 import { UserData } from "../../api/UserApi";
 import { ChatService } from "../../services/ChatService";
@@ -56,7 +55,7 @@ export class FriendList implements OnDestroy, OnInit {
 
     offline!: Signal<UserData[]>
 
-    dms = signal<{ [id: string]: Signal<Channel> } | null>(null);
+    dms = computed(() => this.chatService.dms());
 
     active = 1;
 
@@ -72,10 +71,6 @@ export class FriendList implements OnDestroy, OnInit {
         this.friendRequests = this.friendRequestService.friendRequests;
         this.online = this.friendService.online;
         this.offline = this.friendService.offline;
-
-        this.chatService.subscribeDms(dms => {
-            this.dms.set(dms);
-        })
 
         this.userFilter.valueChanges.subscribe(value => {
             if (value != null) {
