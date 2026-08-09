@@ -101,7 +101,7 @@ public class MatchService {
         }
 
         JPAQueryFragment<MatchResult> fragment = auth.getQueryFragment(MatchResult.class);
-        var page = matchResultRepository.findAll(fragment.getSpecification().and(spec), pageable);
+        var page = matchResultRepository.findAll(spec.and(fragment.getSpecification()), pageable);
 
         return new MatchHistoryListDto(page.getTotalElements(), matchMapper.toMatchHistoryList(page.getContent()));
     }
@@ -123,8 +123,10 @@ public class MatchService {
         var auth = authService.authorizeLeaderboardQuery(currentUser);
 
         JPAQueryFragment<Leaderboard> fragment = auth.getQueryFragment(Leaderboard.class);
-        
-        var result = leaderboardRepository.findAll(fragment.getSpecification(), pageable).getContent();
+        Specification<Leaderboard> spec = Specification.unrestricted();
+
+        var result = leaderboardRepository
+                .findAll(spec.and(fragment.getSpecification()), pageable).getContent();
         return mapper.toDtoList(result);
     }
 

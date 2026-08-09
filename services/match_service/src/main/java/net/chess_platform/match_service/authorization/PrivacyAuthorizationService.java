@@ -3,7 +3,6 @@ package net.chess_platform.match_service.authorization;
 import org.springframework.stereotype.Service;
 
 import net.chess_platform.common.permission.Authorization;
-import net.chess_platform.common.permission.FalseJPAQueryFragment;
 import net.chess_platform.common.permission.JPAQueryFragment;
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.match_service.model.PrivacySetting;
@@ -22,9 +21,9 @@ public class PrivacyAuthorizationService {
 
         if (user.hasRole("chess_application.user")) {
             auth.setQueryCondition(PrivacySetting.class,
-                    new JPAQueryFragment<>((root, query, cb) -> cb.equal(root.get("player").get("id"), user.id())));
+                    new JPAQueryFragment<>((from, cb) -> cb.equal(from.get("player").get("id"), user.id())));
         } else {
-            auth.setQueryCondition(PrivacySetting.class, new FalseJPAQueryFragment<>());
+            auth.setQueryCondition(PrivacySetting.class, new JPAQueryFragment.False<>());
         }
 
         return auth;

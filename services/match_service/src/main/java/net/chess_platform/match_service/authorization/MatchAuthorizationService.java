@@ -6,9 +6,7 @@ import java.util.function.BiConsumer;
 import org.springframework.stereotype.Service;
 
 import net.chess_platform.common.permission.Authorization;
-import net.chess_platform.common.permission.FalseJPAQueryFragment;
 import net.chess_platform.common.permission.JPAQueryFragment;
-import net.chess_platform.common.permission.TrueJPAQueryFragment;
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.match_service.integration.ChatServiceProxy;
 import net.chess_platform.match_service.model.Leaderboard;
@@ -43,11 +41,11 @@ public class MatchAuthorizationService {
 
         BiConsumer<Authorization, Boolean> rules = (a, condition) -> {
             if (condition) {
-                auth.setQueryCondition(MatchResult.class, new JPAQueryFragment<>((root, query, cb) -> {
-                    return cb.equal(root.get("player").get("id"), userId);
+                auth.setQueryCondition(MatchResult.class, new JPAQueryFragment<>((from, cb) -> {
+                    return cb.equal(from.get("player").get("id"), userId);
                 }));
             } else {
-                auth.setQueryCondition(MatchResult.class, new FalseJPAQueryFragment<>());
+                auth.setQueryCondition(MatchResult.class, new JPAQueryFragment.False<>());
             }
         };
 
@@ -90,11 +88,11 @@ public class MatchAuthorizationService {
 
         BiConsumer<Authorization, Boolean> rules = (a, condition) -> {
             if (condition) {
-                auth.setQueryCondition(MatchStat.class, new JPAQueryFragment<>((root, query, cb) -> {
-                    return cb.equal(root.get("player").get("id"), userId);
+                auth.setQueryCondition(MatchStat.class, new JPAQueryFragment<>((from, cb) -> {
+                    return cb.equal(from.get("player").get("id"), userId);
                 }));
             } else {
-                auth.setQueryCondition(MatchStat.class, new FalseJPAQueryFragment<>());
+                auth.setQueryCondition(MatchStat.class, new JPAQueryFragment.False<>());
             }
         };
 
@@ -129,9 +127,9 @@ public class MatchAuthorizationService {
         auth.setAction(Action.LEADERBOARD_QUERY);
 
         if (user.hasRole("chess_application.user")) {
-            auth.setQueryCondition(Leaderboard.class, new TrueJPAQueryFragment<>());
+            auth.setQueryCondition(Leaderboard.class, new JPAQueryFragment.True<>());
         } else {
-            auth.setQueryCondition(Leaderboard.class, new FalseJPAQueryFragment<>());
+            auth.setQueryCondition(Leaderboard.class, new JPAQueryFragment.False<>());
         }
 
         return auth;

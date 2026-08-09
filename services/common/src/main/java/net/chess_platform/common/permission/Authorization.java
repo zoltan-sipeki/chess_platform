@@ -3,7 +3,6 @@ package net.chess_platform.common.permission;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
-import java.util.function.Predicate;
 
 public class Authorization {
 
@@ -22,26 +21,11 @@ public class Authorization {
 
     private Map<Class<?>, QueryFragment<?>> queryFragments = new HashMap<>();
 
-    private Map<Class<?>, Predicate<?>> createChecks = new HashMap<>();
-
     public Authorization() {
     }
 
     public void setAction(Object action) {
         this.action = action.toString();
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> boolean canCreate(T entity) {
-        var clazz = entity.getClass();
-        var check = createChecks.get(clazz);
-        if (check == null) {
-            throw new MissingAuthorizationException(
-                    "Missing predicate authorization for action " + action + " and for entity "
-                            + clazz.getCanonicalName());
-        }
-
-        return isAllowed() && ((Predicate<T>) check).test(entity);
     }
 
     public boolean isAllowed() {
@@ -76,11 +60,7 @@ public class Authorization {
     public void setAllowed(BooleanSupplier supplier) {
         allowed = supplier;
     }
-
-    public <T> void setCreateCheck(Class<T> entityClass, Predicate<T> predicate) {
-        createChecks.put(entityClass, predicate);
-    }
-
+    
     public String getAction() {
         return action;
     }

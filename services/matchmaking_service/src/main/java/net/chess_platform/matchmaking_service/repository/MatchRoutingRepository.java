@@ -2,6 +2,7 @@ package net.chess_platform.matchmaking_service.repository;
 
 import java.util.UUID;
 
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.data.jpa.domain.UpdateSpecification.UpdateOperation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -9,8 +10,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import net.chess_platform.common.permission.Authorization;
-import net.chess_platform.common.permission.JPAQueryFragment;
 import net.chess_platform.matchmaking_service.model.MatchRouting;
 
 @Repository
@@ -32,13 +31,10 @@ public interface MatchRoutingRepository
     @Query("DELETE FROM MatchRouting m WHERE m.matchId = :matchId")
     int delete(long matchId);
 
-    default long update(long matchId, MatchRouting.Update update, Authorization auth) {
+    default long update(long matchId, MatchRouting.Update update, PredicateSpecification<MatchRouting> spec) {
         if (update == null) {
             return 0;
         }
-
-        JPAQueryFragment<MatchRouting> fragment = auth.getQueryFragment(MatchRouting.class);
-
         UpdateOperation<MatchRouting> op = (root, u, cb) -> {
             var status = update.getMatchStatus();
             if (status != null) {
@@ -46,7 +42,7 @@ public interface MatchRoutingRepository
             }
         };
 
-        return update(op.where((root, cb) -> cb.equal(root.get("matchId"), matchId)));
+        return update(op.where((root, cb) -> cb.equal(root.get("matchId"), matchId)).and(spec));
     }
 
 }

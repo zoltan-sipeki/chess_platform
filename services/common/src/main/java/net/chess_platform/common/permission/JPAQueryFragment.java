@@ -1,39 +1,30 @@
 package net.chess_platform.common.permission;
 
-import org.springframework.data.jpa.domain.Specification;
-
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 
 public class JPAQueryFragment<T> implements QueryFragment<T> {
 
     public static class False<T> extends JPAQueryFragment<T> {
 
         public False() {
-            super((root, query, cb) -> cb.disjunction());
+            super((from, cb) -> cb.disjunction());
         }
     }
 
     public static class True<T> extends JPAQueryFragment<T> {
 
         public True() {
-            super((root, query, cb) -> cb.conjunction());
+            super((from, cb) -> cb.conjunction());
         }
     }
 
-    private Specification<T> specification;
+    private PredicateSpecification<T> specification;
 
-    public JPAQueryFragment(Specification<T> specification) {
+    public JPAQueryFragment(PredicateSpecification<T> specification) {
         this.specification = specification;
     }
 
-    public Specification<T> getSpecification() {
+    public PredicateSpecification<T> getSpecification() {
         return specification;
-    }
-
-    public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-        return specification.toPredicate(root, query, cb);
     }
 }
