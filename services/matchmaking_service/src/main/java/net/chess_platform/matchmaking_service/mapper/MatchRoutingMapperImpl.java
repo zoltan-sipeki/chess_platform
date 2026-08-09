@@ -1,12 +1,15 @@
-package net.chess_platform.matchmaking_api_service.mapper;
+package net.chess_platform.matchmaking_service.mapper;
 
 import java.util.UUID;
+
 import javax.annotation.processing.Generated;
-import net.chess_platform.matchmaking_api_service.dto.CurrentMatchDto;
-import net.chess_platform.matchmaking_api_service.dto.PlayerDto;
-import net.chess_platform.matchmaking_api_service.model.MatchRouting;
-import net.chess_platform.matchmaking_api_service.model.Player;
+
 import org.springframework.stereotype.Component;
+
+import net.chess_platform.matchmaking_service.dto.CurrentMatchDto;
+import net.chess_platform.matchmaking_service.dto.PlayerDto;
+import net.chess_platform.matchmaking_service.model.MatchRouting;
+import net.chess_platform.matchmaking_service.model.Player;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",

@@ -160,28 +160,6 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-  matchmaking-api:
-    image: cp-matchmaking-api-service:latest
-    build:
-      context: ./matchmaking_api_service
-    secrets:
-      - postgres-matchmaking-api-service-password
-    environment:
-      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5000,server=y,suspend=n
-    ports:
-      - 5007:5000
-    mem_limit: 250m
-    networks:
-      - chess-network
-    depends_on:
-      config:
-        condition: service_healthy
-      eureka:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
   relay:
     image: cp-relay-service:latest
     build:
@@ -352,8 +330,6 @@ secrets:
     file: ./secrets/postgres/match_service_password
   postgres-matchmaking-service-password:
     file: ./secrets/postgres/matchmaking_service_password
-  postgres-matchmaking-api-service-password:
-    file: ./secrets/postgres/matchmaking_api_service_password
   postgres-relay-service-password:
     file: ./secrets/postgres/relay_service_password
   postgres-user-service-password:

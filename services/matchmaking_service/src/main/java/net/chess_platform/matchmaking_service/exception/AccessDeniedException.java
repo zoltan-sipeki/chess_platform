@@ -1,4 +1,4 @@
-package net.chess_platform.matchmaking_api_service.exception;
+package net.chess_platform.matchmaking_service.exception;
 
 public class AccessDeniedException extends RuntimeException {
 

@@ -21,9 +21,11 @@ import net.chess_platform.common.domain_events.broker.relay.RelayDisconnectEvent
 import net.chess_platform.common.domain_events.service.DomainEventService;
 import net.chess_platform.common.permission.JPAQueryFragment;
 import net.chess_platform.common.security.CurrentUser;
+import net.chess_platform.matchmaking_service.dto.CurrentMatchDto;
 import net.chess_platform.matchmaking_service.exception.EntityNotFoundException;
 import net.chess_platform.matchmaking_service.exception.MatchmakingException;
 import net.chess_platform.matchmaking_service.exception.ServiceUnavailableException;
+import net.chess_platform.matchmaking_service.mapper.MatchRoutingMapper;
 import net.chess_platform.matchmaking_service.mmqueue.MMQueue;
 import net.chess_platform.matchmaking_service.mmqueue.Match;
 import net.chess_platform.matchmaking_service.model.MatchRouting;
@@ -51,12 +53,14 @@ public class MatchmakingService {
 
     private final MatchmakingAuthorizationService authService;
 
+    private final MatchRoutingMapper mapper;
+
     public MatchmakingService(@Qualifier("unrankedQueue") MMQueue unrankedQueue,
             @Qualifier("rankedQueue") MMQueue rankedQueue,
             MatchRoutingFactory machRoutingFactory,
             EurekaClient discoveryClient, DomainEventService eventService,
             PlayerRepository playerRepository, MatchRoutingRepository matchRoutingRepository,
-            MatchmakingAuthorizationService authService) {
+            MatchmakingAuthorizationService authService, MatchRoutingMapper mapper) {
         this.unrankedQueue = unrankedQueue;
         this.rankedQueue = rankedQueue;
         this.matchRoutingFactory = machRoutingFactory;
@@ -65,6 +69,7 @@ public class MatchmakingService {
         this.playerRepository = playerRepository;
         this.matchRoutingRepository = matchRoutingRepository;
         this.authService = authService;
+        this.mapper = mapper;
     }
 
     public void enqueuePlayer(UUID userId, Match.Type queueType) {
@@ -321,5 +326,18 @@ public class MatchmakingService {
         for (var data : routingData) {
             matchRoutingRepository.save(data);
         }
+    }
+
+    public CurrentMatchDto fetchCurrentMatch(CurrentUser user) {
+        var routingData = matchRoutingRepository.findByPlayerId(user.id()).orElse(null);
+        if (routingData == null) {
+            return null;
+        }
+
+        if (routingData.getMatchStatus() == MatchRouting.Status.PENDING) {
+            return mapper.toDto(routingData);
+        }
+
+        return mapper.toDtoWithoutToken(routingData);
     }
 }

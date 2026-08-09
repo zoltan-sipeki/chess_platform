@@ -1,4 +1,4 @@
-package net.chess_platform.matchmaking_api_service.controller;
+package net.chess_platform.matchmaking_service.controller;
 
 import java.time.OffsetDateTime;
 
@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
-import net.chess_platform.matchmaking_api_service.dto.ErrorDto;
-import net.chess_platform.matchmaking_api_service.exception.EntityNotFoundException;
-import net.chess_platform.matchmaking_api_service.exception.MatchmakingException;
-import net.chess_platform.matchmaking_api_service.exception.ServiceUnavailableException;
+import net.chess_platform.matchmaking_service.dto.ErrorDto;
+import net.chess_platform.matchmaking_service.exception.EntityNotFoundException;
+import net.chess_platform.matchmaking_service.exception.MatchmakingException;
+import net.chess_platform.matchmaking_service.exception.ServiceUnavailableException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

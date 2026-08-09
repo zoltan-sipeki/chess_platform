@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: matchmaking-api-service
-  config:
-    import: configtree:/run/secrets/,configserver:http://config:8080

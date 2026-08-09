@@ -75,8 +75,6 @@ rabbitmq-messaging:
     events:
       exchange: user-events-exchange
   matchmaking-service:
-    reply:
-      exchange: matchmaking-reply-exchange
     events:
       exchange: matchmaking-events-exchange
   relay-service:

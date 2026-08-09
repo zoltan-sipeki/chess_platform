@@ -1,4 +1,4 @@
-package net.chess_platform.matchmaking_api_service.dto;
+package net.chess_platform.matchmaking_service.dto;
 
 import java.util.UUID;
 

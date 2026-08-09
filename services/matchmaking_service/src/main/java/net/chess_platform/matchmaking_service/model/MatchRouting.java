@@ -46,7 +46,6 @@ public class MatchRouting extends AuditedEntity {
 
     @OneToOne(fetch = FetchType.EAGER, optional = true)
     private Player invitee;
-
     @Enumerated(EnumType.STRING)
     private Match.Type matchType;
 
@@ -80,6 +79,14 @@ public class MatchRouting extends AuditedEntity {
         this.target = target;
         this.mmr = mmr;
         this.expiresAt = expiresAt;
+    }
+
+    public Player getInviter() {
+        return inviter;
+    }
+
+    public Player getInvitee() {
+        return invitee;
     }
 
     public UUID getPlayerId() {

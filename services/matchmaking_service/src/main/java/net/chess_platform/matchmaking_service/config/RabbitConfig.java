@@ -1,7 +1,5 @@
 package net.chess_platform.matchmaking_service.config;
 
-import org.springframework.amqp.core.AnonymousQueue;
-import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.ExchangeBuilder;
@@ -34,9 +32,6 @@ public class RabbitConfig {
 
     @Value("${rabbitmq-messaging.relay-service.events.exchange}")
     private String RELAY_EVENTS_EXCHANGE;
-
-    @Value("${rabbitmq-messaging.matchmaking-service.reply.exchange}")
-    private String MATCHMAKING_REPLY_EXCHANGE;
 
     @Value("${rabbitmq-messaging.chess-service.events.exchange}")
     private String CHESS_EVENTS_EXCHANGE;
@@ -87,18 +82,8 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue replyQueue() {
-        return new AnonymousQueue(new Base64UrlNamingStrategy(APP_NAME));
-    }
-
-    @Bean
     public Queue eventQueue() {
         return QueueBuilder.durable(SERVICE_QUEUE).build();
-    }
-
-    @Bean
-    public Exchange matchmakingReplyExchange() {
-        return ExchangeBuilder.directExchange(MATCHMAKING_REPLY_EXCHANGE).durable(true).build();
     }
 
     @Bean
@@ -114,13 +99,6 @@ public class RabbitConfig {
     @Bean
     public Exchange chessEventsExchange() {
         return ExchangeBuilder.directExchange(CHESS_EVENTS_EXCHANGE).durable(true).build();
-    }
-
-    @Bean
-    public Binding matchmakingReplyBinding(@Qualifier("replyQueue") Queue replyQueue,
-            @Qualifier("matchmakingReplyExchange") Exchange matchmakingReplyExchange) {
-        return new Binding(replyQueue.getName(), Binding.DestinationType.QUEUE,
-                matchmakingReplyExchange.getName(), SERVICE_ROUTING_KEY, null);
     }
 
     @Bean

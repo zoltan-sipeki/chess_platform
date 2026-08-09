@@ -25,8 +25,6 @@
         
     <module>match_service</module>
         
-    <module>matchmaking_api_service</module>
-        
     <module>matchmaking_service</module>
         
     <module>relay_service</module>

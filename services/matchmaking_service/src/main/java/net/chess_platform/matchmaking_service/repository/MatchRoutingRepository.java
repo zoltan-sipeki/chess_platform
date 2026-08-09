@@ -1,5 +1,6 @@
 package net.chess_platform.matchmaking_service.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.domain.PredicateSpecification;
@@ -15,6 +16,9 @@ import net.chess_platform.matchmaking_service.model.MatchRouting;
 @Repository
 public interface MatchRoutingRepository
         extends JpaRepository<MatchRouting, UUID>, JpaSpecificationExecutor<MatchRouting> {
+
+    @Query("SELECT m FROM MatchRouting m WHERE m.playerId = :playerId AND (m.matchStatus = 'ACTIVE' OR m.matchStatus = 'PENDING' AND m.expiresAt > CURRENT_TIMESTAMP)")
+    Optional<MatchRouting> findByPlayerId(UUID playerId);
 
     @Query("SELECT COUNT(m) > 0 FROM MatchRouting m WHERE m.playerId = :playerId AND (m.matchStatus = 'ACTIVE' OR m.expiresAt > CURRENT_TIMESTAMP AND m.matchStatus = 'PENDING')")
     boolean hasActiveMatch(UUID playerId);
