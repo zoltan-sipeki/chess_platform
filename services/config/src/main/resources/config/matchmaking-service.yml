@@ -48,8 +48,8 @@ eureka:
       defaultZone: http://eureka:8080/eureka/
 
 matchmaking:
-  expand-mmr-range-interval-ms: 150000 # 2.5 mins
-  max-time-in-queue-ms: 300000 # 5 mins
+  expand-mmr-range-interval-ms: 30000 # 2.5 mins
+  max-time-in-queue-ms: 30000 # 5 mins
   routing-clean-up-interval-ms: 90000
   token:
     issuer: matchmaking-service

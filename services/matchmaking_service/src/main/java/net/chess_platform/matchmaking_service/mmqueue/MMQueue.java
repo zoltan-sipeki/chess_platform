@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -44,15 +45,22 @@ public class MMQueue {
 
         unorderedQueue.remove(queuedPlayer.getId());
         orderedQueue.remove(queuedPlayer);
-        
+
         return true;
     }
 
     public synchronized List<Match> expandSearchRanges() {
-        var matches = new ArrayList<Match>();
+        var entries = new ArrayList<>(unorderedQueue.entrySet());
+        var removed = new HashSet<UUID>();
 
-        for (var entries : unorderedQueue.entrySet()) {
-            var player = entries.getValue();
+        var matches = new ArrayList<Match>();
+        for (var entry : entries) {
+            var player = entry.getValue();
+
+            if (removed.contains(player.getId())) {
+                continue;
+            }
+
             if (!shouldExpandSearchRange(player)) {
                 continue;
             }
@@ -62,6 +70,7 @@ public class MMQueue {
 
             var match = reAddPlayer(player);
             if (match != null) {
+                match.getPlayers().forEach(p -> removed.add(p.getId()));
                 matches.add(match);
             }
         }

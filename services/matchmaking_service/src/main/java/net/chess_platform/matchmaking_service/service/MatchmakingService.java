@@ -36,8 +36,6 @@ import net.chess_platform.matchmaking_service.service.PermissionService.Action;
 @Service
 public class MatchmakingService {
 
-    private final ChatServiceProxy chatServiceProxy;
-
     private final MMQueue unrankedQueue;
 
     private final MMQueue rankedQueue;
@@ -68,7 +66,6 @@ public class MatchmakingService {
         this.playerRepository = playerRepository;
         this.matchRoutingRepository = matchRoutingRepository;
         this.permissionService = permissionService;
-        this.chatServiceProxy = chatServiceProxy;
     }
 
     public void enqueuePlayer(UUID userId, Match.Type queueType) {
