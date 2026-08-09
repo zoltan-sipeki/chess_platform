@@ -19,9 +19,9 @@ public class DomainEventSubscriptionRegistry {
 
     private Map<DomainEvent.Type, List<IEventPublisherService>> ackSubscriptions = new HashMap<>();
 
-    private IDomainEventSubscriptionConfigurer configurer;
+    private IDomainEventConfigurer configurer;
 
-    public DomainEventSubscriptionRegistry(IDomainEventSubscriptionConfigurer configurer) {
+    public DomainEventSubscriptionRegistry(IDomainEventConfigurer configurer) {
         this.configurer = configurer;
     }
 

@@ -2,7 +2,6 @@ package net.chess_platform.relay_service.integration.rabbitmq;
 
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -10,8 +9,6 @@ import net.chess_platform.common.domain_events.broker.ActivityChangedEvent;
 import net.chess_platform.common.domain_events.broker.BroadcastEvent;
 import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.broker.user.UserUpdatedEvent;
-import net.chess_platform.common.domain_events.service.DomainEventService;
-import net.chess_platform.relay_service.exception.UserAlreadyExistsException;
 import net.chess_platform.relay_service.integration.ChatServiceProxy;
 import net.chess_platform.relay_service.model.RelayUser.Presence;
 import net.chess_platform.relay_service.service.RelayUserService;
@@ -23,22 +20,16 @@ import net.chess_platform.relay_service.ws.message.ServerMessage;
 @RabbitListener(queues = { "#{eventQueue.name}", "#{eventFanoutQueue.name}" }, messageConverter = "messageConverter")
 public class EventListener {
 
-    @Value("${spring.application.name}")
-    private String SERVICE_NAME;
-
     private final WSConnections connections;
 
     private final RelayUserService userService;
 
-    private final DomainEventService eventService;
-
     private final ChatServiceProxy chatService;
 
-    public EventListener(WSConnections connections, RelayUserService userService, DomainEventService eventService,
+    public EventListener(WSConnections connections, RelayUserService userService,
             ChatServiceProxy chatService) {
         this.connections = connections;
         this.userService = userService;
-        this.eventService = eventService;
         this.chatService = chatService;
     }
 
@@ -49,12 +40,7 @@ public class EventListener {
 
     @RabbitHandler
     public void process(@Payload UserCreatedEvent e) {
-        try {
-            userService.process(e);
-            eventService.ack(e, SERVICE_NAME);
-        } catch (UserAlreadyExistsException ex) {
-            eventService.ack(e, SERVICE_NAME);
-        }
+        userService.process(e);
     }
 
     @RabbitHandler

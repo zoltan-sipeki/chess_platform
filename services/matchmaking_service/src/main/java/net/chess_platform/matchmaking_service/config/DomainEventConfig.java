@@ -2,18 +2,23 @@ package net.chess_platform.matchmaking_service.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import net.chess_platform.common.domain_events.broker.DomainEvent;
+import net.chess_platform.common.domain_events.service.DomainEventService;
 import net.chess_platform.common.domain_events.service.DomainEventSubscriptionRegistry;
-import net.chess_platform.common.domain_events.service.IDomainEventSubscriptionConfigurer;
+import net.chess_platform.common.domain_events.service.IDomainEventConfigurer;
 import net.chess_platform.matchmaking_service.integration.ChatServiceProxy;
 import net.chess_platform.matchmaking_service.integration.ChessServiceProxy;
 import net.chess_platform.matchmaking_service.integration.RelayServiceProxy;
 import net.chess_platform.matchmaking_service.integration.UserServiceProxy;
 
 @Configuration
-public class DomainEventConfig implements IDomainEventSubscriptionConfigurer {
+public class DomainEventConfig implements IDomainEventConfigurer {
+
+    @Value("${rabbitmq-messaging.routing-key.service}")
+    public String SERVICE_NAME;
 
     private final RelayServiceProxy relayService;
 
@@ -33,12 +38,16 @@ public class DomainEventConfig implements IDomainEventSubscriptionConfigurer {
 
     @Override
     public void configure(DomainEventSubscriptionRegistry registry) {
-        var services = List.of(relayService, chatService);
-        registry.registerSubscription(DomainEvent.Type.MATCH_FOUND, services, false);
-        registry.registerSubscription(DomainEvent.Type.ACTIVITY_CHANGED, services, false);
+        registry.registerSubscription(DomainEvent.Type.MATCH_FOUND, relayService, false);
+        registry.registerSubscription(DomainEvent.Type.ACTIVITY_CHANGED, List.of(relayService, chatService), false);
 
         registry.registerAck(DomainEvent.Type.USER_CREATED, userService);
         registry.registerAck(DomainEvent.Type.MATCH_ENDED, chessService);
+    }
+
+    @Override
+    public void configure(DomainEventService service) {
+        service.setServiceName(SERVICE_NAME);
     }
 
 }

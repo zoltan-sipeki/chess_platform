@@ -15,7 +15,7 @@ import net.chess_platform.common.domain_events.service.DomainEventSubscriptionRe
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Import({ RetryPendingEventsJob.class, DomainEventService.class, DomainEventSubscriptionRegistry.class,
-        DomainEventConfig.class })
+                DomainEventConfig.class })
 public @interface EnableDomainEvents {
 
 }

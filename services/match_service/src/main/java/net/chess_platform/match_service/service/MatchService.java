@@ -131,6 +131,10 @@ public class MatchService {
     @Transactional
     public void process(MatchEndedEvent e) {
         try {
+            if (eventService.exists(e)) {
+                return;
+            }
+
             var m = e.getData();
             var matchType = Match.Type.valueOf(m.matchType());
 
@@ -197,6 +201,8 @@ public class MatchService {
 
                 matchResultRepository.save(detail);
             }
+
+            eventService.ack(e);
 
             eventService.publish(new ReplayReadyEvent(m.players().stream().map(p -> p.id()).toList(),
                     new ReplayReadyEvent.Payload(match.getId())));

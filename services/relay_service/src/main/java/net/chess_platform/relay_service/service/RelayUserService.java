@@ -14,7 +14,6 @@ import net.chess_platform.common.domain_events.broker.user.UserCreatedEvent;
 import net.chess_platform.common.domain_events.service.DomainEventService;
 import net.chess_platform.common.security.CurrentUser;
 import net.chess_platform.relay_service.exception.InvalidUserException;
-import net.chess_platform.relay_service.exception.UserAlreadyExistsException;
 import net.chess_platform.relay_service.integration.ChatServiceProxy;
 import net.chess_platform.relay_service.model.RelayUser;
 import net.chess_platform.relay_service.model.RelayUser.Presence;
@@ -70,12 +69,18 @@ public class RelayUserService {
     @Transactional
     public void process(UserCreatedEvent e) {
         try {
+            if (eventService.exists(e)) {
+                return;
+            }
+
             var user = new RelayUser();
             user.setId(e.getData().id());
 
             relayUserRepository.saveAndFlush(user);
+
+            eventService.ack(e);
         } catch (DataIntegrityViolationException ex) {
-            throw new UserAlreadyExistsException();
+            eventService.ack(e);
         }
     }
 

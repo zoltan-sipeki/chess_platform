@@ -238,10 +238,13 @@ public class MatchmakingService {
 
     @Transactional
     public void process(MatchEndedEvent e) {
+        if (eventService.exists(e)) {
+            return;
+        }
+
         var d = e.getData();
         var matchId = d.matchId();
         var type = Match.Type.valueOf(d.matchType());
-
 
         if (!type.equals(Match.Type.PRIVATE)) {
             for (var p : d.players()) {
@@ -258,6 +261,8 @@ public class MatchmakingService {
         }
 
         matchRoutingRepository.delete(matchId);
+
+        eventService.ack(e);
     }
 
     @Transactional

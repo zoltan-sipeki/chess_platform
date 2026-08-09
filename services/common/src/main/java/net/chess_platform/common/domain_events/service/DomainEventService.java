@@ -3,17 +3,18 @@ package net.chess_platform.common.domain_events.service;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.UnexpectedRollbackException;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import net.chess_platform.common.domain_events.broker.AckEvent;
@@ -37,21 +38,47 @@ public class DomainEventService {
 
     }
 
-    private EventDBWriter writer;
+    private final DomainEventWriter writer;
 
-    private DomainEventSubscriptionRegistry registry;
+    private final DomainEventSubscriptionRegistry registry;
 
-    public DomainEventService(EventDBWriter writer, DomainEventSubscriptionRegistry registry) {
-        this.writer = writer;
+    private final IDomainEventConfigurer configurer;
+
+    private String serviceName;
+
+    @PersistenceContext
+    private EntityManager em;
+
+    public DomainEventService(IDomainEventConfigurer configurer, DomainEventSubscriptionRegistry registry,
+            DomainEventWriter writer) {
+        this.configurer = configurer;
         this.registry = registry;
+        this.writer = writer;
+    }
+
+    @PostConstruct
+    public void init() {
+        configurer.configure(this);
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public boolean exists(DomainEvent<?> e) {
+        return writer.existsById(e.getId());
     }
 
     public void publish(DomainEvent<?> e) {
-        var subscriptionsWithAck = registry.getSubscriptionsWithAckFor(e.getType());
-        writer.save(e, subscriptionsWithAck);
+        var recipients = registry.getSubscriptionsWithAckFor(e.getType());
+        if (recipients != null && !recipients.isEmpty()) {
+            writer.save(e, recipients);
+        }
 
-        var subscriptionsWithoutAck = registry.getSubscriptionsWithoutAckFor(e.getType());
-        publish(e, subscriptionsWithoutAck);
+        recipients = registry.getSubscriptionsWithoutAckFor(e.getType());
+        if (recipients != null && !recipients.isEmpty()) {
+            publish(e, recipients);
+        }
     }
 
     public void reDispatchPendingEvents() {
@@ -62,7 +89,7 @@ public class DomainEventService {
         writer.confirmAck(e);
     }
 
-    public void ack(DomainEvent<?> e, String serviceName) {
+    public void ack(DomainEvent<?> e) {
         try {
             writer.ack(e, serviceName);
         } catch (UnexpectedRollbackException ex) {
@@ -109,27 +136,27 @@ public class DomainEventService {
     }
 
     @Service
-    protected static class EventDBWriter {
+    protected static class DomainEventWriter {
 
-        private ApplicationEventPublisher publisher;
+        private final ApplicationEventPublisher publisher;
+
+        private final ObjectMapper objectMapper;
 
         @PersistenceContext
         private EntityManager em;
 
-        private ObjectMapper objectMapper;
-
-        public EventDBWriter(ApplicationEventPublisher publisher,
-                ObjectMapper objectMapper) {
+        public DomainEventWriter(ApplicationEventPublisher publisher, ObjectMapper objectMapper) {
             this.publisher = publisher;
             this.objectMapper = objectMapper;
         }
 
         @Transactional
-        public void save(DomainEvent<?> e, List<IEventPublisherService> recipients) {
-            if (recipients == null || recipients.isEmpty()) {
-                return;
-            }
+        public boolean existsById(UUID id) {
+            return em.find(DomainEventData.class, id) != null;
+        }
 
+        @Transactional
+        public void save(DomainEvent<?> e, List<IEventPublisherService> recipients) {
             try {
                 var event = new DomainEventData();
                 event.setId(e.getId());
@@ -174,7 +201,6 @@ public class DomainEventService {
                     var recipients = new ArrayList<String>();
 
                     ack.setLastSentAt(OffsetDateTime.now());
-                    em.merge(ack);
                     recipients.add(ack.getServiceName());
 
                     // eventAckRepository.saveAll(eventAcks);
@@ -204,7 +230,7 @@ public class DomainEventService {
             }
         }
 
-        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        @Transactional
         public void confirmAck(AckEvent e) {
             em.createQuery(
                     "UPDATE DomainEventAck a SET a.status = 'ACKED', a.ackedAt = :now WHERE a.event.id = :eventId and a.serviceName = :serviceName")

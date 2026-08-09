@@ -1,6 +1,5 @@
 package net.chess_platform.chat_service.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import net.chess_platform.chat_service.mapper.UserMapper;
@@ -24,9 +23,6 @@ import net.chess_platform.common.domain_events.service.DomainEventService;
 @Service
 public class UserService {
 
-    @Value("${spring.application.name}")
-    private String SERVICE_NAME;
-
     private final DomainEventService eventService;
 
     private final UserRepository userRepository;
@@ -48,6 +44,10 @@ public class UserService {
     }
 
     public void process(UserCreatedEvent e) {
+        if (eventService.exists(e)) {
+            return;
+        }
+
         var eventUser = e.getData();
 
         var user = new User();
@@ -68,15 +68,19 @@ public class UserService {
         
         notificationMetadataRepository.save(notificationMetadata);
 
-        eventService.ack(e, SERVICE_NAME);
+        eventService.ack(e);
     }
 
     public void process(UserUpdatedEvent e) {
+        if (eventService.exists(e)) {
+            return;
+        }
         var d = e.getData();
         var update = mapper.toUpdate(d);
 
         userRepository.update(d.id(), update);
-        eventService.ack(e, SERVICE_NAME);
+        
+        eventService.ack(e);
     }
 
     public void process(PresenceChangedEvent e) {
