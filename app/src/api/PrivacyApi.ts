@@ -25,7 +25,7 @@ export class PrivacyApi {
     }
 
     updateChatPrivacy(settings: PrivacySettings): Observable<PrivacySettings> {
-        return this.http.patch<PrivacySettings>(`${this.BASE_URL}}/chat`, settings);
+        return this.http.patch<PrivacySettings>(`${this.BASE_URL}/social`, settings);
     }
 
     updateMatchPrivacy(settings: PrivacySettings): Observable<PrivacySettings> {
