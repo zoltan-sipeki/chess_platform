@@ -71,9 +71,11 @@ public class WSHandler extends TextWebSocketHandler {
             if (userId == null) {
                 var id = authenticate(session, message);
                 connections.setAuthenticatedUserId(session, id);
-                relayUserService.broadcastPresence(id);
+                relayUserService.sendPresence(id, true);
                 return;
             }
+
+            relayUserService.sendPresence(userId, false);
 
             var cm = objectMapper.readValue(message.getPayload(), ClientMessage.class);
             var mtype = cm.getType();

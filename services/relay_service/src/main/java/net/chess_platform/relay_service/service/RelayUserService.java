@@ -40,12 +40,15 @@ public class RelayUserService {
         return user.getPreferredPresence();
     }
 
-    public void broadcastPresence(UUID userId) {
+    public void sendPresence(UUID userId, boolean broadcast) {
         List<UUID> contacts = new ArrayList<>();
 
         var presence = getPreferredPresence(userId);
-        if (getPreferredPresence(userId) != Presence.OFFLINE) {
-            contacts = chatService.getContacts(userId);
+
+        if (broadcast) {
+            if (getPreferredPresence(userId) != Presence.OFFLINE) {
+                contacts = chatService.getContacts(userId);
+            }
         }
 
         contacts.add(userId);
