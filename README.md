@@ -9,7 +9,10 @@
     3. [Relay Service](#relay-service)
     4. [Chat Service](#chat-service)
     5. [Match Service](#match-service)
-3. [Deep dive on the matchmaking / live game subsystems](#deep-dive-on-the-matchmaking--live-game-subsystems)  
+3. [The matchmaking / live game subsystems](#the-matchmaking--live-game-subsystems)
+    1. [High-level overview](#high-level-overview)
+    2. [Design decisions / trade-offs](#design-decisions--trade-offs)
+4. [Known gaps](#known-gaps)
 
 ## Features
 
@@ -42,7 +45,7 @@
 ## High-level architecture
 
 ![High-level architecture](highlevel_architecture.png)
-Figure 1.: High-level architecture
+*Figure 1.: High-level architecture*
 
 The backend is made up of 7 services: Keycloak, user, match, chess, matchmaking, relay and chat services. Each service is backed by their own, separate PostgreSQL database. The services, with a few exceptions, are entirely event-driven, with RabbitMQ facilitating communication between them. The Angular frontend can talk to the services via the API gateway, implemented with Spring Cloud Gateway. Spring Cloud Eureka is used for service discovery, and Spring Cloud Config Server for centralized configuration management. Since I wanted to learn about NoSQL databases including their pros and cons and when to use them instead of a traditional RDBMS, I also experimented with MongoDB. The services are orchestrated with Docker Compose.
 
@@ -58,11 +61,6 @@ Keycloak is the identity provider, authentication mechanism behind the applicati
 
 In addition, the user service is a CRUD service, supporting avatar management (upload, delete), and updating a user (such as updating the display name of a user). Nothing other than the username and e-mail is stored by Keycloak.
 
-**Published events by the user service**:
-- **User Created**: published when the registered user has been commited to the database. Interested services: matchmaking, chat, relay, match
-- **User Updated**: published when the display name or avatar of a user is updated. Interested services: matchmaking, chat, relay, match
-- **User Deleted**: published when a user has been deleted. Interested services: matchmaking, chat, relay, match.
-
 **Access token handling:**
 Keycloak issuess access tokens as JWTs. The access/refresh tokens are stored in memory on the client, not in local storage to mitigate XSS attacks. The authentication workflow is as follows:
 
@@ -72,37 +70,30 @@ Storing the access/refresh tokens in local storage would eliminate the need to a
 
 ### Relay Service
 
-A websocket service that pushes live updates to clients. Instead of all services with live updates maintaining a websocket connection with the client, they send their updates as "broadcast events" via RabbitMQ to the relay service, which in turn forwards the events to the clients, centralizing push notifications in one service. All nodes of the relay service receive the broadcast events since it is not known ahead of time which node a recipient is connected to.
+A websocket service that pushes live updates to clients. Instead of all services with live updates maintaining a websocket connection with the client, they send their updates as "broadcast events" via RabbitMQ to the relay service, which in turn forwards the events to the clients, centralizing push notifications in one service. All nodes of the relay service receive the broadcast events since it is not known ahead of time which node a recipient is connected to. Broadcast events are events such as the MessageCreatedEvent (fired when a user posts a message in a channel), or UserUpdatedEvent (sent when a user updates their display name / avatar) etc.
 
 After a websocket connection has been established, the client authenticates by sending a message of type AUTHENTICATE with the Keycloak access token as the payload. (If the client does not authenticate in a specified amount of time, the websocket connection is closed.) The service verifies the access token, and if the verification is successful, the connection remains open and the client can then start receiving updates. If the user has provided an invalid access token, the connection is closed immediately.
 
 Besides, the service manages user presence (online, offline, away).
 
-How does the relay service know which clients a broadcast event should be forwarded to if it does not have the list of recipients? Some events do contain recipient information, but some do not. For events that do not contain a recipient list, the service acquires it by calling a chat service endpoint that returns the contacts of the sender.
+How does the relay service know which clients a broadcast event should be forwarded to if it does not have the list of recipients? Some events do contain recipient information, but some do not. For events that do not contain a recipient list, the service obtains it by calling a chat service endpoint that returns the contacts of the sender. Another way to solve this problem would be to replicate the contact info between the two services. Boths have their pros and cons.
 
 ### Chat Service
 A CRUD service that provides a REST API for channel handling, instant messaging, friend requests, notifications, and related queries. It also provides privacy settings for querying friend data.
 
-Published events:
-
-- **ChannelTypingEvent (client/broadcast event)**: sent by a channel member to other channel members when they have started typing. Interested services: relay.
-- **NotificationEvent (client/broadcast event)**: sent when a user has created/accepted a friend request. Interested services: relay.
-- **UnfriendEvent (client/broadcast event)**: sent when a user has unfriended a friend. Interested services: relay.
-- **MessageCreatedEvent (client/broadcast event)**: sent by a channel member to other channel members when they have posted a message. Interested services: relay.
-- **MessageEditedEvent (client/broadcast event)**: sent by a channel member to other channel members when they have edited a message. Interested services: relay.
-- **MessageDeletedEvent (client/broadcast event)**: sent by a channel member to ther channel members when they have deleted a message. Interested Services: relay.
-
 ### Match Service
 A query service that provides a REST API for querying past match data, replays, game/player statistics and privacy settings. All this data is obtained by the chess service sending an event when a match has ended. All match data is owned by the match service.
 
-## Deep dive on the matchmaking / live game subsystems
+## The matchmaking / live game subsystems
 
 The matchmaking service never touches game state, it's only job is to pair players together, and issue "matchmaking tokens" / tickets to players so that they can connect to a pre-selected chess node hosting the game. It also acts as a match routing service for when a player needs to reconnect to an ongoing game. The sole job of the chess nodes are to host games, they are not meant to be queried.
 
 In the following sections, I will give an overview of the workings of the two systems and why I designed them the way I did.
 
+### High-level overview
+
 ![High-level architecture of matchmaking / live game](matchmaking_highlevel.png)  
-Figure 2.: Matchmaking / live game architecture
+*Figure 2.: Matchmaking / live game architecture*
 
 The client enters a matchmaking queue, calling the corresponding REST endpoint on the matchmaking service. There is a separate matchmaking queue for ranked and unranked games.
 
@@ -111,14 +102,14 @@ As is shown in Figure 3., when the player is placed into the queue, the system a
 Private games circumvent the matchmaking queues. They work by one player inviting another. Matchmaking tokens are generated and match routing data are saved for private games as well.
 
 ![Matchmaking-service](matchmaking_service.png)  
-Figure 3.: Matchmaking workflow
+*Figure 3.: Matchmaking workflow*
 
 As is shown in Figure 4., the client connects to a game by presenting their matchmaking token to the pre-selected chess service node. The client establishes a websocket connection with the API gateway, calling "/chess/ws?target={node-uuid}". The API gateway obtains the IP address of the target chess node by parsing out the node UUID from the target query parameter, and querying Eureka. If there is a node with the given UUID, the API gateway opens a websocket connection downstream with the chess service node, proxying the original connection, otherwise it terminates its connection with client. The client then has to go through the same authentication workflow as it does with the relay service. If authentication was successful, the client sends their matchmaking token in a JOIN_MATCH message to the chess service to be verified. The service verifies the token signature using the public key of the matchmaking service, then checks whether the player ID in the token matches the ID of the authenticated user, and whether the target node UUID matches its own. (Players reconnect with a JOIN_MATCH message as well, but token verification is skipped if a player already has a game in progress). If verification fails, the connection is closed, else the token is handed off to one of many coordinator threads, based on the match ID (the target thread is determined by taking the modulus of the match ID and the number of threads), confining a match to a single thread. Each subsequent match-related message is sharded by the match ID too, and thus handled by a single thread. If there is no match with the given ID, the match is created, the player is added to the match, and a connection timeout is started. If the other player does not connect before the timer runs out, the match is cleaned up, and the first player is disconnected. If both players are connected, the chess service notifies the matchmaking service that the match is now active, a chessboard is instantiated, a flag-fall timer is started (or a promotion timer if promotion is in progress), then the coordinator keeps accepting messages in an event-loop until the game is over. If so, a MatchEndedEvent is fired with all the match data, the match is cleaned up, and the players are disconnected. On receiving the event, the matchmaking service clears the routing data for the given match ID and updates the MMRs of the players, while the match service parses and persists the data.
 
 ![alt text](chess_service.png)  
-Figure 4.: Game coordinator workflow
+*Figure 4.: Game coordinator workflow*
 
-### Design decisions / trades-off
+### Design decisions / trade-offs
 The matchmaking queues are implemented as in-memory binary trees (vanilla Java TreeSet). The biggest drawback of in-memory structures is that they can't be horizontally scaled, in which case we would need to spawn multiple nodes, and would need to move the queues out of memory into a shared database tables, right?. Does it really make sense to horizontally scale the queues, though?
 
 - Implementing the queues as tables makes the queue operations slower because we are writing to disk.
@@ -136,7 +127,7 @@ A JWT solves all of these issues elegantly. It contains all the necessary inform
 
 **Why the many coordinator threads?**
 
-Each websocket connection uses a different I/O thread. If there weren't any dedicated coordinator threads, all match-related data structures would have to be guarded by a lock, which would reduce performance and introduce potential concurrency bugs. Confining match conduction logic to a single thread solves the locking issue: I/O thread converts incoming messages and then dispatches them to the designated coordinator thread for further processing. Messages are dispatched to coordinator threads by their assigned match ID, ensuring that a match is always handled by the same thread. More than one coordinator thread is probably not that necessary for a chess server, chess not being a CPU intensive game at all, and the potential bottleneck being network I/O. The extra threads are just for good measure, more threads in this case are not going to present any further complexities, so we can freely fine-tune the them if needed.
+Each websocket connection uses a different I/O thread. If there weren't any dedicated coordinator threads, all match-related data structures would have to be guarded by a lock, which would reduce performance and introduce potential concurrency bugs. Confining match conduction logic to a single thread solves the locking issue: I/O thread converts incoming messages and then dispatches them to the designated coordinator thread for further processing. Messages are dispatched to coordinator threads by their assigned match ID, ensuring that a match is always handled by the same thread. More than one coordinator thread is probably not that necessary for a chess server, chess not being a CPU intensive game at all, and the potential bottleneck being network I/O. The additional threads are just for good measure, more threads in this case are not going to present any further complexities, so we can freely fine-tune the them if needed. In the current implementation, there are as many threads as there are CPU cores, which is the upper limit if we care about CPU performance.
 
 The match-related data structures are all stored in memory, they are not persisted to a database. It is to ensure that response times are fast. If the server crashes, all games in progress at the time are lost, which is expected. This is not an MMORPG where the game state has to be periodically saved.
 
@@ -145,6 +136,13 @@ The match-related data structures are all stored in memory, they are not persist
 I've already touched on failure handling in the previous paragraphs, but what if a player tries to reconnect to a game, and the chess node hosting the game has died? The match routing data, which the player queries if they have an ongoing game, is owned by the matchmaking service. If a specific chess node dies, a player with an ongoing game on that node is not going to be able to play another game again because a player can't invite anyone to a private game, nor can they queue for a public game if they have a match in progress. The new chess node taking the place of the previous one will have a new UUID. We have a deadlock situation here. How does the matchmaking service know if a specific chess node is alive or dead? The matchmaking service periodically queries Eureka for the status of the chess nodes, and if Eureka declares a node dead, the matchmaking service will declare that node dead as well, and will delete all match routing data pertaining to that node, resolving the deadlock.
 
 
+**Conclusions to the design**  
 
+This particular architecture may be overkill for an online chess game, but I would definitely consider it if I had to write the backend for a performance-intensive multiplayer real-time game (such as an online shooter). It is crucial for such games to keep all processor cores running the game loop (multiple independent coordinator threads, capped at the number of processor cores). Moving the matchmaking system out into its own service is also a good idea in this case because the game server should only run the game logic and accept incoming connections to provide the best possible performance, it shouldn't be hindered by the workings of the matchmaking system.
 
+## Known gaps
 
+- No circuit-breaker, rate limiting, retry mechanism for synchronous REST calls.
+- No distributed tracing, logging.
+- Error handling is hand-waved in a lot of cases.
+- Missing caching layer.
