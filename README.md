@@ -148,5 +148,7 @@ This particular architecture may be overkill for an online chess game, but I wou
 
 - No circuit-breaker, rate limiting, retry mechanism for synchronous REST calls.
 - No distributed tracing, logging.
+- No distributed locking for scheduled jobs.
 - Error handling is hand-waved in a lot of cases.
 - Missing caching layer.
+- Authorization framework is not very well though-out, needs rework. Quary fragments should be kept.
