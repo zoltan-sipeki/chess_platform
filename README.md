@@ -44,7 +44,7 @@
 
 ## High-level architecture
 
-![High-level architecture](highlevel_architecture.png)
+<img width="1100" height="850" alt="highlevel_architecture" src="https://github.com/user-attachments/assets/fd1cee43-9b7b-4282-a935-32f5e612e947" />
 *Figure 1.: High-level architecture*
 
 The backend is made up of 7 services: Keycloak, user, match, chess, matchmaking, relay and chat services. Each service is backed by their own, separate PostgreSQL database. The services, with a few exceptions, are entirely event-driven, with RabbitMQ facilitating communication between them. The Angular frontend can talk to the services via the API gateway, implemented with Spring Cloud Gateway. Spring Cloud Eureka is used for service discovery, and Spring Cloud Config Server for centralized configuration management. Since I wanted to learn about NoSQL databases including their pros and cons and when to use them instead of a traditional RDBMS, I also experimented with MongoDB. The services are orchestrated with Docker Compose.
@@ -92,7 +92,7 @@ In the following sections, I will give an overview of the workings of the two sy
 
 ### High-level overview
 
-![High-level architecture of matchmaking / live game](matchmaking_highlevel.png)  
+<img width="850" height="609" alt="matchmaking_highlevel" src="https://github.com/user-attachments/assets/8d0631ab-b4aa-4c0d-b565-4007b51d0fea" />
 *Figure 2.: Matchmaking / live game architecture*
 
 The client enters a matchmaking queue, calling the corresponding REST endpoint on the matchmaking service. There is a separate matchmaking queue for ranked and unranked games.
@@ -101,12 +101,12 @@ As is shown in Figure 3., when the player is placed into the queue, the system a
 
 Private games circumvent the matchmaking queues. They work by one player inviting another. Matchmaking tokens are generated and match routing data are saved for private games as well.
 
-![Matchmaking-service](matchmaking_service.png)  
+<img width="1247" height="586" alt="matchmaking_service" src="https://github.com/user-attachments/assets/ffbf2382-0f26-47c2-8b35-37b50f7bcaa4" />
 *Figure 3.: Matchmaking workflow*
 
 As is shown in Figure 4., the client connects to a game by presenting their matchmaking token to the pre-selected chess service node. The client establishes a websocket connection with the API gateway, calling "/chess/ws?target={node-uuid}". The API gateway obtains the IP address of the target chess node by parsing out the node UUID from the target query parameter, and querying Eureka. If there is a node with the given UUID, the API gateway opens a websocket connection downstream with the chess service node, proxying the original connection, otherwise it terminates its connection with client. The client then has to go through the same authentication workflow as it does with the relay service. If authentication was successful, the client sends their matchmaking token in a JOIN_MATCH message to the chess service to be verified. The service verifies the token signature using the public key of the matchmaking service, then checks whether the player ID in the token matches the ID of the authenticated user, and whether the target node UUID matches its own. (Players reconnect with a JOIN_MATCH message as well, but token verification is skipped if a player already has a game in progress). If verification fails, the connection is closed, else the token is handed off to one of many coordinator threads, based on the match ID (the target thread is determined by taking the modulus of the match ID and the number of threads), confining a match to a single thread. Each subsequent match-related message is sharded by the match ID too, and thus handled by a single thread. If there is no match with the given ID, the match is created, the player is added to the match, and a connection timeout is started. If the other player does not connect before the timer runs out, the match is cleaned up, and the first player is disconnected. If both players are connected, the chess service notifies the matchmaking service that the match is now active, a chessboard is instantiated, a flag-fall timer is started (or a promotion timer if promotion is in progress), then the coordinator keeps accepting messages in an event-loop until the game is over. If so, a MatchEndedEvent is fired with all the match data, the match is cleaned up, and the players are disconnected. On receiving the event, the matchmaking service clears the routing data for the given match ID and updates the MMRs of the players, while the match service parses and persists the data.
 
-![alt text](chess_service.png)  
+<img width="2059" height="1209" alt="chess_service" src="https://github.com/user-attachments/assets/97776761-4853-453c-9fd3-3c204e00011e" />
 *Figure 4.: Game coordinator workflow*
 
 ### Design decisions / trade-offs
