@@ -41,7 +41,7 @@ Architecture:
     1. [High-level overview](#high-level-overview)
     2. [Design decisions / trade-offs](#design-decisions--trade-offs)
 4. [Known gaps](#known-gaps)
-5. [Screenshots[(#screenshots)
+5. [Screenshots](#screenshots)
 
 ## Features
 
