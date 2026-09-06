@@ -1,6 +1,6 @@
 # Multiplayer Online Chess Platform - Microservices
 
-A real-time multiplayer chess platform built to explore microservices, distributed systems, and event-driven architecture.
+A multiplayer chess platform built to explore microservices, distributed systems, and event-driven architecture.
 
 ## Technological Stack
 
