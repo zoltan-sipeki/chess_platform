@@ -12,8 +12,6 @@ Backend:
 - RabbitMQ
 - PostgreSQL
 - Keycloak (OAuth 2.0, OpenID Connect)
-- WebSockets
-- REST API
 
 Frontend:
 - Angular (TypeScript)
@@ -27,6 +25,8 @@ Architecture:
 - Transactional Outbox
 - Service discovery
 - API Gateway
+- WebSockets
+- REST API
 
 ## Table of Contents
 
