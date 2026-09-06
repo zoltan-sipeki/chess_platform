@@ -1,4 +1,32 @@
-# Chess Platform - Microservices
+# Multiplayer Online Chess Platform - Microservices
+
+A real-time multiplayer chess platform built to explore microservices, distributed systems, and event-driven architecture.
+
+## Technological Stack
+
+Backend:
+- Java
+- Spring Boot
+- Spring Cloud
+- Spring Security
+- RabbitMQ
+- PostgreSQL
+- Keycloak (OAuth 2.0, OpenID Connect)
+- WebSockets
+- REST API
+
+Frontend:
+- Angular (TypeScript)
+
+Infrastructure:
+- Docker / Docker Compose
+
+Architecture:
+- 7 independently deployable services
+- Event-driven communication
+- Transactional Outbox
+- Service discovery
+- API Gateway
 
 ## Table of Contents
 
@@ -114,7 +142,7 @@ As is shown in Figure 4., the client connects to a game by presenting their matc
 *Figure 4.: Game coordinator workflow*
 
 ### Design decisions / trade-offs
-The matchmaking queues are implemented as in-memory binary trees (vanilla Java TreeSet). The biggest drawback of in-memory structures is that they can't be horizontally scaled, in which case we would need to spawn multiple nodes, and would need to move the queues out of memory into a shared database tables, right?. Does it really make sense to horizontally scale the queues, though?
+The matchmaking queues are implemented as in-memory binary trees (vanilla Java TreeSet). The biggest drawback of in-memory structures is that they can't be horizontally scaled, in which case we would need to spawn multiple nodes, and would need to move the queues out of memory into a shared database tables, right? Does it really make sense to horizontally scale the queues, though?
 
 - Implementing the queues as tables makes the queue operations slower because we are writing to disk.
 - A matchmaking queue is a live data structure, which means its content can get stale very quickly, and does not make a lot of sense to persist. What happens if the matchmaking service goes down (it either crashes or is shut down for maintenance)? All the players who were standing in queue at the time of the crash or the shutdown will still be standing in queue when the service comes back online. By the time that happens, some or all of the players may already have logged out. This has a much lower chance of happening if there are more than one matchmaking nodes running, but this is something an in-memory structure naturally solves.
