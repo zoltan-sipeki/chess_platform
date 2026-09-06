@@ -41,6 +41,7 @@ Architecture:
     1. [High-level overview](#high-level-overview)
     2. [Design decisions / trade-offs](#design-decisions--trade-offs)
 4. [Known gaps](#known-gaps)
+5. [Screenshots[(#screenshots)
 
 ## Features
 
@@ -179,4 +180,85 @@ This particular architecture may be overkill for an online chess game, but I wou
 - No distributed locking for scheduled jobs.
 - Error handling is hand-waved in a lot of cases.
 - Missing caching layer.
-- Authorization framework is not very well though-out, needs rework. Quary fragments should be kept.
+- Authorization framework is not very well though-out, needs rework. Query fragments should be kept.
+
+## Screenshots
+
+- *Landing page:*
+<img width="1917" height="1017" alt="landing_page" src="https://github.com/user-attachments/assets/3b015cea-dbbb-4793-b04e-46403d7b3d78" />
+
+
+- *User home page:*
+<img width="1917" height="1017" alt="user_homepage" src="https://github.com/user-attachments/assets/34226fef-3b84-4145-b512-66e4fcd63419" />
+
+
+- *User search:*
+<img width="1917" height="1015" alt="user_search" src="https://github.com/user-attachments/assets/4bcc6870-76be-499f-8f57-2b111dc18bda" />
+
+
+- *Ranked queue:*
+<img width="1917" height="1017" alt="ranked_queue" src="https://github.com/user-attachments/assets/343db0a3-4579-4b94-8678-ff054d2408ce" />
+
+
+- *Match found:*
+<img width="1917" height="1017" alt="match_found" src="https://github.com/user-attachments/assets/f4e3e2c8-f25b-4fe5-8c7f-6b64e99a6e44" />
+
+
+- *Match in progress:*
+<img width="1917" height="1017" alt="match_in_progress" src="https://github.com/user-attachments/assets/8cdefc56-75b4-4e13-98fe-eb49fa9ff57d" />
+
+
+- *Match ended:*
+<img width="1917" height="1017" alt="match_ended" src="https://github.com/user-attachments/assets/83496943-24c7-4393-a09f-39e6627b1401" />
+
+
+- *Replay:*
+<img width="1917" height="1015" alt="replay" src="https://github.com/user-attachments/assets/2b7f8057-dd2c-41be-ad94-706bc80b0c90" />
+
+
+- *Incoming friend request:*
+<img width="1917" height="1020" alt="incoming_friend_request" src="https://github.com/user-attachments/assets/b11924e5-a1b0-4188-a8aa-57cb3b84dee7" />
+
+
+- *Accepted friend request:*
+<img width="1917" height="1016" alt="friend_request_accepted" src="https://github.com/user-attachments/assets/484d5c07-ad60-4eff-88ce-436c8c91f962" />
+
+
+- *Profile 1.:*
+<img width="1917" height="1016" alt="profile_1" src="https://github.com/user-attachments/assets/24670dfb-2925-4fd2-af3b-cad93000a984" />
+
+
+- *Profile 2.:*
+<img width="1917" height="1017" alt="profile_2" src="https://github.com/user-attachments/assets/ac366756-e805-459c-9e22-a97d41ab48b8" />
+
+
+- *Friends:*
+<img width="1917" height="1017" alt="friends" src="https://github.com/user-attachments/assets/6628898a-70e3-48d9-b7bf-30c15133e1e8" />
+
+
+- *Match history:*
+<img width="1917" height="1020" alt="match_history" src="https://github.com/user-attachments/assets/8076d6d7-1487-4243-94e6-5ca639933cb0" />
+
+
+- *Avatar / display name settings:*
+<img width="1917" height="1016" alt="avatar_display_name_settings" src="https://github.com/user-attachments/assets/2288c604-3b1f-4095-94bc-e612e8a47d6a" />
+<img width="1917" height="1020" alt="avatar" src="https://github.com/user-attachments/assets/0af29b14-816a-44eb-a996-c91624e78eb1" />
+
+
+- *Keycloak specific settings:*
+<img width="1917" height="1020" alt="keycloak_specific_settings" src="https://github.com/user-attachments/assets/30c9620b-944a-4609-a452-a81115d8aec8" />
+
+
+- *Privacy settings:*
+<img width="1917" height="1020" alt="settings_4" src="https://github.com/user-attachments/assets/2918dfc9-006b-4222-be81-65048c0bf12d" />
+
+
+- *Account deletion:*
+<img width="1917" height="1017" alt="account_deletion" src="https://github.com/user-attachments/assets/c965f1c8-3c13-46e0-b567-90a4250e825d" />
+
+
+- *Messaging:*
+<img width="1917" height="1017" alt="messaging" src="https://github.com/user-attachments/assets/1048799b-9e9b-4614-85ff-5db95414a811" />
+
+
+
